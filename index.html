@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta property="og:image" content="cover.jpg">
+<meta property="og:title" content="Peter Flo — Data Science at Harvard">
+<meta property="og:description" content="Researching diffusion models, stochastic optimization, and mathematical analysis.">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Peter Flo</title>
+  <meta name="description" content="Personal site of Peter Flo." />
+  <style>
+    :root {
+      --bg:#fff; --text:#111; --muted:#666;
+      --accent:#AD7C03; --rule:#222; --link:#0645ad; --visited:#551a8b;
+      --maxw:1032px; --leftw:215px;
+    }
+    body{margin:0;background:var(--bg);color:var(--text);
+      font:13px/1.45 Arial, Helvetica, sans-serif;}
+    a{color:var(--link);text-decoration:underline}
+    a:visited{color:var(--visited)}
+    .wrap{max-width:var(--maxw);margin:40px auto;padding:0 16px;
+      display:grid;grid-template-columns:var(--leftw) 1fr 300px;gap:0}
+    .left{padding:0 24px 0 0;border-right:1px solid var(--rule);
+      display:flex;flex-direction:column;align-items:flex-end}
+    .name{font-weight:700;font-size:16px;margin:0;text-align:right}
+    .tag{color:var(--muted);font-size:13px;line-height:1.4;text-align:right;margin-top:6px}
+    .tag .edu{display:block;font-weight:600;color:var(--text)}
+    .tag .degree{display:block;margin-bottom:6px}
+
+    .main{padding:0 24px}
+    .section{margin:14px 0}
+    .label{color:var(--accent);font-weight:700;font-size:14px;display:block;margin:6px 0}
+    .content{font-size:13px;max-width:60ch}
+    .content p{margin:6px 0}
+
+    .aside{padding-left:24px}
+    .aside img{max-width:100%;height:auto;display:block}
+    .aside figcaption{color:var(--muted);font-size:12px;text-align:center;margin-top:6px}
+
+    @media (max-width:820px){
+      .wrap{grid-template-columns:1fr;gap:16px}
+      .left{align-items:flex-start;border-right:none}
+      .name,.tag{text-align:left}
+      .aside{padding:0}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <aside class="left" aria-label="header">
+      <p class="name">Peter Flo</p>
+      <p class="tag">
+        <span class="edu">Harvard University</span>
+        <span class="degree">M.Sc. Data Science</span>
+        <span class="edu">UC Berkeley</span>
+        <span class="degree">B.A. Data Science; B.S. Environmental Economics (Honors)</span>
+      </p>
+    </aside>
+
+    <section class="main" aria-label="content">
+      <div class="section">
+        <span class="label">currently</span>
+        <div class="content">
+          <p> exploring diffusion models, stochastic optimization, and mathematical analysis at Harvard/MIT. kindly fully funded by the <a href="https://www.akerscholarship.no/" target="_blank" rel="noopener">Aker Scholarship</a>.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="label">read</span>
+        <div class="content">
+          <p><strong>projects &amp; writing</strong></p>
+          <p><em>Geospatial Embeddings for Pollution Prediction</em> — Best Honors Thesis (2024). <a href="https://www.youtube.com/live/yae_twxFxnA?si=Iy62yuGaTFI1TNT6&t=3924" target="_blank" rel="noopener">watch</a></p>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="label">look</span>
+        <div class="content">
+          <p><strong>Scientific Climbing in Kyrgyzstan</strong> — <a href="https://amundsensports.com/en-US/articles/khan-tengri" target="_blank" rel="noopener">read</a> · <a href="https://www.youtube.com/live/nAz-CabyrJo?si=ZBGFW2puBWY7z-U6&t=3329" target="_blank" rel="noopener">watch</a></p>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="label">work</span>
+        <div class="content">
+          <p><strong>Special Projects Lead, Midjourney</strong> — image &amp; video moderation + research hiring.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="label">remember</span>
+        <div class="content">
+          <p>research with Ted Miguel, Daniel Kammen, and Sandra Rozo on causal inference and geospatial ML.</p>
+          <p>taught econometrics &amp; data science to 300+ students at UC Berkeley; Outstanding GSI Award (2024).</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="label">something good</span>
+        <div class="content">
+          <p>founder, <em>Drones for Ukraine</em> — built and delivered 125 drones to front-line units. <a href="https://dronerforukraina.vercel.app/" target="_blank" rel="noopener">read</a></p>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="label">ancient</span>
+        <div class="content">
+          <p><a href="cv.pdf">curriculum vitae</a></p>
+          <p><small>pgrindehollevik [at] g.harvard.edu</small></p>
+          <p><small>© <span id="year"></span> Peter Flo</small></p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="aside" aria-label="image">
+      <figure>
+        <img src="cover.jpg" alt="Portrait of Peter"/>
+        <figcaption>First day of grad school</figcaption>
+      </figure>
+    </aside>
+  </main>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
