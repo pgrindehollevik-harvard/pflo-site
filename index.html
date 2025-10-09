@@ -30,13 +30,14 @@
   <style>
     :root {
       --bg:#fff; --text:#111; --muted:#666;
-      --accent:#AD7C03; --rule:#222; --link:#0645ad; --visited:#551a8b;
+      --accent:#AD7C03; --rule:#222; --link:#1a2d5f; --visited:#1a2d5f;
       --maxw:1032px; --leftw:215px;
     }
     body{margin:0;background:var(--bg);color:var(--text);
       font:13px/1.45 Arial, Helvetica, sans-serif;}
     a{color:var(--link);text-decoration:underline}
     a:visited{color:var(--visited)}
+    a:hover{color:#000;text-decoration:none}
     .wrap{max-width:var(--maxw);margin:40px auto;padding:0 16px;
       display:grid;grid-template-columns:var(--leftw) 1fr 300px;gap:0}
     .left{padding:0 24px 0 0;border-right:1px solid var(--rule);
@@ -128,7 +129,7 @@
         <span class="label">ancient</span>
         <div class="content">
           <p><a href="cv.pdf">curriculum vitae</a></p>
-          <p><small>pgrindehollevik [at] g.harvard.edu</small></p>
+          <p><small><a href="mailto:pgrindehollevik@g.harvard.edu">pgrindehollevik@g.harvard.edu</a></small></p>
           <p><small>© <span id="year"></span> Peter Flo</small></p>
         </div>
       </div>
