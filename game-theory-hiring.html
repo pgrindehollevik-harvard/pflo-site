@@ -1237,7 +1237,7 @@
             <h2>Why this matters for labs like Midjourney</h2>
           
             <p>
-              What recruiting teams often treat as “operations” are, in practice, mechanisms that reshape
+              What recruiting teams often treat as "operations" are, in practice, mechanisms that reshape
               incentives, clarify information, and strengthen the repeated-game dynamics that make hiring
               more predictable. When those mechanisms are in place, the system drifts toward the calmer,
               high-reputation, fit-driven equilibrium rather than the expensive, noisy one. That is the real
@@ -1246,6 +1246,11 @@
               will need to rely on luck—or spiraling salaries—to assemble the team it actually wants.
             </p>
           </section>
+
+          <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e5e5e5; text-align: center;">
+            <p style="font-size: 1rem; color: #666; margin-bottom: 1rem;">Thanks for reading!</p>
+            <p style="font-size: 0.85rem; color: #888;">© <span id="copyright-year"></span> Peter Flo</p>
+          </div>
           
         </section>
       </div>
@@ -1638,6 +1643,14 @@
       slider.addEventListener('input', update);
       window.addEventListener('resize', drawChart);
       update();
+    })();
+
+    // Set copyright year
+    (function() {
+      const yearEl = document.getElementById('copyright-year');
+      if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
+      }
     })();
   </script>
 </body>
