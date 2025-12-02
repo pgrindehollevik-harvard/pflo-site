@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>A Game-Theoretic View of High-Skill Tech Hiring</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* --- Blog-style base layout --- */
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: #fff;
+      color: #222;
+    }
+    .blog-shell {
+      min-height: 100vh;
+      display: flex;
+    }
+    
+    /* --- Sidebar Navigation --- */
+    .blog-sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #fafafa;
+      border-right: 1px solid #e5e5e5;
+      padding: 40px 32px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    }
+    .blog-sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2563eb;
+      margin-bottom: 32px;
+      letter-spacing: 0.02em;
+    }
+    .blog-toc {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .blog-toc-item {
+      margin-bottom: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .blog-toc-item a {
+      color: #666;
+      text-decoration: none;
+      display: block;
+      padding: 4px 0;
+      transition: color 0.2s;
+    }
+    .blog-toc-item a:hover {
+      color: #222;
+    }
+    .blog-toc-item.active > a {
+      color: #2563eb;
+      font-weight: 600;
+    }
+    .blog-toc-sublist {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 16px 16px;
+    }
+    .blog-toc-sublist .blog-toc-item {
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    
+    /* --- Main Content Area --- */
+    .blog-main {
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+    }
+    .blog-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 80px 100px 80px;
+      line-height: 1.75;
+    }
+    .blog-breadcrumb {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 16px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    }
+    .blog-breadcrumb a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .blog-breadcrumb a:hover {
+      text-decoration: underline;
+    }
+    .blog-meta-bar {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 24px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    }
+
+    .blog-title {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 400;
+      line-height: 1.2;
+    }
+    .blog-subtitle {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .blog-meta {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 2rem;
+    }
+    .blog-meta span + span::before {
+      content: "•";
+      margin: 0 8px;
+      opacity: 0.5;
+    }
+
+    .blog-content p {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.05rem;
+      line-height: 1.8;
+    }
+    .blog-content h2 {
+      margin-top: 4rem;
+      margin-bottom: 1.2rem;
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+      font-weight: 400;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      scroll-margin-top: 20px;
+    }
+    .blog-content h2:first-of-type {
+      margin-top: 2rem;
+    }
+
+    /* --- Interactive "cards" --- */
+    .interactive {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e2e7;
+      padding: 24px 24px 20px 24px;
+      margin: 32px 0;
+      font-size: 0.98rem;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .interactive h3 {
+      margin-top: 0;
+      margin-bottom: 0.3rem;
+      font-size: 1.05rem;
+    }
+    .interactive p {
+      margin-bottom: 0.6rem;
+    }
+
+    /* --- Matrix component --- */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .matrix-label {
+      font-weight: 600;
+      font-size: 0.8rem;
+      background: #f4f4f6;
+      padding: 6px;
+      border-radius: 10px;
+    }
+    .matrix-cell {
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #e4e4ea;
+      font-size: 0.85rem;
+      background: #fdfdfd;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+    }
+    .matrix-cell:hover {
+      background: #f2f2f6;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      transform: translateY(-1px);
+    }
+    .matrix-cell.active {
+      border-color: #111827;
+      background: #111827;
+      color: #f9fafb;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    }
+    .matrix-explainer {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    /* --- Slider / dots component --- */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    #uncertainty-slider {
+      flex: 1;
+    }
+    .uncertainty-label {
+      font-size: 0.8rem;
+      opacity: 0.75;
+    }
+    .salary-dots {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      height: 40px;
+      position: relative;
+    }
+    .salary-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #111827;
+      position: absolute;
+      bottom: 0;
+      opacity: 0.9;
+    }
+    .dispersion-high .salary-dot:nth-child(1) { left: 5%;  bottom: 7px; }
+    .dispersion-high .salary-dot:nth-child(2) { left: 22%; bottom: 22px; }
+    .dispersion-high .salary-dot:nth-child(3) { left: 40%; bottom: 5px; }
+    .dispersion-high .salary-dot:nth-child(4) { left: 67%; bottom: 26px; }
+    .dispersion-high .salary-dot:nth-child(5) { left: 90%; bottom: 11px; }
+
+    .dispersion-medium .salary-dot:nth-child(1) { left: 30%; bottom: 9px; }
+    .dispersion-medium .salary-dot:nth-child(2) { left: 40%; bottom: 18px; }
+    .dispersion-medium .salary-dot:nth-child(3) { left: 50%; bottom: 11px; }
+    .dispersion-medium .salary-dot:nth-child(4) { left: 60%; bottom: 19px; }
+    .dispersion-medium .salary-dot:nth-child(5) { left: 70%; bottom: 9px; }
+
+    .dispersion-low .salary-dot:nth-child(1) { left: 46%; bottom: 10px; }
+    .dispersion-low .salary-dot:nth-child(2) { left: 49%; bottom: 15px; }
+    .dispersion-low .salary-dot:nth-child(3) { left: 52%; bottom: 12px; }
+    .dispersion-low .salary-dot:nth-child(4) { left: 55%; bottom: 18px; }
+    .dispersion-low .salary-dot:nth-child(5) { left: 58%; bottom: 10px; }
+
+    /* --- Reputation stepper --- */
+    .reputation-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+    .rep-step {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #f9fafb;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .rep-step:hover {
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.09);
+    }
+    .rep-step.active {
+      background: #111827;
+      color: #f9fafb;
+      border-color: #111827;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.25);
+    }
+    .rep-description {
+      font-size: 0.9rem;
+      margin-top: 6px;
+      color: #374151;
+    }
+
+    /* --- Mixed-strategy payoff chart --- */
+    .payoff-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .payoff-chart-container {
+      position: relative;
+      height: 200px;
+      margin: 16px 0;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e2e2e7;
+      padding: 16px;
+    }
+    .payoff-chart {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .payoff-line {
+      fill: none;
+      stroke-width: 2.5;
+      transition: stroke-dasharray 0.2s ease;
+    }
+    .payoff-line.aggressive {
+      stroke: #dc2626;
+    }
+    .payoff-line.conservative {
+      stroke: #2563eb;
+    }
+    .payoff-line.aggressive-dashed {
+      stroke: #dc2626;
+      stroke-dasharray: 5,5;
+      opacity: 0.6;
+    }
+    .payoff-line.conservative-dashed {
+      stroke: #2563eb;
+      stroke-dasharray: 5,5;
+      opacity: 0.6;
+    }
+    .payoff-marker {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .payoff-marker.aggressive {
+      background: #dc2626;
+    }
+    .payoff-marker.conservative {
+      background: #2563eb;
+    }
+    .payoff-intersection {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #111827;
+      border: 3px solid #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .payoff-axes {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+    .payoff-y-axis {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 30px;
+      width: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 8px 4px;
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+    .payoff-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 0.75rem;
+    }
+    .payoff-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .payoff-legend-color {
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+    }
+    .payoff-legend-color.aggressive {
+      background: #dc2626;
+    }
+    .payoff-legend-color.conservative {
+      background: #2563eb;
+    }
+    .payoff-note {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 1200px) {
+      .blog-content {
+        padding: 60px 60px 100px 60px;
+      }
+    }
+    
+    @media (max-width: 900px) {
+      .blog-shell {
+        flex-direction: column;
+      }
+      .blog-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 24px 32px;
+      }
+      .blog-content {
+        padding: 40px 32px 80px 32px;
+      }
+      .blog-title {
+        font-size: 2.2rem;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .blog-content {
+        padding: 32px 24px 60px 24px;
+      }
+      .blog-title {
+        font-size: 1.8rem;
+      }
+      .blog-sidebar {
+        padding: 20px 24px;
+      }
+    }
+
+    /* --- Term tooltips --- */
+    .term {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted rgba(0,0,0,0.3);
+    }
+    .term::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: 120%;
+      transform: translateX(-50%);
+      background: #111827;
+      color: #f9fafb;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      padding: 6px 8px;
+      border-radius: 6px;
+      white-space: normal;
+      min-width: 160px;
+      max-width: 240px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.12s ease;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+      z-index: 20;
+    }
+    .term::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 110%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #111827 transparent transparent transparent;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+      z-index: 19;
+    }
+    .term:hover::after,
+    .term:hover::before {
+      opacity: 1;
+    }
+
+    /* --- Equilibrium regime card --- */
+    .regime-card {
+      margin-top: 16px;
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 12px 14px 10px 14px;
+    }
+    .regime-title {
+      font-size: 0.98rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .regime-card p {
+      font-size: 0.9rem;
+      margin-bottom: 0.4rem;
+    }
+    .regime-card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .regime-card li {
+      font-size: 0.86rem;
+      margin-bottom: 0.15rem;
+    }
+
+    /* --- Equilibrium grid/heatmap --- */
+    .equilibrium-grid-container {
+      margin: 16px 0;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .equilibrium-grid-wrapper {
+      flex: 1;
+      position: relative;
+    }
+    .equilibrium-grid {
+      width: 100%;
+      height: 300px;
+      position: relative;
+      background: #f9fafb;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+    .equilibrium-region {
+      position: absolute;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+    .equilibrium-region:hover {
+      opacity: 0.85;
+    }
+    .equilibrium-region.arms-race {
+      background: #fecaca;
+      border: 1px solid #f87171;
+    }
+    .equilibrium-region.fit-reputation {
+      background: #bbf7d0;
+      border: 1px solid #86efac;
+    }
+    .equilibrium-region.reputation-tax {
+      background: #fde68a;
+      border: 1px solid #fbbf24;
+    }
+    .equilibrium-region.trust-buffered {
+      background: #bfdbfe;
+      border: 1px solid #93c5fd;
+    }
+    .equilibrium-region.mixed {
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+    }
+    .equilibrium-marker {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #111827;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .equilibrium-y-labels {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 300px;
+      padding: 0 0 48px 0;
+      font-size: 0.7rem;
+      color: #6b7280;
+      min-width: 50px;
+      position: relative;
+      align-items: flex-start;
+      padding-left: 8px;
+    }
+    .equilibrium-y-labels > span {
+      writing-mode: vertical-lr;
+      text-orientation: mixed;
+      white-space: nowrap;
+      padding: 4px 0;
+    }
+    .equilibrium-y-labels > span:first-of-type {
+      margin-top: 8px;
+    }
+    .equilibrium-y-label {
+      position: absolute;
+      left: 50%;
+      top: -20px;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+    .equilibrium-x-labels {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0 0 0;
+      font-size: 0.7rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    /* --- Expandable details sections --- */
+    details {
+      margin: 16px 0;
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.7;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 500;
+      color: #2563eb;
+      margin-bottom: 8px;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    details summary:hover {
+      color: #1d4ed8;
+    }
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+    details summary::before {
+      content: "▶ ";
+      display: inline-block;
+      margin-right: 6px;
+      transition: transform 0.2s;
+      font-size: 0.75em;
+    }
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
+    details p {
+      margin: 0 0 0.8rem 0;
+      font-size: 0.9rem;
+    }
+    details code {
+      background: #f4f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+      font-size: 0.85em;
+      color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="blog-shell">
+    <aside class="blog-sidebar">
+      <div class="blog-sidebar-title">GAME THEORY & HIRING</div>
+      <nav class="blog-toc" id="blog-toc">
+        <li class="blog-toc-item"><a href="#intro">Introduction</a></li>
+        <li class="blog-toc-item"><a href="#hiring-game">The hiring game as a simple matrix</a></li>
+        <li class="blog-toc-item"><a href="#information">Information and salary dispersion</a></li>
+        <li class="blog-toc-item"><a href="#reputation">Reputation in a repeated game</a></li>
+        <li class="blog-toc-item"><a href="#nash-equilibria">How the game settles: Nash equilibria</a></li>
+        <li class="blog-toc-item"><a href="#candidates">Candidates as strategists</a></li>
+        <li class="blog-toc-item"><a href="#practice">From theory to practice</a></li>
+        <li class="blog-toc-item"><a href="#conclusion">Why this matters</a></li>
+      </nav>
+    </aside>
+
+    <main class="blog-main">
+      <div class="blog-content">
+        <div class="blog-breadcrumb">
+          <a href="index.html">← pflo.org</a> / GAME THEORY & HIRING
+        </div>
+        <div class="blog-meta-bar" id="word-count">— WORDS —</div>
+        
+        <header>
+          <h1 class="blog-title">A Game-Theoretic View of High-Skill Tech Hiring</h1>
+          <p class="blog-subtitle">
+            Why recruiting researchers at labs like Midjourney looks less like a job board and more like a repeated auction with hidden values.
+          </p>
+          <p class="blog-meta">
+            <span>By Peter Flo</span>
+            <span>Game theory & labor markets</span>
+          </p>
+        </header>
+
+        <section id="intro">
+          <p>
+        When people think about hiring researchers in cutting-edge AI labs, they often imagine
+        a simple contest: find the smartest person and offer them the highest salary. But the
+        real strategic environment looks much more like a repeated, incomplete-information
+        game than a straightforward job market.
+      </p>
+
+      <p>
+        Consider a company like Midjourney, which competes with well-funded labs for a limited
+        pool of top research talent. Each candidate has a “type” — their true skill, creativity,
+        and fit with the lab’s culture — but firms see only noisy signals: a publication record,
+        a GitHub repository or portfolio, a few hours of interviews, and some references.
+        At the same time, candidates observe only fragments of each firm’s working style,
+        career prospects, and research freedom. Both sides are guessing about the other,
+        and those guesses shape strategy.
+      </p>
+
+        </section>
+
+        <section id="hiring-game">
+          <h2>The hiring game as a simple matrix</h2>
+
+      <p>
+        From the firm’s perspective, making an offer is a bit like bidding in an auction.
+        Bid too aggressively and you risk overpaying for someone whose contribution is uncertain.
+        Bid too conservatively and you repeatedly lose strong candidates to rivals. Even this
+        stylized 2×2 view is enough to see why “just pay more” is not a sustainable strategy.
+      </p>
+
+      <!-- 1) Hiring Game Matrix -->
+      <section class="interactive" id="hiring-game">
+        <h3>A simple hiring game</h3>
+        <p>
+          Imagine Midjourney choosing between aggressive and conservative offers, while rival labs
+          do the same. Click a scenario to see how the outcome changes.
+        </p>
+
+        <div class="matrix-grid">
+          <div></div>
+          <div class="matrix-label">Rivals: Conservative</div>
+          <div class="matrix-label">Rivals: Aggressive</div>
+
+          <div class="matrix-label">Midjourney: Conservative</div>
+          <button class="matrix-cell" data-mid="conservative" data-rivals="conservative">
+            Conservative / Conservative
+          </button>
+          <button class="matrix-cell" data-mid="conservative" data-rivals="aggressive">
+            Conservative / Aggressive
+          </button>
+
+          <div class="matrix-label">Midjourney: Aggressive</div>
+          <button class="matrix-cell" data-mid="aggressive" data-rivals="conservative">
+            Aggressive / Conservative
+          </button>
+          <button class="matrix-cell" data-mid="aggressive" data-rivals="aggressive">
+            Aggressive / Aggressive
+          </button>
+        </div>
+
+            <div class="matrix-explainer" id="matrix-explainer">
+              Click a cell to see how this combination of strategies plays out.
+            </div>
+
+            <details>
+              <summary>Understanding the payoff matrix</summary>
+              <p style="margin-top:8px;">
+                This 2×2 matrix represents a simplified version of the hiring game. Each cell shows
+                the outcome when Midjourney and rivals choose a particular combination of strategies.
+                In a full game-theoretic treatment, each cell would contain numerical payoffs for both
+                players, and we'd look for Nash equilibria—combinations where neither player wants to
+                unilaterally deviate.
+              </p>
+              <p>
+                The key insight is that there's no single "best" strategy that works in all scenarios.
+                When rivals are conservative, being aggressive can win you candidates at reasonable cost.
+                When rivals are aggressive, matching their aggression leads to overpaying (the "winner's
+                curse"), but being too conservative means losing talent. This is why mixed strategies
+                often emerge in practice.
+              </p>
+            </details>
+          </section>
+
+          <p>
+            The real world, of course, has many more strategies than "aggressive" versus "conservative":
+        labs can differ on salary, equity, freedom to publish, compute budgets, and how closely
+        work ties to the product. But the core trade-off is similar. You want to reserve your most
+        aggressive bids for the candidates who make the biggest difference inside your specific
+        environment — the ones whose type is especially well matched to what you are building.
+      </p>
+
+        </section>
+
+        <section id="information">
+          <h2>Information and salary dispersion</h2>
+
+      <p>
+        A useful way to see this is through information. In markets where no one really knows
+        what others are paying, offers for similar roles can be all over the place. Some firms
+        underpay and quietly lose good people. Others overpay without realizing it, and only
+        discover the mistake later when performance reviews arrive or budgets tighten.
+      </p>
+
+      <p>
+        As labs get better data — from salary benchmarking tools, ex-employees, or just repeated
+        interaction with the market — those guesses get sharper. Offers converge toward a common
+        range, and what used to look like “random” wage dispersion turns out to be the result of
+        uncertainty rather than deep differences in worker value.
+      </p>
+
+      <!-- 2) Uncertainty → dispersion slider -->
+      <section class="interactive" id="uncertainty-section">
+        <h3>How information changes salaries</h3>
+        <p>
+          Drag the slider to move from a world of very noisy information about salaries to one with
+          precise benchmarks. The dots represent offers for similar researchers.
+        </p>
+
+        <div class="slider-row">
+          <input
+            type="range"
+            id="uncertainty-slider"
+            min="0"
+            max="100"
+            value="70"
+          />
+          <span class="uncertainty-label" id="uncertainty-label">
+            High uncertainty
+          </span>
+        </div>
+
+        <div class="salary-dots dispersion-high" id="salary-dots">
+          <div class="salary-dot"></div>
+          <div class="salary-dot"></div>
+          <div class="salary-dot"></div>
+          <div class="salary-dot"></div>
+          <div class="salary-dot"></div>
+        </div>
+
+        <div id="uncertainty-text" style="margin-top:8px; font-size:0.9rem;">
+          Firms are guessing. Offers for similar researchers are scattered. Some underpay and
+          lose candidates; others overpay and regret it.
+        </div>
+      </section>
+
+      <p>
+        In the low-uncertainty world, everyone can roughly see the same going rate. At that point,
+        the game shifts. It is no longer about whether you can exploit pockets of ignorance in
+        the market. Instead, it becomes about whether you can offer the best bundle of
+        salary, equity, autonomy, and mission for the particular researchers you care most about.
+      </p>
+
+        </section>
+
+        <section id="reputation">
+          <h2>Reputation in a repeated game</h2>
+
+      <p>
+        Hiring is not a one-shot game. The way a lab treats researchers today quietly broadcasts
+        signals to tomorrow’s candidates. That makes reputation a strategic asset: something you
+        can invest in, squander, and rebuild — but not cheaply.
+      </p>
+
+      <!-- 3) Reputation stepper -->
+      <section class="interactive" id="reputation-section">
+        <h3>Reputation as a long-run strategy</h3>
+        <p>
+          Click through the simple timeline below to see how the same lab can move through very
+          different equilibria depending on how it behaves.
+        </p>
+
+        <div class="reputation-steps">
+          <button class="rep-step active" data-stage="0">1. Early lab</button>
+          <button class="rep-step" data-stage="1">2. Good reputation</button>
+          <button class="rep-step" data-stage="2">3. Reputational shock</button>
+          <button class="rep-step" data-stage="3">4. Recovery or decline</button>
+        </div>
+
+        <div class="rep-description" id="rep-description">
+          Candidates know little about the lab. Offers have to be relatively generous to
+          compensate for uncertainty, and a lot of the early hiring game is about signalling
+          seriousness and stability.
+        </div>
+      </section>
+
+      <p>
+        A lab that consistently honours what it promises — around autonomy, promotions, or the
+        chance to ship impactful work — can sometimes pay slightly less cash than its rivals and
+        still win the candidates it cares most about. A lab that burns trust, on the other hand,
+        ends up paying a “reputation tax” in higher salaries or weaker pipelines for years.
+      </p>
+
+      <p>
+        Once you start thinking in this way, it is natural to ask what the “resting points”
+        of the game look like. In game theory language those resting points are
+        <span class="term" data-tooltip="A Nash equilibrium is a set of strategies where no player can improve their outcome by unilaterally changing their own strategy, given what everyone else is doing.">
+          Nash equilibria
+        </span>.
+      </p>
+
+        </section>
+
+        <section id="nash-equilibria">
+          <h2>How the game settles: Nash equilibria</h2>
+
+      <!-- 4) Equilibrium regime card -->
+      <section class="interactive" id="equilibrium-map">
+        <h3>Which hiring regime are you in?</h3>
+        <p>
+          Think of the broader environment as defined by two things: how uncertain salaries are,
+          and how strong your lab’s reputation is. Different combinations give rise to different
+          stable patterns of behaviour. Use the sliders to describe your world; the card below
+          shows the kind of equilibrium you are likely sitting in.
+        </p>
+
+        <div class="slider-row" style="margin-top:10px; flex-wrap:wrap; gap:18px;">
+          <div style="flex:1 1 220px;">
+            <label style="font-size:0.8rem; opacity:0.8;">
+              Market uncertainty about salaries
+              <input type="range" id="regime-uncertainty" min="0" max="100" value="30" />
+            </label>
+            <br />
+            <label style="font-size:0.8rem; opacity:0.8;">
+              Strength of lab reputation
+              <input type="range" id="regime-reputation" min="0" max="100" value="80" />
+            </label>
+          </div>
+        </div>
+
+        <div class="equilibrium-grid-container">
+          <div class="equilibrium-y-labels">
+            <div class="equilibrium-y-label">Reputation</div>
+            <span>High reputation</span>
+            <span>Low reputation</span>
+          </div>
+          <div class="equilibrium-grid-wrapper">
+            <div class="equilibrium-grid" id="equilibrium-grid">
+              <div class="equilibrium-marker" id="equilibrium-marker"></div>
+            </div>
+            <div class="equilibrium-x-labels">
+              <span>Low uncertainty</span>
+              <span>High uncertainty</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="regime-card" id="regime-card">
+          <div class="regime-title" id="regime-title">Arms-race equilibrium</div>
+          <p id="regime-body">
+            High uncertainty and weak reputation put you in a noisy arms race: everyone bids
+            aggressively, overpaying is common, and small shocks move the market a lot.
+          </p>
+          <ul id="regime-bullets">
+            <li>Offers swing widely for similar candidates.</li>
+            <li>Labs feel pressure to "match whatever others are paying," even without good data.</li>
+            <li>It is easy to burn budget without clearly improving the team.</li>
+          </ul>
+        </div>
+
+        <details>
+          <summary>For readers who like the formal game-theory view</summary>
+          <p style="margin-top:8px;">
+            Formally, you can think of each "regime" as a region of parameter space where a
+            particular pattern of strategies is a
+            <span class="term" data-tooltip="A Nash equilibrium is a set of strategies where no player can improve their outcome by unilaterally changing their own strategy, given what everyone else is doing.">
+              Nash equilibrium
+            </span>
+            or close to it. When uncertainty is high and reputation is weak, aggressive bidding
+            by most labs is self-reinforcing: any lab that unilaterally switches to cautious
+            offers loses candidates.
+          </p>
+          <p>
+            When information is precise and reputation is strong, a calmer profile of offers
+            becomes self-reinforcing instead: deviating to constant overbidding is costly,
+            because it no longer buys you much extra talent. The grid is not meant to pin
+            down a single "true" equilibrium, but to show how small shifts in information or
+            reputation can move you between regions where very different behaviours are stable.
+          </p>
+        </details>
+      </section>
+
+        </section>
+
+        <section id="candidates">
+          <h2>Candidates as strategists</h2>
+
+      <p>
+        None of this is one-sided. Candidates also play a game. They choose how much to reveal,
+        when to surface competing offers, and whether to present themselves as “pure researcher,”
+        “staff engineer,” or something in between. Done skillfully, this is a form of signalling:
+        shaping the lab’s beliefs about their type and nudging the equilibrium toward higher
+        offers or more freedom.
+      </p>
+
+      <p>
+        The best outcome for both sides is not maximum drama at the negotiating table. It is a
+        matching process where information flows clearly enough that aggressive bids are reserved
+        for genuinely exceptional fits — people who will thrive in the lab's specific environment
+        and push the frontier forward rather than simply moving headcount numbers.
+      </p>
+
+      <p>
+        This brings us to an interesting prediction from game theory: in many strategic situations,
+        the optimal approach is not to always play one strategy, but to mix strategies. A lab might
+        bid aggressively for some candidates and conservatively for others, or even mix approaches
+        for the same candidate type depending on what rivals are doing. The question is: when does
+        each strategy make sense?
+      </p>
+
+      <!-- 5) Mixed-strategy payoff visualization -->
+      <section class="interactive" id="mixed-strategy">
+        <h3>Mixed strategies in practice</h3>
+        <p>
+          To see how this works, we need to define what we mean by "payoff." In this simplified model,
+          payoff represents the net value to Midjourney from a hiring decision: the benefit of getting
+          a strong candidate (or avoiding a bad fit) minus the cost of the offer and the risk of overpaying.
+          Positive payoffs mean the strategy is working well; negative payoffs mean it's costly or ineffective.
+        </p>
+
+        <p>
+          The payoff depends on both Midjourney's choice and what rivals do. Here's the logic behind
+          each scenario:
+        </p>
+
+        <ul style="margin: 0 0 1.5rem 0; padding-left: 1.5rem; line-height: 1.8;">
+          <li><strong>Midjourney aggressive, rivals conservative:</strong> Midjourney wins the candidate
+            with a strong offer, and the cost is justified because rivals weren't bidding hard. <strong>Payoff: +3</strong></li>
+          <li><strong>Both conservative:</strong> Salaries stay reasonable, but Midjourney might miss some
+            candidates. <strong>Payoff: +1</strong></li>
+          <li><strong>Midjourney conservative, rivals aggressive:</strong> Midjourney loses good candidates
+            to rivals who outbid them. <strong>Payoff: -1</strong></li>
+          <li><strong>Both aggressive:</strong> Everyone bids high, leading to overpaying and winner's curse.
+            <strong>Payoff: -2</strong></li>
+        </ul>
+
+        <p>
+          The chart below shows Midjourney's expected payoff from each strategy as we vary how often
+          rivals play aggressively. When rivals are rarely aggressive (left side), aggressive bidding
+          pays off. When rivals are often aggressive (right side), conservative bidding avoids the worst
+          outcomes. Move the slider to see how the optimal strategy changes.
+        </p>
+
+        <div class="payoff-row">
+          <label style="font-size:0.8rem; opacity:0.8;">
+            Share of rival labs playing aggressive
+            <input type="range" id="rival-aggression" min="0" max="100" value="67" />
+          </label>
+
+          <div class="payoff-chart-container">
+            <div class="payoff-y-axis">
+              <span>3</span>
+              <span>0</span>
+              <span>-2</span>
+            </div>
+            <svg class="payoff-chart" id="payoff-chart" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="aggGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#dc2626;stop-opacity:0.2" />
+                  <stop offset="100%" style="stop-color:#dc2626;stop-opacity:0.05" />
+                </linearGradient>
+                <linearGradient id="consGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.2" />
+                  <stop offset="100%" style="stop-color:#2563eb;stop-opacity:0.05" />
+                </linearGradient>
+              </defs>
+              <path id="payoff-agg-line" class="payoff-line aggressive" stroke="#dc2626" />
+              <path id="payoff-cons-line" class="payoff-line conservative" stroke="#2563eb" />
+              <path id="payoff-agg-area" fill="url(#aggGradient)" opacity="0.3" />
+              <path id="payoff-cons-area" fill="url(#consGradient)" opacity="0.3" />
+              <line id="payoff-zero-line" x1="0" y1="58" x2="100" y2="58" stroke="#d1d5db" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.6" />
+            </svg>
+            <div class="payoff-marker aggressive" id="payoff-agg-marker"></div>
+            <div class="payoff-marker conservative" id="payoff-cons-marker"></div>
+            <div class="payoff-intersection" id="payoff-intersection"></div>
+            <div class="payoff-axes">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <div class="payoff-legend">
+            <div class="payoff-legend-item">
+              <div class="payoff-legend-color aggressive"></div>
+              <span>Midjourney plays aggressive</span>
+            </div>
+            <div class="payoff-legend-item">
+              <div class="payoff-legend-color conservative"></div>
+              <span>Midjourney plays conservative</span>
+            </div>
+          </div>
+
+          <p id="payoff-text" class="payoff-note" style="margin-top:12px;">
+            At this level of rival aggression, the payoffs tell us which strategy is better. When
+            the lines cross, both strategies are equally good—this is the mixed-strategy equilibrium
+            point. At other levels, one strategy clearly dominates, but the optimal mix depends on
+            reading the competitive landscape.
+          </p>
+
+          <details>
+            <summary>For readers who want the algebra</summary>
+            <p style="margin-top:8px;">
+              Let <em>q</em> be the probability that rivals play aggressively. The expected payoff when
+              Midjourney plays aggressively is:
+            </p>
+            <p style="margin: 4px 0;">
+              <code>E[Aggressive] = 3 · (1 − q) + (−2) · q = 3 − 5q</code>
+            </p>
+            <p>
+              The expected payoff when Midjourney plays conservatively is:
+            </p>
+            <p style="margin: 4px 0;">
+              <code>E[Conservative] = 1 · (1 − q) + (−1) · q = 1 − 2q</code>
+            </p>
+            <p>
+              The mixed-strategy equilibrium is at the point where Midjourney is indifferent between
+              the two strategies, so we set the payoffs equal:
+            </p>
+            <p style="margin: 4px 0;">
+              <code>3 − 5q = 1 − 2q</code>, which implies <code>q = 2⁄3</code>.
+            </p>
+            <p>
+              At this point, Midjourney cannot improve its expected payoff by switching entirely to
+              aggressive or conservative bidding, given what rivals are doing. That is exactly the
+              sense in which a mixed strategy is an equilibrium: each pure strategy has the same
+              expected value, so randomising between them is sustainable.
+            </p>
+          </details>
+
+          <p style="font-size:0.85rem; color:#888; margin-top:16px; font-style:italic;">
+            Note: This is a simplified model. In reality, payoffs depend on many factors: candidate
+            quality, market conditions, budget constraints, and long-term reputation effects. The
+            negative payoff when playing conservative against aggressive rivals reflects the cost of
+            consistently losing strong candidates—not just the immediate loss, but the opportunity
+            cost of missing talent that could drive the lab forward.
+          </p>
+        </div>
+      </section>
+
+        </section>
+
+        <section id="practice">
+            <h2>From theory to practice: turning the game into tools</h2>
+          
+            <p>
+              Taken together, the frictions above explain why labs overbid, underbid, or oscillate between the two. The formal results point to a simple fact: hiring outcomes change when you change the
+              information structure, the payoff structure, or the repeated-game incentives. A lab doesn’t
+              need to solve the full equilibrium; it just needs to shift the game enough so that the
+              better equilibrium becomes the natural resting point. Three practical levers matter most.
+            </p>
+          
+            <h3>1. Replace one-size-fits-all bidding with match-weighted segmentation</h3>
+          
+            <p><strong>Theory link:</strong> In both the matrix game and the mixed-strategy discussion,
+            aggressive bids only make sense when the expected payoff is high <em>relative to rivals’
+            behavior and candidate type</em>. Without segmentation, labs misallocate aggression and drift
+            into the “aggressive–aggressive” loser’s equilibrium.</p>
+          
+            <p><strong>Low-hanging fruit:</strong></p>
+            <ul>
+              <li>Build a <strong>simple two-axis tagging system</strong> for candidates:
+                <br><em>fit with research agenda × expected marginal impact on product.</em>
+              </li>
+              <li>Use these tags to create three buckets:
+                <strong>priority fits, promising, misaligned-but-strong.</strong>
+              </li>
+              <li><strong>Pre-commit</strong> to aggressive offers for the priority group and
+                conservative baselines for the others.</li>
+              <li>Review the bucketing once per quarter, not case-by-case (keeps managers from emotional
+                overbidding).</li>
+            </ul>
+          
+            <p><strong>Outcome:</strong> The lab systematically reserves scarce bidding power for
+              candidates where it has an actual comparative advantage, mirroring the optimal mixed
+              strategy.</p>
+          
+          
+            <h3>2. Turn rejections and near-misses into a Bayesian update loop</h3>
+          
+            <p><strong>Theory link:</strong> On the incomplete-information side of the model, the biggest inefficiency
+            comes from labs not knowing the distribution of rival offers or candidate preferences. Payoffs
+            improve as uncertainty drops. A rejection is a noisy but informative signal.</p>
+          
+            <p><strong>One approach:</strong></p>
+            <ul>
+              <li>Record a <strong>four-line post-mortem</strong> for every declined offer:
+                <ol>
+                  <li>What the candidate said they valued most.</li>
+                  <li>What they felt the offer lacked.</li>
+                  <li>Whether rivals outbid, out-signaled, or out-reputed.</li>
+                  <li>Whether a different package could have <em>plausibly</em> changed the outcome.</li>
+                </ol>
+              </li>
+              <li>Aggregate these monthly into a <strong>“belief update” doc</strong> with recommended
+                adjustments to offer ranges or autonomy promises.</li>
+              <li>Use this to maintain a <strong>rolling expected market rate</strong> for each candidate
+                segment.</li>
+            </ul>
+          
+            <p><strong>Outcome:</strong> The lab converges toward the low-uncertainty regime where offers
+              cluster rationally and the equilibrium stabilizes at fit-and-reputation rather than pure cash
+              escalation.</p>
+          
+          
+            <h3>3. Manage reputation like an asset with depreciation and compounding</h3>
+          
+            <p><strong>Theory link:</strong> In the repeated-game view, reputation shifts future payoffs
+            by reducing what the lab must bid to win. A shock—broken promise, chaotic re-org—pushes the game
+            into worse equilibria with systematic overpaying: the “reputation tax.”</p>
+          
+            <p><strong>This could be cool to implement:</strong></p>
+            <ul>
+              <li>Create a <strong>promise ledger</strong>: autonomy, research freedom expectations, compute
+                access, promotion timeline, (hiring speed!). Track how often commitments slip.</li>
+              <li>Collect <strong>exit reasons</strong> with a consistent template.</li>
+              <li>Build a <strong>quarterly reputation forecast</strong>:
+                <br><em>What promises did we keep? Which did we break? Are recent alumni net-positive or
+                net-negative signalers?</em></li>
+              <li>Assign a simple internal metric (green/yellow/red) that determines how much
+                “reputation discount” you can apply safely to offers.</li>
+            </ul>
+          
+            <p><strong>Outcome:</strong> The lab actively maintains the conditions of the high-reputation
+              equilibrium, where candidates accept slightly lower cash for clarity, autonomy, and trust—
+              exactly what the model predicts.</p>
+          
+          
+            <p>
+              These tools share a structure: a game-theoretic insight, the friction it explains, and a
+              mechanism that shifts the equilibrium. They turn abstract models into practical levers for
+              reducing wasted bids, sharpening beliefs, and steering the hiring game toward states where
+              match quality and trust dominate blind escalation.
+            </p>
+          </section>
+          
+          <section id="conclusion">
+            <h2>Why this matters for labs like Midjourney</h2>
+          
+            <p>
+              What recruiting teams often treat as “operations” are, in practice, mechanisms that reshape
+              incentives, clarify information, and strengthen the repeated-game dynamics that make hiring
+              more predictable. When those mechanisms are in place, the system drifts toward the calmer,
+              high-reputation, fit-driven equilibrium rather than the expensive, noisy one. That is the real
+              payoff of seeing hiring as a strategic game: it reveals exactly which levers move outcomes,
+              and which simply raise costs. The sooner a lab starts operating in those terms, the less it
+              will need to rely on luck—or spiraling salaries—to assemble the team it actually wants.
+            </p>
+          </section>
+          
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ===== Word count and navigation =====
+    (function() {
+      // Calculate word count
+      const content = document.querySelector('.blog-content');
+      const text = content.innerText || content.textContent;
+      const wordCount = text.trim().split(/\s+/).length;
+      document.getElementById('word-count').textContent = `${wordCount.toLocaleString()} WORDS | PETER FLO`;
+
+      // Smooth scroll for TOC links
+      const tocLinks = document.querySelectorAll('.blog-toc a');
+      tocLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('href').substring(1);
+          const target = document.getElementById(targetId);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+
+      // Highlight active section on scroll
+      const sections = document.querySelectorAll('section[id]');
+      const observerOptions = {
+        rootMargin: '-20% 0px -60% 0px',
+        threshold: 0
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('id');
+            tocLinks.forEach(link => {
+              const tocItem = link.closest('.blog-toc-item');
+              if (link.getAttribute('href') === `#${id}`) {
+                tocItem.classList.add('active');
+              } else {
+                tocItem.classList.remove('active');
+              }
+            });
+          }
+        });
+      }, observerOptions);
+
+      sections.forEach(section => observer.observe(section));
+    })();
+
+    // ===== 1) Hiring Game Matrix =====
+    (function () {
+      const cells = document.querySelectorAll('.matrix-cell');
+      const explainer = document.getElementById('matrix-explainer');
+
+      const explanations = {
+        'conservative-conservative':
+          'Everyone is cautious. Salaries are lower, but offers are fragile: strong candidates with good outside options may simply walk away.',
+        'conservative-aggressive':
+          'Midjourney frequently loses to rivals. It saves money, but risks consistently missing out on candidates who could have been big contributors.',
+        'aggressive-conservative':
+          'Midjourney usually wins these candidates. If its information is good, this looks great; if its signals are noisy, it risks paying more than necessary.',
+        'aggressive-aggressive':
+          'Everyone bids hard. Midjourney sometimes wins star researchers but often overpays. This is the “winner’s curse” region of the hiring game.'
+      };
+
+      cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+          cells.forEach(c => c.classList.remove('active'));
+          cell.classList.add('active');
+
+          const mid = cell.getAttribute('data-mid');
+          const rivals = cell.getAttribute('data-rivals');
+          const key = mid + '-' + rivals;
+
+          explainer.textContent = explanations[key];
+        });
+      });
+    })();
+
+    // ===== 2) Uncertainty → dispersion slider =====
+    (function () {
+      const slider = document.getElementById('uncertainty-slider');
+      const label = document.getElementById('uncertainty-label');
+      const dots = document.getElementById('salary-dots');
+      const text = document.getElementById('uncertainty-text');
+
+      function update() {
+        const v = Number(slider.value);
+        let level, description, cls;
+
+        if (v < 35) {
+          level = 'Low uncertainty';
+          cls = 'salary-dots dispersion-low';
+          description =
+            'Everyone sees roughly the same benchmark. Offers converge, and the hiring game shifts toward fit, culture, and non-monetary perks.';
+        } else if (v < 70) {
+          level = 'Medium uncertainty';
+          cls = 'salary-dots dispersion-medium';
+          description =
+            'Firms have some benchmark information, but it is noisy. Offers begin to cluster, and labs mix market data with their own beliefs about candidate fit.';
+        } else {
+          level = 'High uncertainty';
+          cls = 'salary-dots dispersion-high';
+          description =
+            'Firms are guessing. Offers for similar researchers are scattered. Some underpay and lose candidates; others overpay and regret it.';
+        }
+
+        label.textContent = level;
+        dots.className = cls;
+        text.textContent = description;
+      }
+
+      slider.addEventListener('input', update);
+      update();
+    })();
+
+    // ===== 3) Reputation stepper =====
+    (function () {
+      const buttons = document.querySelectorAll('.rep-step');
+      const desc = document.getElementById('rep-description');
+
+      const descriptions = [
+        'Candidates know little about the lab. Offers have to be relatively generous to compensate for uncertainty, and a lot of the early hiring game is about signalling seriousness and stability.',
+        'Past researchers talk positively about autonomy and impact. Some candidates are willing to accept slightly lower cash in exchange for interesting work and strong mentorship, giving the lab more bargaining power.',
+        'Stories spread that commitments were not honoured—maybe around layoffs or broken promises. Even generous offers are viewed with suspicion, and outside options suddenly look safer.',
+        'If the lab invests in rebuilding trust—real changes, consistent behaviour—reputation can slowly recover, but it is costly. If it does not, top candidates stop applying and the lab competes mainly for weaker signals.'
+      ];
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const stage = Number(btn.getAttribute('data-stage'));
+          desc.textContent = descriptions[stage];
+        });
+      });
+    })();
+
+    // ===== 4) Equilibrium regime card with grid =====
+    (function () {
+      const uSlider = document.getElementById('regime-uncertainty');
+      const rSlider = document.getElementById('regime-reputation');
+      const titleEl = document.getElementById('regime-title');
+      const bodyEl = document.getElementById('regime-body');
+      const bulletsEl = document.getElementById('regime-bullets');
+      const gridEl = document.getElementById('equilibrium-grid');
+      const markerEl = document.getElementById('equilibrium-marker');
+
+      // Create grid regions
+      function createGrid() {
+        // Remove existing regions but keep y-axis and marker
+        const existingRegions = gridEl.querySelectorAll('.equilibrium-region');
+        existingRegions.forEach(reg => reg.remove());
+        
+        const regions = [
+          { name: 'arms-race', u: [60, 100], r: [0, 40], left: 60, top: 60, width: 40, height: 40 },
+          { name: 'fit-reputation', u: [0, 40], r: [60, 100], left: 0, top: 0, width: 40, height: 40 },
+          { name: 'reputation-tax', u: [0, 40], r: [0, 40], left: 0, top: 60, width: 40, height: 40 },
+          { name: 'trust-buffered', u: [60, 100], r: [60, 100], left: 60, top: 0, width: 40, height: 40 },
+          { name: 'mixed', u: [40, 60], r: [0, 100], left: 40, top: 0, width: 20, height: 100 },
+          { name: 'mixed', u: [0, 100], r: [40, 60], left: 0, top: 40, width: 100, height: 20 }
+        ];
+
+        regions.forEach(reg => {
+          const div = document.createElement('div');
+          div.className = `equilibrium-region ${reg.name}`;
+          div.style.left = `${reg.left}%`;
+          div.style.top = `${reg.top}%`;
+          div.style.width = `${reg.width}%`;
+          div.style.height = `${reg.height}%`;
+          gridEl.appendChild(div);
+        });
+      }
+
+      function getRegimeType(u, r) {
+        if (u > 60 && r < 40) return 'arms-race';
+        if (u < 40 && r > 60) return 'fit-reputation';
+        if (u < 40 && r < 40) return 'reputation-tax';
+        if (u > 60 && r > 60) return 'trust-buffered';
+        return 'mixed';
+      }
+
+      function updateRegime() {
+        const u = Number(uSlider.value); // uncertainty
+        const r = Number(rSlider.value); // reputation
+
+        // Update marker position (no need to account for y-axis labels - they're outside now)
+        const gridWidth = gridEl.offsetWidth;
+        const gridHeight = gridEl.offsetHeight;
+        const markerX = (u / 100) * gridWidth;
+        const markerY = ((100 - r) / 100) * gridHeight; // flip Y: high reputation = top
+        markerEl.style.left = `${markerX}px`;
+        markerEl.style.top = `${markerY}px`;
+
+        let title, body, bulletsHtml;
+        const regimeType = getRegimeType(u, r);
+
+        if (regimeType === 'arms-race') {
+          title = 'Arms-race equilibrium';
+          body =
+            'High uncertainty and weak reputation put you in a noisy arms race: everyone bids aggressively, overpaying is common, and small shocks move the market a lot.';
+          bulletsHtml = `
+            <li>Offers swing widely for similar candidates.</li>
+            <li>Labs feel pressure to "match whatever others are paying," even without good data.</li>
+            <li>It is easy to burn budget without clearly improving the team.</li>
+          `;
+        } else if (regimeType === 'fit-reputation') {
+          title = 'Fit-and-reputation equilibrium';
+          body =
+            'Low uncertainty and strong reputation give you a calmer game: salaries cluster near benchmarks and you win key candidates on match quality and trust rather than pure cash.';
+          bulletsHtml = `
+            <li>Most offers sit near clear market benchmarks.</li>
+            <li>Candidates are willing to trade a bit of cash for autonomy and interesting work.</li>
+            <li>Over time you can reserve aggressive bids for truly exceptional matches.</li>
+          `;
+        } else if (regimeType === 'reputation-tax') {
+          title = 'Reputation-tax equilibrium';
+          body =
+            'Information is good but your reputation is weak. You can match the market on salary, but you often have to overpay or add sweeteners to overcome scepticism.';
+          bulletsHtml = `
+            <li>Candidates know roughly what they could earn elsewhere.</li>
+            <li>To close offers, you lean heavily on salary, sign-on, or title inflation.</li>
+            <li>Small investments in reliability and mentorship can have outsized long-run effects.</li>
+          `;
+        } else if (regimeType === 'trust-buffered') {
+          title = 'Trust-buffered equilibrium';
+          body =
+            'Reputation is strong but information is still noisy. You suffer some volatility in offers, but candidates give you the benefit of the doubt and will tolerate imperfect benchmarks.';
+          bulletsHtml = `
+            <li>Some offers end up above or below true market, but this rarely becomes a drama.</li>
+            <li>Strong alumni stories and internal culture offset some compensation noise.</li>
+            <li>Improving data quality moves you toward a clean fit-and-reputation world.</li>
+          `;
+        } else {
+          title = 'Mixed-strategy region';
+          body =
+            'You are in a middle region: sometimes aggressive bidding makes sense, sometimes not. Small changes in information or reputation can shift which behaviours are stable.';
+          bulletsHtml = `
+            <li>Neither pure "always aggressive" nor pure "always conservative" works well.</li>
+            <li>You experiment with different mixes of salary, equity, and freedom across roles.</li>
+            <li>Clarifying benchmarks and strengthening reputation nudge you toward better regimes.</li>
+          `;
+        }
+
+        titleEl.textContent = title;
+        bodyEl.textContent = body;
+        bulletsEl.innerHTML = bulletsHtml;
+      }
+
+      // Initialize grid
+      if (gridEl.offsetWidth > 0) {
+        createGrid();
+      } else {
+        // Wait for layout
+        setTimeout(() => {
+          createGrid();
+          updateRegime();
+        }, 100);
+      }
+
+      uSlider.addEventListener('input', updateRegime);
+      rSlider.addEventListener('input', updateRegime);
+      window.addEventListener('resize', () => {
+        createGrid();
+        updateRegime();
+      });
+      updateRegime();
+    })();
+
+    // ===== 5) Mixed-strategy payoff visualization =====
+    (function () {
+      const slider = document.getElementById('rival-aggression');
+      const chartEl = document.getElementById('payoff-chart');
+      const aggLineEl = document.getElementById('payoff-agg-line');
+      const consLineEl = document.getElementById('payoff-cons-line');
+      const aggAreaEl = document.getElementById('payoff-agg-area');
+      const consAreaEl = document.getElementById('payoff-cons-area');
+      const aggMarkerEl = document.getElementById('payoff-agg-marker');
+      const consMarkerEl = document.getElementById('payoff-cons-marker');
+      const intersectionEl = document.getElementById('payoff-intersection');
+      const text = document.getElementById('payoff-text');
+
+      // Payoff structure (simplified model):
+      // - Midjourney aggressive, rivals conservative: +3 (win candidate, reasonable cost)
+      // - Both conservative: +1 (moderate outcomes)
+      // - Midjourney conservative, rivals aggressive: -1 (lose candidates to rivals)
+      // - Both aggressive: -2 (overpaying, winner's curse)
+      //
+      // Expected payoffs as function of q (probability rivals are aggressive):
+      // Aggressive: E[payoff] = (1-q)*3 + q*(-2) = 3 - 5q
+      // Conservative: E[payoff] = (1-q)*1 + q*(-1) = 1 - 2q
+      function payoffAgg(q) {
+        return 3 - 5 * q;   // E[payoff | Midjourney aggressive]
+      }
+      function payoffCons(q) {
+        return 1 - 2 * q;  // E[payoff | Midjourney conservative]
+      }
+
+      function yFromPayoff(p) {
+        const minP = -2, maxP = 3;
+        const ratio = (p - minP) / (maxP - minP);
+        return 100 - (ratio * 80 + 10); // 10% padding top, 10% bottom
+      }
+
+      function xFromQ(q) {
+        return q * 100;
+      }
+
+      function drawChart() {
+        const points = 100;
+        let aggPath = 'M ';
+        let consPath = 'M ';
+        let aggAreaPath = 'M 0,100 ';
+        let consAreaPath = 'M 0,100 ';
+
+        for (let i = 0; i <= points; i++) {
+          const q = i / points;
+          const x = xFromQ(q);
+          const aggY = yFromPayoff(payoffAgg(q));
+          const consY = yFromPayoff(payoffCons(q));
+
+          if (i === 0) {
+            aggPath += `${x},${aggY} `;
+            consPath += `${x},${consY} `;
+            aggAreaPath += `${x},${aggY} `;
+            consAreaPath += `${x},${consY} `;
+          } else {
+            aggPath += `L ${x},${aggY} `;
+            consPath += `L ${x},${consY} `;
+            aggAreaPath += `L ${x},${aggY} `;
+            consAreaPath += `L ${x},${consY} `;
+          }
+        }
+
+        aggAreaPath += 'L 100,100 Z';
+        consAreaPath += 'L 100,100 Z';
+
+        aggLineEl.setAttribute('d', aggPath);
+        consLineEl.setAttribute('d', consPath);
+        aggAreaEl.setAttribute('d', aggAreaPath);
+        consAreaEl.setAttribute('d', consAreaPath);
+
+        // Draw intersection point (where payoffs are equal)
+        const qStar = 2 / 3; // 3-5q = 1-2q => 2 = 3q => q = 2/3
+        const xStar = xFromQ(qStar);
+        const yStar = yFromPayoff(payoffAgg(qStar));
+        intersectionEl.style.left = `${xStar}%`;
+        intersectionEl.style.top = `${yStar}%`;
+      }
+
+      function update() {
+        const q = Number(slider.value) / 100; // rivals' prob of aggressive
+
+        const payoffAggVal = 3 - 5 * q;
+        const payoffConsVal = 1 - 2 * q;
+
+        const x = xFromQ(q);
+        const aggY = yFromPayoff(payoffAggVal);
+        const consY = yFromPayoff(payoffConsVal);
+
+        aggMarkerEl.style.left = `${x}%`;
+        aggMarkerEl.style.top = `${aggY}%`;
+        consMarkerEl.style.left = `${x}%`;
+        consMarkerEl.style.top = `${consY}%`;
+
+        const qStar = 2 / 3; // point where payoffs are equal
+
+        let msg;
+        if (Math.abs(q - qStar) < 0.05) {
+          msg =
+            'Here Midjourney is roughly indifferent between the two strategies. That is what a mixed-strategy equilibrium looks like: sometimes you bid hard, sometimes you hold back, and rivals cannot profitably exploit either choice.';
+        } else if (payoffAggVal > payoffConsVal) {
+          msg =
+            'Given how often rivals are aggressive, Midjourney does better on average by bidding aggressively too — but at the cost of more winner\'s-curse risk.';
+        } else {
+          msg =
+            'At this level of rival aggression, a more conservative posture yields higher expected value. You will lose some candidates, but avoid burning budget on noisy overbids.';
+        }
+
+        text.textContent = msg;
+      }
+
+      // Initialize chart
+      drawChart();
+      slider.addEventListener('input', update);
+      window.addEventListener('resize', drawChart);
+      update();
+    })();
+  </script>
+</body>
+</html>
