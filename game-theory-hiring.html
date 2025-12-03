@@ -45,6 +45,50 @@
       height: 100vh;
       overflow-y: auto;
       font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+      transition: transform 0.3s ease, width 0.3s ease;
+      z-index: 100;
+    }
+    .blog-sidebar.collapsed {
+      transform: translateX(-100%);
+      width: 0;
+      min-width: 0;
+      border-right: none;
+    }
+    .sidebar-toggle {
+      position: fixed;
+      left: 280px;
+      top: 20px;
+      width: 32px;
+      height: 32px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 101;
+      transition: left 0.3s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .sidebar-toggle:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #fafafa;
+    }
+    .blog-sidebar.collapsed ~ .sidebar-toggle {
+      left: 0;
+    }
+    .sidebar-toggle-icon {
+      width: 12px;
+      height: 12px;
+      border-right: 2px solid #666;
+      border-bottom: 2px solid #666;
+      transform: rotate(135deg);
+      transition: transform 0.3s ease;
+    }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon {
+      transform: rotate(-45deg);
     }
     .blog-sidebar-title {
       font-size: 14px;
@@ -442,6 +486,13 @@
         border-right: none;
         border-bottom: 1px solid #e5e5e5;
         padding: 24px 32px;
+        transform: none !important;
+      }
+      .blog-sidebar.collapsed {
+        display: none;
+      }
+      .sidebar-toggle {
+        display: none;
       }
       .blog-content {
         padding: 40px 32px 80px 32px;
@@ -695,6 +746,10 @@
         <li class="blog-toc-item"><a href="#conclusion">Why this matters</a></li>
       </nav>
     </aside>
+
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+      <div class="sidebar-toggle-icon"></div>
+    </button>
 
     <main class="blog-main">
       <div class="blog-content">
@@ -1274,6 +1329,25 @@
   </div>
 
   <script>
+    // ===== Sidebar toggle =====
+    (function() {
+      const sidebar = document.querySelector('.blog-sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      
+      if (!sidebar || !toggle) return;
+      
+      // Check for saved preference
+      const savedState = localStorage.getItem('sidebar-collapsed');
+      if (savedState === 'true') {
+        sidebar.classList.add('collapsed');
+      }
+      
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+      });
+    })();
+
     // ===== Word count and navigation =====
     (function() {
       // Calculate word count
