@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>What a Semester of Graduate Game Theory Taught Me (and What It Didn't)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A personal walkthrough of Harvard's Econ 2048 — from Nash equilibrium to monotone comparative statics, with connections to AI alignment." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="What a Semester of Graduate Game Theory Taught Me" />
+  <meta property="og:description" content="A personal walkthrough of Harvard's Econ 2048 — Nash equilibrium, refinements, supermodular games, and what it all means for alignment." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:#fff; color:#222; }
+    .blog-shell { min-height:100vh; display:flex; }
+
+    .blog-sidebar { width:280px; min-width:280px; background:#fafafa; border-right:1px solid #e5e5e5; padding:40px 32px; position:sticky; top:0; height:100vh; overflow-y:auto; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; transition:transform .3s ease,width .3s ease; z-index:100; }
+    .blog-sidebar.collapsed { transform:translateX(-100%); width:0; min-width:0; border-right:none; }
+    .sidebar-toggle { position:fixed; left:280px; top:20px; width:32px; height:32px; background:#fff; border:1px solid #e5e5e5; border-left:none; border-radius:0 8px 8px 0; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:101; transition:left .3s ease,box-shadow .2s ease; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+    .sidebar-toggle:hover { box-shadow:0 4px 12px rgba(0,0,0,.15); background:#fafafa; }
+    .blog-sidebar.collapsed ~ .sidebar-toggle { left:0; }
+    .sidebar-toggle-icon { width:12px; height:12px; border-right:2px solid #666; border-bottom:2px solid #666; transform:rotate(135deg); transition:transform .3s ease; }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform:rotate(-45deg); }
+    .blog-sidebar-title { font-size:14px; font-weight:600; color:#2563eb; margin-bottom:32px; letter-spacing:.02em; }
+    .blog-toc { list-style:none; padding:0; margin:0; }
+    .blog-toc-item { margin-bottom:8px; font-size:13px; line-height:1.6; }
+    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding:4px 0; transition:color .2s; }
+    .blog-toc-item a:hover { color:#222; }
+    .blog-toc-item.active > a { color:#2563eb; font-weight:600; }
+
+    .blog-main { flex:1; min-width:0; }
+    .blog-content { max-width:800px; margin:0 auto; padding:60px 80px 100px; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
+    .blog-breadcrumb a { color:#2563eb; text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration:underline; }
+    .blog-meta-bar { font-size:12px; color:#888; margin-bottom:24px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
+    .blog-title { font-size:2.8rem; margin-bottom:16px; letter-spacing:-.03em; font-family:'Georgia','Times New Roman',serif; font-weight:400; line-height:1.15; }
+    .blog-subtitle { font-size:1.1rem; color:#666; margin-bottom:24px; line-height:1.6; }
+    .blog-meta { font-size:.9rem; color:#888; margin-bottom:2rem; }
+    .blog-meta span + span::before { content:"•"; margin:0 8px; opacity:.5; }
+
+    .blog-content p { margin:0 0 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content h2 { margin-top:4rem; margin-bottom:1.2rem; font-size:1.8rem; letter-spacing:-.02em; font-weight:400; font-family:'Georgia','Times New Roman',serif; scroll-margin-top:20px; }
+    .blog-content h2:first-of-type { margin-top:2rem; }
+    .blog-content h3 { font-size:1.15rem; margin-top:2rem; margin-bottom:.8rem; font-weight:600; }
+    .blog-content ul, .blog-content ol { margin:0 0 1.5rem 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content li { margin-bottom:.4rem; }
+    .blog-content blockquote { border-left:3px solid #2563eb; padding:.6rem 1.2rem; margin:1.5rem 0; background:#f8faff; color:#444; font-style:italic; }
+    .blog-content blockquote p { margin-bottom:.5rem; }
+    .blog-content hr { border:none; border-top:1px solid #e5e5e5; margin:3rem 0; }
+
+    .interactive { background:#fff; border-radius:12px; border:1px solid #e2e2e7; padding:24px 24px 20px; margin:32px 0; font-size:.98rem; box-shadow:0 2px 8px rgba(15,23,42,.04); }
+    .interactive h3 { margin-top:0; margin-bottom:.3rem; font-size:1.05rem; }
+    .interactive p { margin-bottom:.6rem; }
+
+    .matrix-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; text-align:center; margin-top:10px; }
+    .matrix-label { font-weight:600; font-size:.8rem; background:#f4f4f6; padding:6px; border-radius:10px; }
+    .matrix-cell { cursor:pointer; padding:8px; border-radius:10px; border:1px solid #e4e4ea; font-size:.85rem; background:#fdfdfd; transition:background .15s,box-shadow .15s,transform .05s; }
+    .matrix-cell:hover { background:#f2f2f6; box-shadow:0 2px 6px rgba(15,23,42,.08); transform:translateY(-1px); }
+    .matrix-cell.active { border-color:#111827; background:#111827; color:#f9fafb; box-shadow:0 4px 12px rgba(15,23,42,.25); }
+    .matrix-explainer { margin-top:10px; font-size:.9rem; color:#374151; }
+
+    .tab-row { display:flex; gap:6px; flex-wrap:wrap; margin:12px 0; }
+    .tab-btn { padding:6px 12px; border-radius:999px; border:1px solid #e5e7eb; font-size:.8rem; cursor:pointer; background:#f9fafb; transition:background .15s,color .15s,box-shadow .15s; }
+    .tab-btn:hover { box-shadow:0 2px 5px rgba(15,23,42,.09); }
+    .tab-btn.active { background:#111827; color:#f9fafb; border-color:#111827; box-shadow:0 3px 10px rgba(15,23,42,.25); }
+    .tab-body { font-size:.9rem; margin-top:6px; color:#374151; line-height:1.7; }
+    .tab-body p { margin:0 0 .8rem; font-size:.9rem; }
+
+    .term { position:relative; cursor:help; border-bottom:1px dotted rgba(0,0,0,.3); }
+    .term::after { content:attr(data-tooltip); position:absolute; left:50%; bottom:120%; transform:translateX(-50%); background:#111827; color:#f9fafb; font-size:.75rem; line-height:1.4; padding:6px 8px; border-radius:6px; white-space:normal; min-width:180px; max-width:280px; opacity:0; pointer-events:none; transition:opacity .12s; box-shadow:0 4px 12px rgba(15,23,42,.25); z-index:20; }
+    .term::before { content:""; position:absolute; left:50%; bottom:110%; transform:translateX(-50%); border-width:6px; border-style:solid; border-color:#111827 transparent transparent transparent; opacity:0; transition:opacity .12s; z-index:19; }
+    .term:hover::after, .term:hover::before { opacity:1; }
+
+    details { margin:16px 0; font-size:.9rem; color:#555; line-height:1.7; }
+    details summary { cursor:pointer; font-weight:500; color:#2563eb; margin-bottom:8px; user-select:none; }
+    details summary:hover { color:#1d4ed8; }
+    details summary::-webkit-details-marker { display:none; }
+    details summary::before { content:"▶ "; display:inline-block; margin-right:6px; transition:transform .2s; font-size:.75em; }
+    details[open] summary::before { transform:rotate(90deg); }
+    details p { margin:0 0 .8rem; font-size:.9rem; }
+
+    .aside-personal { background:#f8faff; border-radius:12px; border:1px solid #dbe4f0; padding:20px 24px; margin:2rem 0; }
+    .aside-personal p:last-child { margin-bottom:0; }
+
+    .diagram { margin:2rem 0; text-align:center; overflow-x:auto; }
+    .diagram svg { max-width:100%; height:auto; }
+
+    .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; }
+
+    @media (max-width:1200px) { .blog-content { padding:60px 60px 100px; } }
+    @media (max-width:900px) {
+      .blog-shell { flex-direction:column; }
+      .blog-sidebar { width:100%; height:auto; position:relative; border-right:none; border-bottom:1px solid #e5e5e5; padding:24px 32px; transform:none !important; }
+      .blog-sidebar.collapsed { display:none; }
+      .sidebar-toggle { display:none; }
+      .blog-content { padding:40px 32px 80px; }
+      .blog-title { font-size:2.2rem; }
+    }
+    @media (max-width:600px) { .blog-content { padding:32px 24px 60px; } .blog-title { font-size:1.8rem; } .blog-sidebar { padding:20px 24px; } }
+  </style>
+</head>
+<body>
+<div class="blog-shell">
+  <aside class="blog-sidebar" id="blog-sidebar">
+    <div class="blog-sidebar-title">GAME THEORY SEMESTER</div>
+    <nav>
+      <ul class="blog-toc" id="blog-toc">
+        <li class="blog-toc-item"><a href="#intro">The setup</a></li>
+        <li class="blog-toc-item"><a href="#normal-form">The normal form</a></li>
+        <li class="blog-toc-item"><a href="#dominance">Dominance and rationalizability</a></li>
+        <li class="blog-toc-item"><a href="#nash">Nash equilibrium</a></li>
+        <li class="blog-toc-item"><a href="#refinements">The refinement ladder</a></li>
+        <li class="blog-toc-item"><a href="#correlated">Correlated equilibrium</a></li>
+        <li class="blog-toc-item"><a href="#extensive">Extensive-form games</a></li>
+        <li class="blog-toc-item"><a href="#sequential">Sequential equilibrium</a></li>
+        <li class="blog-toc-item"><a href="#comparative-statics">Monotone comparative statics</a></li>
+        <li class="blog-toc-item"><a href="#supermodular">Supermodular games</a></li>
+        <li class="blog-toc-item"><a href="#potential">Potential games</a></li>
+        <li class="blog-toc-item"><a href="#didnt-teach">What the course didn't teach</a></li>
+        <li class="blog-toc-item"><a href="#alignment">The alignment connection</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+    <div class="sidebar-toggle-icon"></div>
+  </button>
+
+  <main class="blog-main">
+    <div class="blog-content">
+      <div class="blog-breadcrumb">
+        <a href="/index.html">&larr; pflo.org</a> / GAME THEORY SEMESTER
+      </div>
+      <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
+
+      <header>
+        <h1 class="blog-title">What a Semester of Graduate Game Theory Taught Me (and What It Didn't)</h1>
+        <p class="blog-subtitle">
+          A walkthrough of Harvard's Econ 2048 — from strategies as complete contingent plans
+          to the machinery that actually lets you prove things about how decisions change.
+          With equations where they help and hand-waving where it's honest.
+        </p>
+        <p class="blog-meta">
+          <span>Peter Flo</span>
+          <span>March 2026</span>
+          <span>Econ 2048, Shengwu Li</span>
+        </p>
+      </header>
+
+      <div class="aside-personal" style="margin-bottom:2rem;">
+        <p><strong>TL;DR.</strong> Nash equilibrium exists but is hard to compute; correlated equilibrium is tractable and often a better model of learned behavior. Refinements (perfect, proper, sequential) narrow down which equilibria are plausible. The most useful machinery: monotone comparative statics (Topkis) and supermodular games — they let you predict how decisions change without solving for equilibria. Ends with connections to AI alignment.</p>
+      </div>
+
+      <!-- ===== INTRO ===== -->
+      <section id="intro">
+        <h2>The setup</h2>
+
+        <p>
+          I took Econ 2048 expecting to learn "how to find Nash equilibria." I left
+          with something different: a sense for when equilibrium concepts are the right
+          question, and when they're covering up the wrong one. The course moved fast —
+          normal form games, Bayesian games, extensive form, refinements, monotone
+          comparative statics, supermodular games, potential games — all in one
+          semester, taught by Shengwu Li with the kind of precision that makes you realize
+          how much hand-waving you've been doing your whole life.
+        </p>
+        <p>
+          What follows is my attempt to reconstruct the intellectual arc. Not a
+          textbook summary — more like "here's what actually stuck, and why."
+        </p>
+      </section>
+
+      <!-- ===== NORMAL FORM ===== -->
+      <section id="normal-form">
+        <h2>The normal form</h2>
+
+        <p>
+          The course opens with a quote from Von Neumann and Morgenstern that reframes
+          what a "strategy" is. In everyday language, a strategy is a vague plan. In game
+          theory, a
+          <span class="term" data-tooltip="A complete contingent plan that specifies what action to take in every possible situation a player might face. You commit to the entire plan before the game starts — not because you lack flexibility, but because the analysis requires it.">strategy</span>
+          is a <em>complete contingent plan</em>: a function that specifies what you'll do in
+          every possible situation you might encounter, given every possible piece of
+          information you might have.
+        </p>
+        <p>
+          This is an extreme definition, and the course is upfront about that. Savage's
+          famous critique is right there in the notes: requiring someone to "envisage every
+          conceivable policy for the government of his whole life" is "utterly ridiculous" —
+          not because you might regret it later, but because the <em>computational task</em>
+          is beyond human possibility. You can't even plan a picnic this way.
+        </p>
+        <p>
+          But the power of the
+          <span class="term" data-tooltip="A game represented by its players, their strategy sets, and their payoff functions — abstracting away all sequential structure. Any game can be reduced to normal form by listing all complete contingent plans as strategies.">normal form</span>
+          is exactly this abstraction. A game $(N, S, u)$ consists of players $N$,
+          strategy sets $S_n$ for each player, and utility functions $u_n : S \to \mathbb{R}$.
+          That's it. Every sequential game, every dynamic interaction, every elaborate
+          mechanism — all reduce to choosing from a set of complete plans and getting a payoff.
+        </p>
+
+        <blockquote>
+          <p>"The idea that this mathematically simple normal form is a general model for all
+          games was the key simplifying insight that allowed the first great advances of
+          modern game theory." — Myerson (2004)</p>
+        </blockquote>
+      </section>
+
+      <!-- ===== DOMINANCE ===== -->
+      <section id="dominance">
+        <h2>Dominance and rationalizability</h2>
+
+        <p>
+          Before asking "what will players do?", the course asks a gentler question: "what
+          <em>won't</em> they do?" A
+          <span class="term" data-tooltip="A mixed strategy σₙ strictly dominates sₙ if it gives strictly higher expected payoff than sₙ against every possible opponent strategy. A rational player would never play a strictly dominated strategy.">strictly dominated</span>
+          strategy is one that is always worse than some alternative, no matter what opponents
+          do. Rational players won't play them.
+        </p>
+        <p>
+          But the real insight comes from iterating. If I know you're rational, I know you
+          won't play dominated strategies. So I can eliminate those from <em>your</em>
+          strategy set. But now, with your strategy set trimmed, some of <em>my</em> strategies
+          might become dominated. We can keep going — this is
+          <span class="term" data-tooltip="Repeatedly removing strictly dominated strategies for all players. After each round of deletion, new strategies may become dominated. The process converges to the 'rationalizable' set — the strategies that survive all rounds.">iterated deletion of strictly dominated strategies</span>.
+        </p>
+        <p>
+          What survives is the
+          <span class="term" data-tooltip="The set of strategies that can't be eliminated by iterated deletion of strictly dominated strategies. Equivalently, the largest set that is 'closed under rational behavior' (CURB) — where every strategy in the set is a best response to some belief over the set.">rationalizable set</span>.
+          A beautiful theorem connects the two ideas: a strategy is not strictly
+          dominated if and only if it's a
+          <span class="term" data-tooltip="Strategy sₙ is a best response to belief β if it maximizes expected payoff given that belief. Every undominated strategy is a best response to some belief, and vice versa.">best response</span>
+          to some belief about opponents. The proof uses the
+          <span class="term" data-tooltip="If two convex sets in ℝⁿ are disjoint, there exists a hyperplane that separates them. Used here to construct a belief that makes any undominated strategy a best response.">separating hyperplane theorem</span>
+          — you show that the set of achievable payoff vectors and the set of payoffs that
+          would strictly dominate your strategy are two disjoint convex sets, and the
+          separating hyperplane gives you the belief.
+        </p>
+
+        <div class="eq-block">
+          $$s_n \text{ is not strictly dominated} \iff \exists \beta_{-n} \in \Delta(S_{-n}) : s_n \text{ best-responds to } \beta_{-n}$$
+        </div>
+
+        <p>
+          This is the first of many moments in the course where a seemingly semantic
+          distinction — "not dominated" vs. "best response to something" — turns out to be
+          a real mathematical equivalence with a nontrivial proof.
+        </p>
+      </section>
+
+      <!-- ===== NASH ===== -->
+      <section id="nash">
+        <h2>Nash equilibrium</h2>
+
+        <p>
+          A
+          <span class="term" data-tooltip="A strategy profile where every player is simultaneously best-responding to every other player's strategy. No one can improve their payoff by unilaterally changing what they do.">Nash equilibrium</span>
+          is a strategy profile where everyone is best-responding to everyone else
+          simultaneously. It's the most famous concept in game theory, and it exists in
+          every finite game.
+        </p>
+        <p>
+          The existence proof uses
+          <span class="term" data-tooltip="If X is nonempty, compact, and convex, and F: X ⇒ X is a correspondence with nonempty convex values and is upper hemi-continuous, then F has a fixed point: some x* ∈ F(x*). Generalizes Brouwer's fixed point theorem to correspondences.">Kakutani's fixed point theorem</span>.
+          Define the best-response correspondence $B : \Sigma \rightrightarrows \Sigma$,
+          where $B_n(\sigma) = \arg\max_{\sigma'_n} u_n(\sigma'_n, \sigma_{-n})$. A Nash
+          equilibrium is exactly a fixed point of $B$ — a profile that maps to itself under
+          best-responding. Kakutani guarantees this fixed point exists because the strategy
+          simplex is compact and convex, best-response sets are nonempty and convex, and the
+          correspondence is upper hemi-continuous.
+        </p>
+        <p>
+          But here's the uncomfortable fact the course doesn't shy away from: <strong>finding a
+          Nash equilibrium is computationally hard</strong>. It's
+          <span class="term" data-tooltip="A complexity class for problems where solutions can be verified in polynomial time and are guaranteed to exist (by a parity argument). 'PPAD-complete' means the problem is as hard as any problem in this class. Unlike NP-complete problems, PPAD problems always have solutions — you just can't find them efficiently.">PPAD-complete</span>
+          (Daskalakis et al., 2009). You might hope that the extra structure of games makes
+          it easier than generic fixed-point problems. It doesn't.
+        </p>
+        <p>
+          This matters more than it sounds. If Nash equilibrium is the "right" prediction for
+          rational play, but neither humans nor computers can efficiently find it, then in what
+          sense is it a prediction at all?
+        </p>
+      </section>
+
+      <!-- ===== REFINEMENTS ===== -->
+      <section id="refinements">
+        <h2>The refinement ladder</h2>
+
+        <p>
+          Nash equilibrium has a problem: there are usually too many of them, and some are
+          clearly unreasonable. The refinement program tries to narrow down which equilibria
+          are "plausible" by adding extra requirements.
+        </p>
+        <p>
+          The idea behind
+          <span class="term" data-tooltip="An equilibrium that is robust to small 'trembles' — mistakes where players accidentally play the wrong action with small probability. Formally: the limit of ε-perfect equilibria (fully mixed profiles where worse actions get ≤ ε probability) as ε → 0.">perfect equilibrium</span>
+          (Selten, 1975) is: what if players occasionally tremble — accidentally play the
+          wrong action with tiny probability? A perfect equilibrium survives this test. It's
+          the limit of
+          <span class="term" data-tooltip="A fully mixed strategy profile where any action yielding lower payoff than another gets at most ε probability. As ε → 0, these profiles converge to a perfect equilibrium.">$\varepsilon$-perfect equilibria</span>
+          as trembles vanish.
+        </p>
+        <p>
+          <span class="term" data-tooltip="A refinement of perfect equilibrium. Requires that 'worse mistakes are less likely than better mistakes' — if action a gives lower payoff than a', then the probability of trembling to a must be at most ε times the probability of trembling to a'. Strictly stronger than perfect equilibrium.">Proper equilibrium</span>
+          (Myerson, 1978) goes further: not just that you rarely tremble, but that
+          <em>worse</em> mistakes are <em>less</em> likely than better ones. If action $a$
+          gives lower payoff than $a'$, then $\sigma_n(a) \le \varepsilon \cdot \sigma_n(a')$.
+          This is a much more structured trembling story.
+        </p>
+
+        <div class="diagram">
+          <svg viewBox="0 0 680 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Refinement hierarchy">
+            <defs>
+              <marker id="ah" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+                <polygon points="0 0, 7 2.5, 0 5" fill="#2563eb"/>
+              </marker>
+            </defs>
+            <text x="340" y="16" text-anchor="middle" font-size="12" fill="#888" font-weight="600">REFINEMENT HIERARCHY (MORE → LESS RESTRICTIVE)</text>
+            <rect x="10" y="40" width="140" height="50" rx="8" fill="#2563eb" stroke="none"/>
+            <text x="80" y="70" text-anchor="middle" font-size="12" fill="#fff" font-weight="500">Proper</text>
+            <rect x="185" y="40" width="140" height="50" rx="8" fill="#60a5fa" stroke="none"/>
+            <text x="255" y="70" text-anchor="middle" font-size="12" fill="#fff" font-weight="500">Perfect</text>
+            <rect x="360" y="40" width="140" height="50" rx="8" fill="#93c5fd" stroke="none"/>
+            <text x="430" y="70" text-anchor="middle" font-size="12" fill="#1e3a5f" font-weight="500">Nash</text>
+            <rect x="535" y="40" width="140" height="50" rx="8" fill="#dbeafe" stroke="none"/>
+            <text x="605" y="70" text-anchor="middle" font-size="12" fill="#1e3a5f" font-weight="500">Rationalizable</text>
+            <line x1="150" y1="65" x2="183" y2="65" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+            <line x1="325" y1="65" x2="358" y2="65" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+            <line x1="500" y1="65" x2="533" y2="65" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+            <text x="80" y="108" text-anchor="middle" font-size="10" fill="#666">Fewest equilibria</text>
+            <text x="605" y="108" text-anchor="middle" font-size="10" fill="#666">Most strategies</text>
+          </svg>
+        </div>
+
+        <p>
+          The course presents a game that illustrates the difference cleanly. Three Nash
+          equilibria — but only two are perfect, and only one is proper. The proper
+          equilibrium is the one where players' trembles are "ordered by rationality" — a
+          genuinely elegant constraint.
+        </p>
+
+        <section class="interactive">
+          <h3>The refinement game</h3>
+          <p>This game has three Nash equilibria: $(r_1, c_1)$, $(r_2, c_2)$, and $(r_3, c_3)$. Click each to see which refinements it survives.</p>
+          <div class="matrix-grid">
+            <div></div>
+            <div class="matrix-label">$c_1$</div>
+            <div class="matrix-label">$c_2$</div>
+          </div>
+          <div class="matrix-grid" style="grid-template-columns:1fr 1fr 1fr 1fr; margin-top:4px;">
+            <div></div>
+            <div class="matrix-label">$c_1$</div>
+            <div class="matrix-label">$c_2$</div>
+            <div class="matrix-label">$c_3$</div>
+            <div class="matrix-label">$r_1$</div>
+            <button class="matrix-cell" data-eq="r1c1">1, 1</button>
+            <button class="matrix-cell" data-eq="off">0, 0</button>
+            <button class="matrix-cell" data-eq="off">−9, −9</button>
+            <div class="matrix-label">$r_2$</div>
+            <button class="matrix-cell" data-eq="off">0, 0</button>
+            <button class="matrix-cell" data-eq="r2c2">0, 0</button>
+            <button class="matrix-cell" data-eq="off">−7, −7</button>
+            <div class="matrix-label">$r_3$</div>
+            <button class="matrix-cell" data-eq="off">−9, −9</button>
+            <button class="matrix-cell" data-eq="off">−7, −7</button>
+            <button class="matrix-cell" data-eq="r3c3">−7, −7</button>
+          </div>
+          <div class="matrix-explainer" id="refine-explainer">Click a diagonal cell to see which equilibrium concepts it satisfies.</div>
+        </section>
+      </section>
+
+      <!-- ===== CORRELATED ===== -->
+      <section id="correlated">
+        <h2>Correlated equilibrium</h2>
+
+        <p>
+          This was one of the most eye-opening parts of the course.
+          <span class="term" data-tooltip="A probability distribution over strategy profiles where, if each player is told their recommended action (but not others'), they have no incentive to deviate. Allows correlation between players' actions. Due to Aumann (1974).">Correlated equilibrium</span>
+          (Aumann, 1974) allows a mediator to recommend actions to players using a shared
+          random signal. Each player sees only their own recommendation and has no incentive
+          to deviate.
+        </p>
+
+        <section class="interactive">
+          <h3>Chicken: Nash vs. correlated</h3>
+          <p>In the game of Chicken, the best Nash equilibrium gives expected social welfare of $28/3 \approx 9.33$. But a correlated equilibrium — playing (Drive, Chicken), (Chicken, Drive), and (Chicken, Chicken) each with probability $1/3$ — achieves welfare of $10$.</p>
+          <div class="matrix-grid" style="grid-template-columns:1fr 1fr 1fr;">
+            <div></div>
+            <div class="matrix-label">Drive</div>
+            <div class="matrix-label">Chicken</div>
+            <div class="matrix-label">Drive</div>
+            <div class="matrix-cell">0, 0</div>
+            <div class="matrix-cell">7, 2</div>
+            <div class="matrix-label">Chicken</div>
+            <div class="matrix-cell">2, 7</div>
+            <div class="matrix-cell">6, 6</div>
+          </div>
+          <p style="margin-top:12px; font-size:.9rem; color:#374151;">
+            The correlated equilibrium avoids (Drive, Drive) entirely — the crash — while
+            Nash can't, because independent randomization inevitably puts some probability on
+            both players driving. This is the power of correlation: a shared signal coordinates
+            players away from bad outcomes.
+          </p>
+        </section>
+
+        <p>
+          The kicker: unlike Nash equilibria, correlated equilibria can be computed in
+          <span class="term" data-tooltip="An algorithm whose runtime grows at most polynomially with the input size. 'Polynomial time' is the standard benchmark for computational tractability — problems solvable in poly time are considered 'easy.'">polynomial time</span>.
+          The CE constraints are linear in the probabilities, so you can find one via linear
+          programming. Nash constraints become nonlinear the moment you require the joint
+          distribution to be a product of independent marginals — that's what makes Nash hard.
+        </p>
+        <p>
+          Three interpretations of CE that the course highlights: (1) explicit coordination by
+          a trusted mediator, (2) informational robustness — a CE captures what you can predict
+          about play without assuming independence, and (3) learning — players who meet
+          repeatedly and play myopic best-responses to
+          <span class="term" data-tooltip="A forecast is calibrated if, among all times it predicted rain with probability p, it actually rained about p fraction of the time. Foster and Vohra (1997) showed that players using calibrated forecasts converge to correlated equilibrium.">calibrated forecasts</span>
+          converge to CE.
+        </p>
+      </section>
+
+      <!-- ===== EXTENSIVE ===== -->
+      <section id="extensive">
+        <h2>Extensive-form games</h2>
+
+        <p>
+          The normal form collapses all sequential structure. The
+          <span class="term" data-tooltip="A game represented as a tree, with nodes for decisions and branches for actions. Captures the sequential structure of who moves when, what they know, and what they've observed. More detailed than the normal form.">extensive form</span>
+          brings it back — who moves when, what they know at the time, what they've observed.
+          The notation is heavier (histories, information sets, active player functions,
+          behavioral strategies) but the payoff is that we can talk about <em>dynamic
+          rationality</em>: not just "is this a good plan?" but "would you actually follow
+          through with it?"
+        </p>
+        <p>
+          A key result:
+          <span class="term" data-tooltip="In a game of perfect recall, every mixed strategy has an equivalent behavioral strategy and vice versa. This means we can analyze extensive-form games using behavioral strategies (choices at each information set) without loss of generality.">Kuhn's theorem</span>
+          — under
+          <span class="term" data-tooltip="A player has perfect recall if they always remember their own past moves and everything they've observed. Formally: at any information set, all histories in that set share the same sequence of the player's past information sets and actions.">perfect recall</span>,
+          mixed strategies and
+          <span class="term" data-tooltip="A strategy that specifies, at each information set, a probability distribution over available actions. Unlike mixed strategies (which randomize over complete plans), behavioral strategies randomize at each decision point independently.">behavioral strategies</span>
+          are equivalent. This sounds technical but it's what lets us work with decision-by-decision strategies instead of exponentially large complete plans.
+        </p>
+        <p>
+          <span class="term" data-tooltip="A strategy profile that constitutes a Nash equilibrium in every subgame (every proper subtree that doesn't split any information set). Eliminates non-credible threats by requiring rational play even in parts of the game that are never reached.">Subgame-perfect equilibrium</span>
+          (SPE) is the natural first refinement: require Nash equilibrium in every subgame.
+          Computable via
+          <span class="term" data-tooltip="Solving the game from the end backward: at each final decision node, choose the best action; then at the second-to-last, choose the best action given what will happen next; and so on. Works in games of perfect information.">backward induction</span>.
+          But SPE is fragile — "seemingly-irrelevant transformations of the game tree can
+          eliminate subgames," and with them all the rationality requirements that SPE imposed.
+        </p>
+      </section>
+
+      <!-- ===== SEQUENTIAL ===== -->
+      <section id="sequential">
+        <h2>Sequential equilibrium</h2>
+
+        <p>
+          The course spends significant time on the problem of off-path beliefs. In extensive
+          games, some information sets are never reached in equilibrium. But players still need
+          beliefs about what's happening there — and those beliefs can be arbitrary, sometimes
+          supporting unreasonable equilibria.
+        </p>
+        <p>
+          <span class="term" data-tooltip="Weak Perfect Bayesian Equilibrium: requires (1) sequential rationality — players best-respond at every information set given their beliefs, and (2) beliefs are formed by Bayes' rule wherever possible (on the equilibrium path). Does NOT restrict off-path beliefs.">Weak Perfect Bayesian Equilibrium</span>
+          (WPBE) requires
+          <span class="term" data-tooltip="Each player's strategy is a best response at every information set, given their beliefs about where they are in the game tree. A strengthening of Nash equilibrium for extensive games.">sequential rationality</span>
+          and Bayesian updating on the path of play. But it doesn't restrict off-path beliefs,
+          which leads to three bugs the course illustrates with examples:
+        </p>
+        <ol>
+          <li>Players can "signal what they don't know" — off-path beliefs let them convey information they shouldn't have.</li>
+          <li>Players can make "different inferences from the same information" — two players who've seen identical histories can hold contradictory beliefs.</li>
+          <li>WPBE doesn't even imply SPE in some games.</li>
+        </ol>
+        <p>
+          The early literature added ad hoc patches (Bayesian updating "wherever possible,"
+          no signaling what you don't know, agreement across players). Shengwu's comment in
+          the notes: "This was a mess."
+        </p>
+        <p>
+          <span class="term" data-tooltip="An equilibrium where (1) players best-respond at every information set given beliefs, and (2) beliefs are 'consistent' — they're the limit of beliefs that would be derived from Bayes' rule if players used fully mixed (trembling) strategies. Due to Kreps and Wilson (1982).">Sequential equilibrium</span>
+          (Kreps & Wilson, 1982) cleans this up with a single elegant idea:
+          <span class="term" data-tooltip="An assessment (strategy profile + belief system) is consistent if it's the limit of fully mixed assessments where beliefs are derived from Bayes' rule. This pins down off-path beliefs by asking: 'what would you believe if players occasionally trembled to every action?'">consistency</span>.
+          Beliefs are the limit of what Bayes' rule would give under fully mixed strategies
+          (where every action at every information set gets positive probability). As the
+          trembles vanish, the limiting beliefs pin down what you "should" believe even off-path.
+        </p>
+        <p>
+          Sequential equilibrium implies both WPBE and SPE, and every finite extensive game
+          has one.
+        </p>
+        <details>
+          <summary>Proof sketch (agent normal form)</summary>
+          <p style="margin-top:8px;">
+            The proof goes through the
+            <span class="term" data-tooltip="A reformulation of an extensive game where each information set is treated as a separate 'agent.' A player who has three information sets becomes three separate agents who share the same payoff function. Simplifies the analysis of trembling-hand perfection.">agent normal form</span>
+            — treat each information set as a separate agent, perturb so every action gets
+            positive probability, apply Kakutani, take limits.
+          </p>
+        </details>
+      </section>
+
+      <!-- ===== COMPARATIVE STATICS ===== -->
+      <section id="comparative-statics">
+        <h2>Monotone comparative statics</h2>
+
+        <div class="aside-personal">
+          <p>
+            This is where the course shifts gears entirely. We go from "what happens in
+            equilibrium?" to "how do decisions change when parameters change?" — and the
+            tools are completely different. If I had to pick one topic from the course that
+            changed how I think, it's this one.
+          </p>
+        </div>
+
+        <p>
+          The traditional approach to comparative statics: maximize $b(x, t) - c(x)$, take the
+          first-order condition, apply the
+          <span class="term" data-tooltip="A theorem that, under differentiability conditions, lets you express how the optimal choice x*(t) changes with a parameter t by differentiating the first-order condition. Requires second derivatives and concavity/convexity assumptions.">implicit function theorem</span>:
+        </p>
+
+        <div class="eq-block">
+          $$\frac{d}{dt} x^*(t) = \frac{b_{xt}(x^*(t), t)}{c''(x^*(t)) - b_{xx}(x^*(t), t)}$$
+        </div>
+
+        <p>
+          If the cross-partial $b_{xt} > 0$, $c$ is convex, and $b$ is concave in $x$, then
+          $x^*$ is increasing in $t$. This works — but the course immediately shows it's
+          <em>overkill</em>. The conclusion holds even if $b$ and $c$ aren't differentiable,
+          $c$ isn't convex, $b$ isn't concave, and $x$ isn't even real-valued. The
+          differentiability was only a servant to the method.
+        </p>
+        <p>
+          The intuitive idea: if doing more of $x$ becomes more attractive when the parameter
+          $t$ is higher, then optimal $x$ goes up. The modern approach strips this down to
+          what actually matters:
+          <span class="term" data-tooltip="A partially ordered set where every pair of elements has a greatest lower bound (meet ∧) and least upper bound (join ∨). Think of ℝⁿ with the product order — you take component-wise min and max.">lattice</span>
+          structure and
+          <span class="term" data-tooltip="A function f(x,t) has increasing differences if raising x is 'more valuable' when t is higher. Formally: for x' ≥ x and t' ≥ t, f(x',t') − f(x,t') ≥ f(x',t) − f(x,t). In the differentiable case, this is ∂²f/∂x∂t ≥ 0.">increasing differences</span>.
+        </p>
+
+        <h3>Topkis's monotonicity theorem</h3>
+        <p>
+          The centerpiece result. If $f(x, t)$ is
+          <span class="term" data-tooltip="A function on a lattice satisfying f(x ∨ y) + f(x ∧ y) ≥ f(x) + f(y). Captures 'complementarity' — the components of x are worth more together than apart. On ℝ, every function is supermodular; the concept only bites in higher dimensions.">supermodular</span>
+          in $x$ and has increasing differences in $(x, t)$, and the feasible set $S(t)$ is
+          increasing in the
+          <span class="term" data-tooltip="Set A is greater than set B in the strong set order if, for all a ∈ A and b ∈ B, the join a ∨ b is in A and the meet a ∧ b is in B. A generalization of 'bigger' for sets in a lattice. Ensures that as the constraint set grows, it grows 'upward.'">strong set order</span>,
+          then the set of optimizers $X^*(t) = \arg\max_{x \in S(t)} f(x, t)$ is increasing
+          in $t$ (in the strong set order).
+        </p>
+
+        <div class="diagram">
+          <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Topkis checklist">
+            <text x="340" y="16" text-anchor="middle" font-size="12" fill="#888" font-weight="600">TOPKIS CHECKLIST</text>
+            <rect x="10" y="30" width="155" height="65" rx="8" fill="#f0f5ff" stroke="#2563eb" stroke-width="1"/>
+            <text x="87" y="56" text-anchor="middle" font-size="11" font-weight="600" fill="#222">1. X is a lattice</text>
+            <text x="87" y="74" text-anchor="middle" font-size="10" fill="#666">Choice set has order</text>
+
+            <rect x="180" y="30" width="155" height="65" rx="8" fill="#f0f5ff" stroke="#2563eb" stroke-width="1"/>
+            <text x="257" y="56" text-anchor="middle" font-size="11" font-weight="600" fill="#222">2. f supermodular</text>
+            <text x="257" y="74" text-anchor="middle" font-size="10" fill="#666">Complementarity in x</text>
+
+            <rect x="350" y="30" width="155" height="65" rx="8" fill="#f0f5ff" stroke="#2563eb" stroke-width="1"/>
+            <text x="427" y="56" text-anchor="middle" font-size="11" font-weight="600" fill="#222">3. Inc. differences</text>
+            <text x="427" y="74" text-anchor="middle" font-size="10" fill="#666">in (x, t)</text>
+
+            <rect x="520" y="30" width="155" height="65" rx="8" fill="#f0f5ff" stroke="#2563eb" stroke-width="1"/>
+            <text x="597" y="56" text-anchor="middle" font-size="11" font-weight="600" fill="#222">4. S(t) increasing</text>
+            <text x="597" y="74" text-anchor="middle" font-size="10" fill="#666">in strong set order</text>
+          </svg>
+        </div>
+
+        <p>
+          The beauty is that in many applications, some conditions are trivially satisfied.
+          If $X \subseteq \mathbb{R}$, it's automatically a lattice and every function is
+          supermodular in $x$. If constraints don't vary with $t$, condition 4 is free. You
+          only need to check increasing differences — which often reduces to checking a
+          cross-partial is nonneg.
+        </p>
+
+        <details>
+          <summary>Example: monopoly pricing with arbitrary demand</summary>
+          <p style="margin-top:8px;">
+            A monopolist with marginal cost $c$ faces decreasing demand $D(p)$ and chooses
+            price to maximize $(p - c)D(p)$. The traditional approach would require
+            differentiability of $D$. The Topkis approach: take logs. Maximize
+            $\ln(p - c) + \ln D(p)$. The cross-partial $\frac{\partial^2}{\partial p \,
+            \partial c} \ln(p - c) = \frac{1}{(p-c)^2} \geq 0$. Done. The optimal price is
+            increasing in cost, for <em>any</em> decreasing demand function, no
+            differentiability needed.
+          </p>
+        </details>
+
+        <details>
+          <summary>Example: first-price auctions with risk aversion</summary>
+          <p style="margin-top:8px;">
+            Bidder $i$'s utility is $w(b, \theta)F(b)$ where $\theta$ is their value. Take
+            logs: $\ln w(b, \theta) + \ln F(b)$. If $\ln w$ has increasing differences in
+            $(b, \theta)$, optimal bids are increasing in value. In particular, if $w(b,
+            \theta) = v(\theta - b)$ for concave $v$, this holds. The concavity of $v$ is
+            doing double duty — capturing risk aversion and guaranteeing increasing
+            differences.
+          </p>
+        </details>
+      </section>
+
+      <!-- ===== SUPERMODULAR ===== -->
+      <section id="supermodular">
+        <h2>Supermodular games</h2>
+
+        <p>
+          Topkis's theorem is about single-agent optimization. Supermodular games extend it
+          to strategic settings. A
+          <span class="term" data-tooltip="A game where each player's strategy set is a lattice, payoffs are supermodular in own action, and have increasing differences with other players' actions. Captures 'strategic complements' — when one player does more, others want to do more too.">supermodular game</span>
+          (Milgrom & Roberts, 1990) is one where players' strategies are
+          <span class="term" data-tooltip="When one player increases their action, other players want to increase theirs too. The economic intuition: actions reinforce each other. Contrast with strategic substitutes, where one player increasing makes others want to decrease.">strategic complements</span>:
+          when one player increases their action, others want to increase theirs.
+        </p>
+        <p>
+          The headline result: supermodular games have <strong>extremal pure-strategy Nash
+          equilibria</strong> — a smallest and a largest. And these bound the entire
+          rationalizable set: every rationalizable strategy is between the smallest and
+          largest equilibrium.
+        </p>
+
+        <div class="eq-block">
+          $$\text{For any rationalizable } a_i: \quad \underline{a}_i \le a_i \le \overline{a}_i$$
+        </div>
+
+        <p>
+          This is remarkable. In a generic game, Nash, correlated equilibrium, and
+          rationalizability can make very different predictions. In supermodular games, they
+          all agree on the upper and lower bounds. And a corollary: a supermodular game is
+          <span class="term" data-tooltip="A game where iterated deletion of dominated strategies leaves exactly one strategy for each player. The game has a unique prediction without needing to assume Nash equilibrium.">dominance solvable</span>
+          if and only if it has a unique pure-strategy Nash equilibrium.
+        </p>
+
+        <section class="interactive">
+          <h3>Examples of supermodular games</h3>
+          <p>Click to see how different settings exhibit strategic complementarity.</p>
+          <div class="tab-row" id="super-tabs">
+            <button class="tab-btn active" data-tab="0">Search</button>
+            <button class="tab-btn" data-tab="1">Networks</button>
+            <button class="tab-btn" data-tab="2">Bertrand</button>
+            <button class="tab-btn" data-tab="3">Cournot</button>
+          </div>
+          <div class="tab-body" id="super-body"></div>
+        </section>
+
+        <p>
+          Comparative statics for supermodular games fall out cleanly: if you parameterize the
+          game and payoffs have increasing differences in the parameter, then the extremal
+          equilibria are monotone in the parameter. You get predictions about how equilibria
+          move without solving for them.
+        </p>
+      </section>
+
+      <!-- ===== POTENTIAL ===== -->
+      <section id="potential">
+        <h2>Potential games</h2>
+
+        <p>
+          A
+          <span class="term" data-tooltip="A game where there exists a single function F(a) such that any player's gain from unilaterally changing their action equals the change in F. Formally: uᵢ(a) − uᵢ(a'ᵢ, a₋ᵢ) = F(a) − F(a'ᵢ, a₋ᵢ). Implies existence of pure-strategy Nash equilibria.">potential game</span>
+          is one where a single function $F$ captures every player's incentives: any
+          player's gain from deviating equals the change in $F$. If $F$ has a maximum,
+          it's a Nash equilibrium.
+        </p>
+
+        <div class="eq-block">
+          $$u_i(a) - u_i(a'_i, a_{-i}) = F(a) - F(a'_i, a_{-i}) \quad \forall i, a, a'_i$$
+        </div>
+
+        <p>
+          This immediately gives existence of pure-strategy NE (just maximize $F$) and the
+          <span class="term" data-tooltip="Start at any strategy profile. If some player can improve their payoff by deviating, let them. The potential F strictly increases at each step. In a finite game, this must terminate — at a Nash equilibrium. No cycles are possible.">finite improvement property</span>:
+          start anywhere, let players make beneficial deviations one at a time, and you must
+          reach an equilibrium because $F$ strictly increases at each step. No cycles possible.
+        </p>
+        <p>
+          The canonical example is
+          <span class="term" data-tooltip="A game where players choose routes through a network (roads, internet), and the cost of each route depends on how many others are using it. Every congestion game is a potential game, so pure-strategy equilibria always exist.">congestion games</span>
+          — think traffic routing. Each player picks a set of roads; each road has a cost
+          that increases with congestion. The potential function sums up "accumulated costs":
+          $F(a) = -\sum_{x} d_x(n_x(a))$ where $d_x(m) = c_x(1) + c_x(2) + \cdots + c_x(m)$.
+        </p>
+        <p>
+          A beautiful application: <strong>VCG auctions with endogenous investment</strong>.
+          Players can invest to change their values before a
+          <span class="term" data-tooltip="Vickrey-Clarke-Groves mechanism: an auction where each player's transfer equals the externality they impose on others. Truthful reporting is a dominant strategy. Here used with endogenous investment — players choose how much to invest in their own values.">VCG mechanism</span>
+          runs. The investment game turns out to be a potential game with potential function
+          equal to social welfare. So at any pure-strategy Nash equilibrium, no single player
+          can improve social welfare by changing their investment. The mechanism aligns
+          individual incentives with collective good — at least locally.
+        </p>
+      </section>
+
+      <!-- ===== DIDN'T TEACH ===== -->
+      <section id="didnt-teach">
+        <h2>What the course didn't teach</h2>
+
+        <p>
+          Every course makes choices, and the omissions are as revealing as the inclusions.
+        </p>
+        <p>
+          <strong>No repeated games.</strong> The folk theorem — that almost anything can be
+          sustained as an equilibrium in infinitely repeated games — is one of the most
+          important (and unsettling) results in game theory. The course skipped it entirely.
+          I think this is defensible: the folk theorem is about what's <em>possible</em> in
+          equilibrium, not what's <em>likely</em>, and the course prioritized tools that make
+          sharp predictions.
+        </p>
+        <p>
+          <strong>No mechanism design.</strong> How to design rules of a game to achieve a
+          desired outcome — auctions, voting systems, matching markets. The VCG example at the
+          end was a taste, but full mechanism design is a separate course (and one I want to
+          take). This is where game theory becomes <em>engineering</em> rather than
+          <em>analysis</em>.
+        </p>
+        <p>
+          <strong>No evolutionary game theory.</strong> What happens when "players" don't
+          optimize but instead follow simple rules, and selection pressure does the work? This
+          connects to learning dynamics, replicator equations, and — I suspect — to how neural
+          networks learn strategic behavior during training.
+        </p>
+        <p>
+          <strong>Limited learning and dynamics.</strong> The CE-as-learning-outcome result
+          (Foster & Vohra) was mentioned but not developed. How players actually converge to
+          equilibria — or fail to — is arguably more important than the equilibria themselves.
+        </p>
+      </section>
+
+      <!-- ===== ALIGNMENT ===== -->
+      <section id="alignment">
+        <h2>The alignment connection</h2>
+
+        <div class="aside-personal">
+          <p>
+            I want to be careful here. It's easy to see game theory everywhere once you've
+            learned it. The following connections feel genuine to me, but I'm flagging the
+            places where they might be reaching.
+          </p>
+        </div>
+
+        <p>
+          <strong>Principal-agent as the core framing.</strong> The alignment problem is, at its
+          root, a game between a principal (humans) and an agent (AI) with misaligned
+          information and possibly misaligned objectives. The extensive-form game structure —
+          sequential moves, imperfect information, beliefs about opponent types — maps
+          directly. What makes alignment hard is that we're playing a Bayesian game where we
+          don't know the agent's type (its learned objectives) and can only partially observe
+          its actions (its internal reasoning).
+        </p>
+        <p>
+          <strong>Refinements as a theory of "what kind of rationality to assume."</strong>
+          The refinement ladder — from rationalizability to Nash to perfect to proper to
+          sequential — is really about how much intelligence to attribute to the players.
+          For AI alignment, this is directly relevant: how capable is the model at strategic
+          reasoning? A model that only avoids dominated strategies behaves very differently
+          from one that plays sequential equilibria. As models become more capable, we may need
+          to assume stronger rationality concepts — and design our oversight mechanisms accordingly.
+        </p>
+        <p>
+          <strong>Correlated equilibrium and the mediator problem.</strong> In alignment, we
+          <em>want</em> to be the mediator — the entity that coordinates the game by sending
+          private recommendations that players voluntarily follow. Constitutional AI, RLHF, and
+          system prompts are all attempts at mediation. The CE framework suggests a precise
+          question: under what conditions will the AI voluntarily follow the mediator's
+          recommendation? The answer depends on whether the AI's incentive constraints are
+          satisfied — which requires knowing its utility function. And that's exactly what
+          mechanistic interpretability is trying to figure out.
+        </p>
+        <p>
+          <strong>Supermodular games and capability cascades.</strong> If AI capabilities are
+          strategic complements — one lab advancing makes other labs want to advance faster —
+          then the AI development landscape is a supermodular game. The extremal equilibrium
+          result says the rationalizable strategies are bounded by the extremal equilibria. In
+          a race with strategic complements, this means the "rational" range of behavior is
+          pinned between "everyone goes slow" and "everyone goes fast." Comparative statics
+          tells you how these bounds shift when you change parameters like compute costs or
+          regulation.
+        </p>
+        <p>
+          <strong>Potential games and alignment by design.</strong> If we could design the
+          "game" between AI systems and humans so that it has a potential function aligned with
+          social welfare, then individual incentive-compatible behavior would automatically
+          promote collective good. The VCG-with-investment result is a prototype: mechanism
+          design can align local incentives with global welfare, at least at equilibrium.
+          Whether this extends to the AI setting — where "players" are learned systems with
+          opaque objectives — is a research question I'm very interested in.
+        </p>
+        <p>
+          <strong>Where the analogy breaks down.</strong> Classical game theory assumes players
+          know the rules of the game, have well-defined utility functions, and can compute best
+          responses. AI systems violate all three: they learn the "rules" from data, their
+          "utility functions" are emergent properties of training, and their "best responses"
+          are approximated by gradient descent over billions of parameters. The gap between the
+          theory and the application is large. But I think the structural analogies — the
+          information asymmetries, the strategic complementarities, the monitoring problems —
+          are real, and the formalism gives us a language to make them precise.
+        </p>
+      </section>
+
+      <hr>
+      <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">Thanks for reading.</p>
+      <p style="font-size:.85rem; color:#888; text-align:center;">&copy; <span id="copyright-year"></span> Peter Flo</p>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Sidebar toggle
+  (function() {
+    const sb = document.getElementById('blog-sidebar');
+    const tog = document.getElementById('sidebar-toggle');
+    if (!sb || !tog) return;
+    if (localStorage.getItem('sidebar-collapsed-gt2') === 'true') sb.classList.add('collapsed');
+    tog.addEventListener('click', () => { sb.classList.toggle('collapsed'); localStorage.setItem('sidebar-collapsed-gt2', sb.classList.contains('collapsed')); });
+  })();
+
+  // Word count + TOC
+  (function() {
+    const c = document.querySelector('.blog-content');
+    const wc = (c.innerText || c.textContent).trim().split(/\s+/).length;
+    document.getElementById('word-count').textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
+    const links = document.querySelectorAll('.blog-toc a');
+    links.forEach(l => l.addEventListener('click', e => { e.preventDefault(); const t = document.getElementById(l.getAttribute('href').slice(1)); if (t) t.scrollIntoView({ behavior:'smooth', block:'start' }); }));
+    const secs = document.querySelectorAll('section[id]');
+    const obs = new IntersectionObserver(entries => { entries.forEach(entry => { if (entry.isIntersecting) { const id = entry.target.id; links.forEach(l => { l.closest('.blog-toc-item').classList.toggle('active', l.getAttribute('href') === '#' + id); }); } }); }, { rootMargin:'-20% 0px -60% 0px' });
+    secs.forEach(s => obs.observe(s));
+  })();
+
+  // Refinement game
+  (function() {
+    const cells = document.querySelectorAll('[data-eq]');
+    const exp = document.getElementById('refine-explainer');
+    const info = {
+      'r1c1': '<strong>(r₁, c₁): payoff (1, 1).</strong> Nash ✓ · Perfect ✓ · Proper ✓. Both players\' best response when the other\'s tremble makes costly mistakes (−9) even less likely than moderate ones (0). The unique proper equilibrium.',
+      'r2c2': '<strong>(r₂, c₂): payoff (0, 0).</strong> Nash ✓ · Perfect ✓ · Proper ✗. Both get 0 regardless of trembles to c₂/r₂. Survives trembling, but a "proper" trembling player would put more weight on the better mistake (r₁) than the worse one (r₃), which destabilizes this.',
+      'r3c3': '<strong>(r₃, c₃): payoff (−7, −7).</strong> Nash ✓ · Perfect ✗ · Proper ✗. A terrible equilibrium sustained only because each player expects the other to play c₃/r₃. Any trembling destroys it — a small probability on c₁ makes r₁ strictly better than r₃.',
+      'off': 'This cell is not a Nash equilibrium. Click a diagonal cell — (r₁,c₁), (r₂,c₂), or (r₃,c₃) — to see which refinements it survives.'
+    };
+    cells.forEach(cell => cell.addEventListener('click', () => {
+      cells.forEach(c => c.classList.remove('active'));
+      cell.classList.add('active');
+      exp.innerHTML = info[cell.dataset.eq] || '';
+    }));
+  })();
+
+  // Supermodular game tabs
+  (function() {
+    const data = [
+      '<p><strong>Search game.</strong> Agents choose search intensity $a_i \\in [0,1]$. Payoff: $u_i(a) = \\gamma a_i \\sum_{j \\neq i} a_j - c(a_i)$. The more others search, the more valuable your own searching becomes (more potential matches). Cross-partial in $(a_i, a_j)$ is $\\gamma > 0$ — pure strategic complements.</p>',
+      '<p><strong>Network externalities.</strong> Agents on a network choose $L$ or $R$. Payoff increases with the number of neighbors choosing the same action. Classic coordination game — everyone wants to be on the same "platform." The binary action set is a lattice, and payoffs have increasing differences because coordinating with more neighbors is better.</p>',
+      '<p><strong>Logit Bertrand competition.</strong> Firms choose prices $p_i$. Market shares follow a logit model: $\\frac{k_i e^{-\\lambda p_i}}{\\sum_j k_j e^{-\\lambda p_j}}$. Take logs of payoff and check the cross-partial — it\'s ≥ 0. Prices are strategic complements: if competitors raise prices, you want to raise yours too. Note: $\\lambda = \\infty$ recovers classical Bertrand (pure price competition).</p>',
+      '<p><strong>Cournot duopoly.</strong> Firms choose quantities $q_i$. Payoff: $q_i(1 - q_i - q_j) - c_i(q_i)$. This is a game of strategic <em>substitutes</em> — if the other firm produces more, you want to produce less. But here\'s the trick: <strong>reverse the order</strong> on one firm\'s action space, and you get a supermodular game. The theory handles both complements and substitutes.</p>'
+    ];
+    const tabs = document.getElementById('super-tabs');
+    const body = document.getElementById('super-body');
+    body.innerHTML = data[0];
+    tabs.addEventListener('click', e => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      body.innerHTML = data[parseInt(btn.dataset.tab)];
+      if (window.MathJax) MathJax.typesetPromise([body]);
+    });
+  })();
+
+  document.getElementById('copyright-year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
