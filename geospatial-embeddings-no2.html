@@ -26,29 +26,16 @@
     onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]});"></script>
 
   <style>
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:#fff; color:#222; }
-    .blog-shell { min-height:100vh; display:flex; }
-
-    /* Sidebar */
-    .blog-sidebar { width:280px; min-width:280px; background:#fafafa; border-right:1px solid #e5e5e5; padding:40px 32px; position:sticky; top:0; height:100vh; overflow-y:auto; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; transition:transform .3s ease,width .3s ease; z-index:100; }
-    .blog-sidebar.collapsed { transform:translateX(-100%); width:0; min-width:0; border-right:none; }
-    .sidebar-toggle { position:fixed; left:280px; top:20px; width:32px; height:32px; background:#fff; border:1px solid #e5e5e5; border-left:none; border-radius:0 8px 8px 0; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:101; transition:left .3s ease,box-shadow .2s ease; box-shadow:0 2px 8px rgba(0,0,0,.1); }
-    .sidebar-toggle:hover { box-shadow:0 4px 12px rgba(0,0,0,.15); background:#fafafa; }
-    .blog-sidebar.collapsed ~ .sidebar-toggle { left:0; }
-    .sidebar-toggle-icon { width:12px; height:12px; border-right:2px solid #666; border-bottom:2px solid #666; transform:rotate(135deg); transition:transform .3s ease; }
-    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform:rotate(-45deg); }
-    .blog-sidebar-title { font-size:14px; font-weight:600; color:#2563eb; margin-bottom:32px; letter-spacing:.02em; }
-    .blog-toc { list-style:none; padding:0; margin:0; }
-    .blog-toc-item { margin-bottom:8px; font-size:13px; line-height:1.6; }
-    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding:4px 0; transition:color .2s; }
-    .blog-toc-item a:hover { color:#222; }
-    .blog-toc-item.active > a { color:#2563eb; font-weight:600; }
-
-    /* Main */
-    .blog-main { flex:1; min-width:0; }
-    .blog-content { max-width:840px; margin:0 auto; padding:60px 80px 100px 80px; line-height:1.75; }
-    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
-    .blog-breadcrumb a { color:#2563eb; text-decoration:none; }
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
+    .blog-breadcrumb a { color:var(--link); text-decoration:none; }
     .blog-breadcrumb a:hover { text-decoration:underline; }
     .blog-meta-bar { font-size:12px; color:#888; margin-bottom:24px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
     .blog-title { font-size:3rem; margin-bottom:16px; letter-spacing:-.03em; font-family:Georgia,'Times New Roman',serif; font-weight:400; line-height:1.2; }
@@ -59,7 +46,7 @@
     .blog-content h2 { margin-top:4rem; margin-bottom:1.2rem; font-size:1.8rem; letter-spacing:-.02em; font-weight:400; font-family:Georgia,'Times New Roman',serif; scroll-margin-top:20px; }
     .blog-content h2:first-of-type { margin-top:2rem; }
     .blog-content h3 { margin-top:2.2rem; margin-bottom:.8rem; font-size:1.12rem; font-weight:600; }
-    .blog-content a { color:#2563eb; }
+    .blog-content a { color:var(--link); }
     .blog-content ul, .blog-content ol { margin:0 0 1.5rem; padding-left:1.5rem; line-height:1.9; }
     .blog-content li { margin-bottom:.3rem; }
 
@@ -91,7 +78,7 @@
     .band-wrap { margin-top:12px; border-radius:10px; border:1px solid #e5e7eb; overflow:hidden; background:#fff; }
     .band { height:40px; position:relative; background:linear-gradient(90deg,#f9fafb,#f3f4f6); }
     .band-center { position:absolute; left:50%; top:0; bottom:0; width:2px; transform:translateX(-50%); background:rgba(17,24,39,.55); }
-    .band-range { position:absolute; top:7px; bottom:7px; left:50%; transform:translateX(-50%); border-radius:999px; background:rgba(37,99,235,.22); border:1px solid rgba(37,99,235,.35); transition:width 160ms ease; }
+    .band-range { position:absolute; top:7px; bottom:7px; left:50%; transform:translateX(-50%); border-radius:999px; background:rgba(173,124,3,.22); border:1px solid rgba(173,124,3,.35); transition:width 160ms ease; }
     .band-labels { display:flex; justify-content:space-between; padding:8px 10px; font-size:.78rem; color:#6b7280; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
 
     /* Figures */
@@ -108,56 +95,23 @@
     #emb-canvas { width:100%; height:300px; display:block; border-radius:10px; border:1px solid #e5e7eb; background:#fafafa; cursor:crosshair; }
 
     details { margin:16px 0; font-size:.95rem; color:#555; line-height:1.7; }
-    details summary { cursor:pointer; font-weight:500; color:#2563eb; margin-bottom:8px; user-select:none; }
+    details summary { cursor:pointer; font-weight:500; color:var(--accent); margin-bottom:8px; user-select:none; }
     details summary::-webkit-details-marker { display:none; }
     details summary::before { content:"▶ "; display:inline-block; margin-right:6px; transition:transform .2s; font-size:.75em; }
     details[open] summary::before { transform:rotate(90deg); }
     code { background:#f4f4f6; padding:2px 6px; border-radius:4px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; font-size:.92em; color:#dc2626; }
 
-    @media (max-width:1200px) { .blog-content { padding:60px 60px 100px; } }
-    @media (max-width:900px) {
-      .blog-shell { flex-direction:column; }
-      .blog-sidebar { width:100%; height:auto; position:relative; border-right:none; border-bottom:1px solid #e5e5e5; padding:24px 32px; transform:none !important; }
-      .blog-sidebar.collapsed { display:none; }
-      .sidebar-toggle { display:none; }
-      .blog-content { padding:40px 32px 80px; }
-      .blog-title { font-size:2.2rem; }
-    }
     @media (max-width:600px) {
-      .blog-content { padding:32px 24px 60px; }
       .blog-title { font-size:1.8rem; }
-      .blog-sidebar { padding:20px 24px; }
       .slider-row { flex-direction:column; align-items:stretch; gap:8px; }
     }
   </style>
 </head>
 <body>
-<div class="blog-shell">
-  <aside class="blog-sidebar">
-    <div class="blog-sidebar-title">EMBEDDINGS &amp; NO₂</div>
-    <nav class="blog-toc" id="blog-toc">
-      <li class="blog-toc-item"><a href="#intro">Introduction</a></li>
-      <li class="blog-toc-item"><a href="#why-no2">Why NO₂?</a></li>
-      <li class="blog-toc-item"><a href="#embeddings">What are embeddings?</a></li>
-      <li class="blog-toc-item"><a href="#pipeline">The prediction pipeline</a></li>
-      <li class="blog-toc-item"><a href="#data">Data sources</a></li>
-      <li class="blog-toc-item"><a href="#modeling">Modeling</a></li>
-      <li class="blog-toc-item"><a href="#results">Results</a></li>
-      <li class="blog-toc-item"><a href="#errors">Interpreting error</a></li>
-      <li class="blog-toc-item"><a href="#generalization">Generalization</a></li>
-      <li class="blog-toc-item"><a href="#policy">Policy implications</a></li>
-      <li class="blog-toc-item"><a href="#limits">Limitations &amp; next steps</a></li>
-      <li class="blog-toc-item"><a href="#links">Links</a></li>
-    </nav>
-  </aside>
-
-  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-    <div class="sidebar-toggle-icon"></div>
-  </button>
-
-  <main class="blog-main">
+<main class="wrap">
+  <section class="main" aria-label="content">
     <div class="blog-content">
-      <div class="blog-breadcrumb"><a href="index.html">&larr; pflo.org</a> / EMBEDDINGS &amp; NO₂</div>
+      <div class="blog-breadcrumb"><a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a></div>
       <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
 
       <header>
@@ -698,33 +652,17 @@
         </div>
       </section>
     </div>
-  </main>
-</div>
+  </section>
+</main>
 
 <script>
-// ===== Sidebar =====
-(function(){
-  const sb=document.querySelector('.blog-sidebar'), tg=document.getElementById('sidebar-toggle');
-  if(!sb||!tg) return;
-  if(localStorage.getItem('emb-no2-sb')==='true') sb.classList.add('collapsed');
-  tg.addEventListener('click',()=>{sb.classList.toggle('collapsed');localStorage.setItem('emb-no2-sb',sb.classList.contains('collapsed'));});
-})();
-
-// ===== Word count + TOC =====
+// ===== Word count =====
 (function(){
   const c=document.querySelector('.blog-content');
   if(!c) return;
   const wc=(c.innerText||c.textContent||'').trim().split(/\s+/).filter(Boolean).length;
   const el=document.getElementById('word-count');
   if(el) el.textContent=wc.toLocaleString()+' WORDS | PETER FLO';
-
-  const links=document.querySelectorAll('.blog-toc a');
-  links.forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.getElementById((a.getAttribute('href')||'').substring(1));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});});
-
-  const ids=Array.from(links).map(a=>(a.getAttribute('href')||'').replace(/^#/,'')).filter(Boolean);
-  const secs=ids.map(id=>document.getElementById(id)).filter(Boolean);
-  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;const id=e.target.id;links.forEach(a=>{const li=a.closest('.blog-toc-item');if(!li)return;li.classList.toggle('active',a.getAttribute('href')==='#'+id);});});},{rootMargin:'-20% 0px -60% 0px',threshold:0});
-  secs.forEach(s=>obs.observe(s));
 })();
 
 // ===== Embedding dots: SF vs Oakland t-SNE mimic =====

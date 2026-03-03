@@ -19,100 +19,23 @@
 
   <link rel="icon" type="image/png" href="/favicon.png" />
   <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background: #fff;
-      color: #222;
-    }
-    .blog-shell {
-      min-height: 100vh;
-      display: flex;
-    }
-
-    /* --- Sidebar --- */
-    .blog-sidebar {
-      width: 280px;
-      min-width: 280px;
-      background: #fafafa;
-      border-right: 1px solid #e5e5e5;
-      padding: 40px 32px;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-      transition: transform 0.3s ease, width 0.3s ease;
-      z-index: 100;
-    }
-    .blog-sidebar.collapsed {
-      transform: translateX(-100%);
-      width: 0;
-      min-width: 0;
-      border-right: none;
-    }
-    .sidebar-toggle {
-      position: fixed;
-      left: 280px;
-      top: 20px;
-      width: 32px;
-      height: 32px;
-      background: #fff;
-      border: 1px solid #e5e5e5;
-      border-left: none;
-      border-radius: 0 8px 8px 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 101;
-      transition: left 0.3s ease, box-shadow 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .sidebar-toggle:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      background: #fafafa;
-    }
-    .blog-sidebar.collapsed ~ .sidebar-toggle { left: 0; }
-    .sidebar-toggle-icon {
-      width: 12px; height: 12px;
-      border-right: 2px solid #666;
-      border-bottom: 2px solid #666;
-      transform: rotate(135deg);
-      transition: transform 0.3s ease;
-    }
-    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon {
-      transform: rotate(-45deg);
-    }
-    .blog-sidebar-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #2563eb;
-      margin-bottom: 32px;
-      letter-spacing: 0.02em;
-    }
-    .blog-toc { list-style: none; padding: 0; margin: 0; }
-    .blog-toc-item { margin-bottom: 8px; font-size: 13px; line-height: 1.6; }
-    .blog-toc-item a {
-      color: #666; text-decoration: none; display: block; padding: 4px 0;
-      transition: color 0.2s;
-    }
-    .blog-toc-item a:hover { color: #222; }
-    .blog-toc-item.active > a { color: #2563eb; font-weight: 600; }
-
-    /* --- Main --- */
-    .blog-main { flex: 1; min-width: 0; padding: 0; }
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
     .blog-content {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 60px 80px 100px 80px;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
       line-height: 1.75;
     }
     .blog-breadcrumb {
       font-size: 12px; color: #888; margin-bottom: 16px;
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
     }
-    .blog-breadcrumb a { color: #2563eb; text-decoration: none; }
+    .blog-breadcrumb a { color: var(--link); text-decoration: none; }
     .blog-breadcrumb a:hover { text-decoration: underline; }
     .blog-meta-bar {
       font-size: 12px; color: #888; margin-bottom: 24px;
@@ -144,8 +67,8 @@
     .blog-content ul, .blog-content ol { margin: 0 0 1.5rem 1.5rem; font-size: 1.05rem; line-height: 1.8; }
     .blog-content li { margin-bottom: 0.4rem; }
     .blog-content blockquote {
-      border-left: 3px solid #2563eb; padding: 0.6rem 1.2rem; margin: 1.5rem 0;
-      background: #f8faff; color: #444; font-style: italic;
+      border-left: 3px solid var(--accent); padding: 0.6rem 1.2rem; margin: 1.5rem 0;
+      background: #faf8f5; color: #444; font-style: italic;
     }
     .blog-content blockquote p { margin-bottom: 0.5rem; }
     .blog-content hr { border: none; border-top: 1px solid #e5e5e5; margin: 3rem 0; }
@@ -200,10 +123,10 @@
     /* --- Expandable details --- */
     details { margin: 16px 0; font-size: 0.9rem; color: #555; line-height: 1.7; }
     details summary {
-      cursor: pointer; font-weight: 500; color: #2563eb; margin-bottom: 8px;
+      cursor: pointer; font-weight: 500; color: var(--accent); margin-bottom: 8px;
       user-select: none; transition: color 0.2s;
     }
-    details summary:hover { color: #1d4ed8; }
+    details summary:hover { color: #8B6914; }
     details summary::-webkit-details-marker { display: none; }
     details summary::before {
       content: "▶ "; display: inline-block; margin-right: 6px;
@@ -214,7 +137,7 @@
 
     /* --- Personal aside --- */
     .aside-personal {
-      background: #f8faff; border-radius: 12px; border: 1px solid #dbe4f0;
+      background: #faf8f5; border-radius: 12px; border: 1px solid #e8e0d5;
       padding: 20px 24px; margin: 2rem 0;
     }
     .aside-personal p:last-child { margin-bottom: 0; }
@@ -223,60 +146,17 @@
     .diagram { margin: 2rem 0; text-align: center; overflow-x: auto; }
     .diagram svg { max-width: 100%; height: auto; }
 
-    /* --- Responsive --- */
-    @media (max-width: 1200px) {
-      .blog-content { padding: 60px 60px 100px 60px; }
-    }
-    @media (max-width: 900px) {
-      .blog-shell { flex-direction: column; }
-      .blog-sidebar {
-        width: 100%; height: auto; position: relative;
-        border-right: none; border-bottom: 1px solid #e5e5e5;
-        padding: 24px 32px; transform: none !important;
-      }
-      .blog-sidebar.collapsed { display: none; }
-      .sidebar-toggle { display: none; }
-      .blog-content { padding: 40px 32px 80px 32px; }
-      .blog-title { font-size: 2.2rem; }
-    }
     @media (max-width: 600px) {
-      .blog-content { padding: 32px 24px 60px 24px; }
       .blog-title { font-size: 1.8rem; }
-      .blog-sidebar { padding: 20px 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="blog-shell">
-    <aside class="blog-sidebar" id="blog-sidebar">
-      <div class="blog-sidebar-title">MECH INTERP & ALIGNMENT</div>
-      <nav>
-        <ul class="blog-toc" id="blog-toc">
-          <li class="blog-toc-item"><a href="#why">Why this paper</a></li>
-          <li class="blog-toc-item"><a href="#what-is-it">What is mechanistic interpretability?</a></li>
-          <li class="blog-toc-item"><a href="#reverse-engineering">The reverse engineering pipeline</a></li>
-          <li class="blog-toc-item"><a href="#decomposition">Decomposition: finding the atoms</a></li>
-          <li class="blog-toc-item"><a href="#sdl">Sparse dictionary learning</a></li>
-          <li class="blog-toc-item"><a href="#sdl-limits">Eight problems with SDL</a></li>
-          <li class="blog-toc-item"><a href="#foundations">Theoretical foundations</a></li>
-          <li class="blog-toc-item"><a href="#description">Description and validation</a></li>
-          <li class="blog-toc-item"><a href="#circuits">Circuit discovery</a></li>
-          <li class="blog-toc-item"><a href="#applications">Applications</a></li>
-          <li class="blog-toc-item"><a href="#oversight">Scalable oversight</a></li>
-          <li class="blog-toc-item"><a href="#sociotechnical">Sociotechnical problems</a></li>
-          <li class="blog-toc-item"><a href="#direction">Where I'm headed</a></li>
-        </ul>
-      </nav>
-    </aside>
-
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-      <div class="sidebar-toggle-icon"></div>
-    </button>
-
-    <main class="blog-main">
+  <main class="wrap">
+    <section class="main" aria-label="content">
       <div class="blog-content">
         <div class="blog-breadcrumb">
-          <a href="/index.html">&larr; pflo.org</a> / MECH INTERP & ALIGNMENT
+          <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
         </div>
         <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
 
@@ -1044,52 +924,18 @@
         </p>
 
       </div>
-    </main>
-  </div>
+    </section>
+  </main>
 
   <script>
-    // ===== Sidebar toggle =====
-    (function() {
-      const sidebar = document.getElementById('blog-sidebar');
-      const toggle = document.getElementById('sidebar-toggle');
-      if (!sidebar || !toggle) return;
-      const saved = localStorage.getItem('sidebar-collapsed-mi');
-      if (saved === 'true') sidebar.classList.add('collapsed');
-      toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebar-collapsed-mi', sidebar.classList.contains('collapsed'));
-      });
-    })();
-
-    // ===== Word count + TOC tracking =====
+    // ===== Word count =====
     (function() {
       const content = document.querySelector('.blog-content');
+      if (!content) return;
       const text = content.innerText || content.textContent;
       const wc = text.trim().split(/\s+/).length;
-      document.getElementById('word-count').textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
-
-      const tocLinks = document.querySelectorAll('.blog-toc a');
-      tocLinks.forEach(link => {
-        link.addEventListener('click', e => {
-          e.preventDefault();
-          const t = document.getElementById(link.getAttribute('href').slice(1));
-          if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-      });
-
-      const sections = document.querySelectorAll('section[id]');
-      const obs = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            tocLinks.forEach(l => {
-              const item = l.closest('.blog-toc-item');
-              item.classList.toggle('active', l.getAttribute('href') === '#' + id);
-            });
-          }
-        });
-      }, { rootMargin: '-20% 0px -60% 0px' });
-      sections.forEach(s => obs.observe(s));
+      const el = document.getElementById('word-count');
+      if (el) el.textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
     })();
 
     // ===== SDL limitation tabs =====

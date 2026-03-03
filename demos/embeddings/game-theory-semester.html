@@ -18,27 +18,16 @@
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
 
   <style>
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:#fff; color:#222; }
-    .blog-shell { min-height:100vh; display:flex; }
-
-    .blog-sidebar { width:280px; min-width:280px; background:#fafafa; border-right:1px solid #e5e5e5; padding:40px 32px; position:sticky; top:0; height:100vh; overflow-y:auto; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; transition:transform .3s ease,width .3s ease; z-index:100; }
-    .blog-sidebar.collapsed { transform:translateX(-100%); width:0; min-width:0; border-right:none; }
-    .sidebar-toggle { position:fixed; left:280px; top:20px; width:32px; height:32px; background:#fff; border:1px solid #e5e5e5; border-left:none; border-radius:0 8px 8px 0; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:101; transition:left .3s ease,box-shadow .2s ease; box-shadow:0 2px 8px rgba(0,0,0,.1); }
-    .sidebar-toggle:hover { box-shadow:0 4px 12px rgba(0,0,0,.15); background:#fafafa; }
-    .blog-sidebar.collapsed ~ .sidebar-toggle { left:0; }
-    .sidebar-toggle-icon { width:12px; height:12px; border-right:2px solid #666; border-bottom:2px solid #666; transform:rotate(135deg); transition:transform .3s ease; }
-    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform:rotate(-45deg); }
-    .blog-sidebar-title { font-size:14px; font-weight:600; color:#2563eb; margin-bottom:32px; letter-spacing:.02em; }
-    .blog-toc { list-style:none; padding:0; margin:0; }
-    .blog-toc-item { margin-bottom:8px; font-size:13px; line-height:1.6; }
-    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding:4px 0; transition:color .2s; }
-    .blog-toc-item a:hover { color:#222; }
-    .blog-toc-item.active > a { color:#2563eb; font-weight:600; }
-
-    .blog-main { flex:1; min-width:0; }
-    .blog-content { max-width:800px; margin:0 auto; padding:60px 80px 100px; line-height:1.75; }
-    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
-    .blog-breadcrumb a { color:#2563eb; text-decoration:none; }
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
+    .blog-breadcrumb a { color:var(--link); text-decoration:none; }
     .blog-breadcrumb a:hover { text-decoration:underline; }
     .blog-meta-bar { font-size:12px; color:#888; margin-bottom:24px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
     .blog-title { font-size:2.8rem; margin-bottom:16px; letter-spacing:-.03em; font-family:'Georgia','Times New Roman',serif; font-weight:400; line-height:1.15; }
@@ -52,7 +41,7 @@
     .blog-content h3 { font-size:1.15rem; margin-top:2rem; margin-bottom:.8rem; font-weight:600; }
     .blog-content ul, .blog-content ol { margin:0 0 1.5rem 1.5rem; font-size:1.05rem; line-height:1.8; }
     .blog-content li { margin-bottom:.4rem; }
-    .blog-content blockquote { border-left:3px solid #2563eb; padding:.6rem 1.2rem; margin:1.5rem 0; background:#f8faff; color:#444; font-style:italic; }
+    .blog-content blockquote { border-left:3px solid var(--accent); padding:.6rem 1.2rem; margin:1.5rem 0; background:#faf8f5; color:#444; font-style:italic; }
     .blog-content blockquote p { margin-bottom:.5rem; }
     .blog-content hr { border:none; border-top:1px solid #e5e5e5; margin:3rem 0; }
 
@@ -80,14 +69,14 @@
     .term:hover::after, .term:hover::before { opacity:1; }
 
     details { margin:16px 0; font-size:.9rem; color:#555; line-height:1.7; }
-    details summary { cursor:pointer; font-weight:500; color:#2563eb; margin-bottom:8px; user-select:none; }
-    details summary:hover { color:#1d4ed8; }
+    details summary { cursor:pointer; font-weight:500; color:var(--accent); margin-bottom:8px; user-select:none; }
+    details summary:hover { color:#8B6914; }
     details summary::-webkit-details-marker { display:none; }
     details summary::before { content:"▶ "; display:inline-block; margin-right:6px; transition:transform .2s; font-size:.75em; }
     details[open] summary::before { transform:rotate(90deg); }
     details p { margin:0 0 .8rem; font-size:.9rem; }
 
-    .aside-personal { background:#f8faff; border-radius:12px; border:1px solid #dbe4f0; padding:20px 24px; margin:2rem 0; }
+    .aside-personal { background:#faf8f5; border-radius:12px; border:1px solid #e8e0d5; padding:20px 24px; margin:2rem 0; }
     .aside-personal p:last-child { margin-bottom:0; }
 
     .diagram { margin:2rem 0; text-align:center; overflow-x:auto; }
@@ -95,49 +84,15 @@
 
     .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; }
 
-    @media (max-width:1200px) { .blog-content { padding:60px 60px 100px; } }
-    @media (max-width:900px) {
-      .blog-shell { flex-direction:column; }
-      .blog-sidebar { width:100%; height:auto; position:relative; border-right:none; border-bottom:1px solid #e5e5e5; padding:24px 32px; transform:none !important; }
-      .blog-sidebar.collapsed { display:none; }
-      .sidebar-toggle { display:none; }
-      .blog-content { padding:40px 32px 80px; }
-      .blog-title { font-size:2.2rem; }
-    }
-    @media (max-width:600px) { .blog-content { padding:32px 24px 60px; } .blog-title { font-size:1.8rem; } .blog-sidebar { padding:20px 24px; } }
+    @media (max-width:600px) { .blog-title { font-size:1.8rem; } }
   </style>
 </head>
 <body>
-<div class="blog-shell">
-  <aside class="blog-sidebar" id="blog-sidebar">
-    <div class="blog-sidebar-title">GAME THEORY SEMESTER</div>
-    <nav>
-      <ul class="blog-toc" id="blog-toc">
-        <li class="blog-toc-item"><a href="#intro">The setup</a></li>
-        <li class="blog-toc-item"><a href="#normal-form">The normal form</a></li>
-        <li class="blog-toc-item"><a href="#dominance">Dominance and rationalizability</a></li>
-        <li class="blog-toc-item"><a href="#nash">Nash equilibrium</a></li>
-        <li class="blog-toc-item"><a href="#refinements">The refinement ladder</a></li>
-        <li class="blog-toc-item"><a href="#correlated">Correlated equilibrium</a></li>
-        <li class="blog-toc-item"><a href="#extensive">Extensive-form games</a></li>
-        <li class="blog-toc-item"><a href="#sequential">Sequential equilibrium</a></li>
-        <li class="blog-toc-item"><a href="#comparative-statics">Monotone comparative statics</a></li>
-        <li class="blog-toc-item"><a href="#supermodular">Supermodular games</a></li>
-        <li class="blog-toc-item"><a href="#potential">Potential games</a></li>
-        <li class="blog-toc-item"><a href="#didnt-teach">What the course didn't teach</a></li>
-        <li class="blog-toc-item"><a href="#alignment">The alignment connection</a></li>
-      </ul>
-    </nav>
-  </aside>
-
-  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-    <div class="sidebar-toggle-icon"></div>
-  </button>
-
-  <main class="blog-main">
+<main class="wrap">
+  <section class="main" aria-label="content">
     <div class="blog-content">
       <div class="blog-breadcrumb">
-        <a href="/index.html">&larr; pflo.org</a> / GAME THEORY SEMESTER
+        <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
       </div>
       <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
 
@@ -817,29 +772,17 @@
       <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">Thanks for reading.</p>
       <p style="font-size:.85rem; color:#888; text-align:center;">&copy; <span id="copyright-year"></span> Peter Flo</p>
     </div>
-  </main>
-</div>
+  </section>
+</main>
 
 <script>
-  // Sidebar toggle
-  (function() {
-    const sb = document.getElementById('blog-sidebar');
-    const tog = document.getElementById('sidebar-toggle');
-    if (!sb || !tog) return;
-    if (localStorage.getItem('sidebar-collapsed-gt2') === 'true') sb.classList.add('collapsed');
-    tog.addEventListener('click', () => { sb.classList.toggle('collapsed'); localStorage.setItem('sidebar-collapsed-gt2', sb.classList.contains('collapsed')); });
-  })();
-
-  // Word count + TOC
+  // Word count
   (function() {
     const c = document.querySelector('.blog-content');
+    if (!c) return;
     const wc = (c.innerText || c.textContent).trim().split(/\s+/).length;
-    document.getElementById('word-count').textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
-    const links = document.querySelectorAll('.blog-toc a');
-    links.forEach(l => l.addEventListener('click', e => { e.preventDefault(); const t = document.getElementById(l.getAttribute('href').slice(1)); if (t) t.scrollIntoView({ behavior:'smooth', block:'start' }); }));
-    const secs = document.querySelectorAll('section[id]');
-    const obs = new IntersectionObserver(entries => { entries.forEach(entry => { if (entry.isIntersecting) { const id = entry.target.id; links.forEach(l => { l.closest('.blog-toc-item').classList.toggle('active', l.getAttribute('href') === '#' + id); }); } }); }, { rootMargin:'-20% 0px -60% 0px' });
-    secs.forEach(s => obs.observe(s));
+    const el = document.getElementById('word-count');
+    if (el) el.textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
   })();
 
   // Refinement game

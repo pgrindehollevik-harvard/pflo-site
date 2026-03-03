@@ -19,143 +19,18 @@
   <meta name="twitter:description" content="Why recruiting researchers at labs like Midjourney looks less like a job board and more like a repeated auction with hidden values." />
   <meta name="twitter:image" content="https://pflo.org/cover.jpg" />
   
-  <link rel="stylesheet" href="style.css" />
   <style>
-    /* --- Blog-style base layout --- */
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background: #fff;
-      color: #222;
-    }
-    .blog-shell {
-      min-height: 100vh;
-      display: flex;
-    }
-    
-    /* --- Sidebar Navigation --- */
-    .blog-sidebar {
-      width: 280px;
-      min-width: 280px;
-      background: #fafafa;
-      border-right: 1px solid #e5e5e5;
-      padding: 40px 32px;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-      transition: transform 0.3s ease, width 0.3s ease;
-      z-index: 100;
-    }
-    .blog-sidebar.collapsed {
-      transform: translateX(-100%);
-      width: 0;
-      min-width: 0;
-      border-right: none;
-    }
-    .sidebar-toggle {
-      position: fixed;
-      left: 280px;
-      top: 20px;
-      width: 32px;
-      height: 32px;
-      background: #fff;
-      border: 1px solid #e5e5e5;
-      border-left: none;
-      border-radius: 0 8px 8px 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 101;
-      transition: left 0.3s ease, box-shadow 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .sidebar-toggle:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      background: #fafafa;
-    }
-    .blog-sidebar.collapsed ~ .sidebar-toggle {
-      left: 0;
-    }
-    .sidebar-toggle-icon {
-      width: 12px;
-      height: 12px;
-      border-right: 2px solid #666;
-      border-bottom: 2px solid #666;
-      transform: rotate(135deg);
-      transition: transform 0.3s ease;
-    }
-    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon {
-      transform: rotate(-45deg);
-    }
-    .blog-sidebar-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #2563eb;
-      margin-bottom: 32px;
-      letter-spacing: 0.02em;
-    }
-    .blog-toc {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .blog-toc-item {
-      margin-bottom: 8px;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .blog-toc-item a {
-      color: #666;
-      text-decoration: none;
-      display: block;
-      padding: 4px 0;
-      transition: color 0.2s;
-    }
-    .blog-toc-item a:hover {
-      color: #222;
-    }
-    .blog-toc-item.active > a {
-      color: #2563eb;
-      font-weight: 600;
-    }
-    .blog-toc-sublist {
-      list-style: none;
-      padding: 0;
-      margin: 8px 0 16px 16px;
-    }
-    .blog-toc-sublist .blog-toc-item {
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-    
-    /* --- Main Content Area --- */
-    .blog-main {
-      flex: 1;
-      min-width: 0;
-      padding: 0;
-    }
-    .blog-content {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 60px 80px 100px 80px;
-      line-height: 1.75;
-    }
-    .blog-breadcrumb {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 16px;
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-    }
-    .blog-breadcrumb a {
-      color: #2563eb;
-      text-decoration: none;
-    }
-    .blog-breadcrumb a:hover {
-      text-decoration: underline;
-    }
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
+    .blog-breadcrumb a { color:var(--link); text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration:underline; }
     .blog-meta-bar {
       font-size: 12px;
       color: #888;
@@ -469,48 +344,9 @@
       opacity: 0.8;
     }
 
-    @media (max-width: 1200px) {
-      .blog-content {
-        padding: 60px 60px 100px 60px;
-      }
-    }
-    
-    @media (max-width: 900px) {
-      .blog-shell {
-        flex-direction: column;
-      }
-      .blog-sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        border-right: none;
-        border-bottom: 1px solid #e5e5e5;
-        padding: 24px 32px;
-        transform: none !important;
-      }
-      .blog-sidebar.collapsed {
-        display: none;
-      }
-      .sidebar-toggle {
-        display: none;
-      }
-      .blog-content {
-        padding: 40px 32px 80px 32px;
-      }
-      .blog-title {
-        font-size: 2.2rem;
-      }
-    }
-    
     @media (max-width: 600px) {
-      .blog-content {
-        padding: 32px 24px 60px 24px;
-      }
       .blog-title {
         font-size: 1.8rem;
-      }
-      .blog-sidebar {
-        padding: 20px 24px;
       }
     }
 
@@ -696,13 +532,13 @@
     details summary {
       cursor: pointer;
       font-weight: 500;
-      color: #2563eb;
+      color: var(--accent);
       margin-bottom: 8px;
       user-select: none;
       transition: color 0.2s;
     }
     details summary:hover {
-      color: #1d4ed8;
+      color: #8B6914;
     }
     details summary::-webkit-details-marker {
       display: none;
@@ -732,29 +568,11 @@
   </style>
 </head>
 <body>
-  <div class="blog-shell">
-    <aside class="blog-sidebar">
-      <div class="blog-sidebar-title">GAME THEORY & HIRING</div>
-      <nav class="blog-toc" id="blog-toc">
-        <li class="blog-toc-item"><a href="#intro">Introduction</a></li>
-        <li class="blog-toc-item"><a href="#hiring-game">The hiring game as a simple matrix</a></li>
-        <li class="blog-toc-item"><a href="#information">Information and salary dispersion</a></li>
-        <li class="blog-toc-item"><a href="#reputation">Reputation in a repeated game</a></li>
-        <li class="blog-toc-item"><a href="#nash-equilibria">How the game settles: Nash equilibria</a></li>
-        <li class="blog-toc-item"><a href="#candidates">Candidates as strategists</a></li>
-        <li class="blog-toc-item"><a href="#practice">From theory to practice</a></li>
-        <li class="blog-toc-item"><a href="#conclusion">Why this matters</a></li>
-      </nav>
-    </aside>
-
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-      <div class="sidebar-toggle-icon"></div>
-    </button>
-
-    <main class="blog-main">
+  <main class="wrap">
+    <section class="main" aria-label="content">
       <div class="blog-content">
         <div class="blog-breadcrumb">
-          <a href="index.html">← pflo.org</a> / GAME THEORY & HIRING
+          <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
         </div>
         <div class="blog-meta-bar" id="word-count">— WORDS —</div>
         
@@ -1325,74 +1143,18 @@
           
         </section>
       </div>
-    </main>
-  </div>
+    </section>
+  </main>
 
   <script>
-    // ===== Sidebar toggle =====
+    // ===== Word count =====
     (function() {
-      const sidebar = document.querySelector('.blog-sidebar');
-      const toggle = document.getElementById('sidebar-toggle');
-      
-      if (!sidebar || !toggle) return;
-      
-      // Check for saved preference
-      const savedState = localStorage.getItem('sidebar-collapsed');
-      if (savedState === 'true') {
-        sidebar.classList.add('collapsed');
-      }
-      
-      toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-      });
-    })();
-
-    // ===== Word count and navigation =====
-    (function() {
-      // Calculate word count
       const content = document.querySelector('.blog-content');
+      if (!content) return;
       const text = content.innerText || content.textContent;
       const wordCount = text.trim().split(/\s+/).length;
-      document.getElementById('word-count').textContent = `${wordCount.toLocaleString()} WORDS | PETER FLO`;
-
-      // Smooth scroll for TOC links
-      const tocLinks = document.querySelectorAll('.blog-toc a');
-      tocLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const targetId = link.getAttribute('href').substring(1);
-          const target = document.getElementById(targetId);
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
-      });
-
-      // Highlight active section on scroll
-      const sections = document.querySelectorAll('section[id]');
-      const observerOptions = {
-        rootMargin: '-20% 0px -60% 0px',
-        threshold: 0
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('id');
-            tocLinks.forEach(link => {
-              const tocItem = link.closest('.blog-toc-item');
-              if (link.getAttribute('href') === `#${id}`) {
-                tocItem.classList.add('active');
-              } else {
-                tocItem.classList.remove('active');
-              }
-            });
-          }
-        });
-      }, observerOptions);
-
-      sections.forEach(section => observer.observe(section));
+      const el = document.getElementById('word-count');
+      if (el) el.textContent = `${wordCount.toLocaleString()} WORDS | PETER FLO`;
     })();
 
     // ===== 1) Hiring Game Matrix =====
