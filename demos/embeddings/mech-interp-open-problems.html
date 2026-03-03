@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Open Problems in Mechanistic Interpretability — A Summary Essay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="An interactive summary of Sharkey et al. (2025) on open problems in mechanistic interpretability — reverse engineering neural networks, sparse dictionary learning, and the road to scalable oversight." />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://pflo.org/demos/embeddings/mech-interp-open-problems.html" />
+  <meta property="og:title" content="Open Problems in Mechanistic Interpretability — A Summary Essay" />
+  <meta property="og:description" content="An interactive summary of Sharkey et al. (2025) on reverse engineering neural networks and the road to alignment." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Open Problems in Mechanistic Interpretability — A Summary Essay" />
+  <meta name="twitter:description" content="An interactive summary of Sharkey et al. (2025) on reverse engineering neural networks and the road to alignment." />
+  <meta name="twitter:image" content="https://pflo.org/cover.jpg" />
+
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: #fff;
+      color: #222;
+    }
+    .blog-shell {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* --- Sidebar --- */
+    .blog-sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #fafafa;
+      border-right: 1px solid #e5e5e5;
+      padding: 40px 32px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+      transition: transform 0.3s ease, width 0.3s ease;
+      z-index: 100;
+    }
+    .blog-sidebar.collapsed {
+      transform: translateX(-100%);
+      width: 0;
+      min-width: 0;
+      border-right: none;
+    }
+    .sidebar-toggle {
+      position: fixed;
+      left: 280px;
+      top: 20px;
+      width: 32px;
+      height: 32px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 101;
+      transition: left 0.3s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .sidebar-toggle:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #fafafa;
+    }
+    .blog-sidebar.collapsed ~ .sidebar-toggle { left: 0; }
+    .sidebar-toggle-icon {
+      width: 12px; height: 12px;
+      border-right: 2px solid #666;
+      border-bottom: 2px solid #666;
+      transform: rotate(135deg);
+      transition: transform 0.3s ease;
+    }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon {
+      transform: rotate(-45deg);
+    }
+    .blog-sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2563eb;
+      margin-bottom: 32px;
+      letter-spacing: 0.02em;
+    }
+    .blog-toc { list-style: none; padding: 0; margin: 0; }
+    .blog-toc-item { margin-bottom: 8px; font-size: 13px; line-height: 1.6; }
+    .blog-toc-item a {
+      color: #666; text-decoration: none; display: block; padding: 4px 0;
+      transition: color 0.2s;
+    }
+    .blog-toc-item a:hover { color: #222; }
+    .blog-toc-item.active > a { color: #2563eb; font-weight: 600; }
+
+    /* --- Main --- */
+    .blog-main { flex: 1; min-width: 0; padding: 0; }
+    .blog-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 80px 100px 80px;
+      line-height: 1.75;
+    }
+    .blog-breadcrumb {
+      font-size: 12px; color: #888; margin-bottom: 16px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    }
+    .blog-breadcrumb a { color: #2563eb; text-decoration: none; }
+    .blog-breadcrumb a:hover { text-decoration: underline; }
+    .blog-meta-bar {
+      font-size: 12px; color: #888; margin-bottom: 24px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    }
+    .blog-title {
+      font-size: 3rem; margin-bottom: 16px; letter-spacing: -0.03em;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 400; line-height: 1.2;
+    }
+    .blog-subtitle {
+      font-size: 1.1rem; color: #666; margin-bottom: 24px; line-height: 1.6;
+    }
+    .blog-meta { font-size: 0.9rem; color: #888; margin-bottom: 2rem; }
+    .blog-meta span + span::before { content: "•"; margin: 0 8px; opacity: 0.5; }
+
+    .blog-content p { margin: 0 0 1.5rem 0; font-size: 1.05rem; line-height: 1.8; }
+    .blog-content h2 {
+      margin-top: 4rem; margin-bottom: 1.2rem;
+      font-size: 1.8rem; letter-spacing: -0.02em;
+      font-weight: 400; font-family: 'Georgia', 'Times New Roman', serif;
+      scroll-margin-top: 20px;
+    }
+    .blog-content h2:first-of-type { margin-top: 2rem; }
+    .blog-content h3 {
+      font-size: 1.15rem; margin-top: 2rem; margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+    .blog-content ul, .blog-content ol { margin: 0 0 1.5rem 1.5rem; font-size: 1.05rem; line-height: 1.8; }
+    .blog-content li { margin-bottom: 0.4rem; }
+    .blog-content blockquote {
+      border-left: 3px solid #2563eb; padding: 0.6rem 1.2rem; margin: 1.5rem 0;
+      background: #f8faff; color: #444; font-style: italic;
+    }
+    .blog-content blockquote p { margin-bottom: 0.5rem; }
+    .blog-content hr { border: none; border-top: 1px solid #e5e5e5; margin: 3rem 0; }
+
+    /* --- Interactive cards --- */
+    .interactive {
+      background: #fff; border-radius: 12px; border: 1px solid #e2e2e7;
+      padding: 24px 24px 20px; margin: 32px 0; font-size: 0.98rem;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+    }
+    .interactive h3 { margin-top: 0; margin-bottom: 0.3rem; font-size: 1.05rem; }
+    .interactive p { margin-bottom: 0.6rem; }
+
+    /* --- Tab switcher inside interactive cards --- */
+    .tab-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+    .tab-btn {
+      padding: 6px 12px; border-radius: 999px; border: 1px solid #e5e7eb;
+      font-size: 0.8rem; cursor: pointer; background: #f9fafb;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .tab-btn:hover { box-shadow: 0 2px 5px rgba(15,23,42,0.09); }
+    .tab-btn.active {
+      background: #111827; color: #f9fafb; border-color: #111827;
+      box-shadow: 0 3px 10px rgba(15,23,42,0.25);
+    }
+    .tab-body { font-size: 0.9rem; margin-top: 6px; color: #374151; line-height: 1.7; }
+
+    /* --- Term tooltips (same as game-theory) --- */
+    .term {
+      position: relative; cursor: help;
+      border-bottom: 1px dotted rgba(0,0,0,0.3);
+    }
+    .term::after {
+      content: attr(data-tooltip);
+      position: absolute; left: 50%; bottom: 120%; transform: translateX(-50%);
+      background: #111827; color: #f9fafb;
+      font-size: 0.75rem; line-height: 1.4;
+      padding: 6px 8px; border-radius: 6px;
+      white-space: normal; min-width: 180px; max-width: 280px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.12s ease;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.25); z-index: 20;
+    }
+    .term::before {
+      content: ""; position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%);
+      border-width: 6px; border-style: solid;
+      border-color: #111827 transparent transparent transparent;
+      opacity: 0; transition: opacity 0.12s ease; z-index: 19;
+    }
+    .term:hover::after, .term:hover::before { opacity: 1; }
+
+    /* --- Expandable details --- */
+    details { margin: 16px 0; font-size: 0.9rem; color: #555; line-height: 1.7; }
+    details summary {
+      cursor: pointer; font-weight: 500; color: #2563eb; margin-bottom: 8px;
+      user-select: none; transition: color 0.2s;
+    }
+    details summary:hover { color: #1d4ed8; }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::before {
+      content: "▶ "; display: inline-block; margin-right: 6px;
+      transition: transform 0.2s; font-size: 0.75em;
+    }
+    details[open] summary::before { transform: rotate(90deg); }
+    details p { margin: 0 0 0.8rem 0; font-size: 0.9rem; }
+
+    /* --- Personal aside --- */
+    .aside-personal {
+      background: #f8faff; border-radius: 12px; border: 1px solid #dbe4f0;
+      padding: 20px 24px; margin: 2rem 0;
+    }
+    .aside-personal p:last-child { margin-bottom: 0; }
+
+    /* --- SVG diagrams --- */
+    .diagram { margin: 2rem 0; text-align: center; overflow-x: auto; }
+    .diagram svg { max-width: 100%; height: auto; }
+
+    /* --- Responsive --- */
+    @media (max-width: 1200px) {
+      .blog-content { padding: 60px 60px 100px 60px; }
+    }
+    @media (max-width: 900px) {
+      .blog-shell { flex-direction: column; }
+      .blog-sidebar {
+        width: 100%; height: auto; position: relative;
+        border-right: none; border-bottom: 1px solid #e5e5e5;
+        padding: 24px 32px; transform: none !important;
+      }
+      .blog-sidebar.collapsed { display: none; }
+      .sidebar-toggle { display: none; }
+      .blog-content { padding: 40px 32px 80px 32px; }
+      .blog-title { font-size: 2.2rem; }
+    }
+    @media (max-width: 600px) {
+      .blog-content { padding: 32px 24px 60px 24px; }
+      .blog-title { font-size: 1.8rem; }
+      .blog-sidebar { padding: 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blog-shell">
+    <aside class="blog-sidebar" id="blog-sidebar">
+      <div class="blog-sidebar-title">MECH INTERP & ALIGNMENT</div>
+      <nav>
+        <ul class="blog-toc" id="blog-toc">
+          <li class="blog-toc-item"><a href="#why">Why this paper</a></li>
+          <li class="blog-toc-item"><a href="#what-is-it">What is mechanistic interpretability?</a></li>
+          <li class="blog-toc-item"><a href="#reverse-engineering">The reverse engineering pipeline</a></li>
+          <li class="blog-toc-item"><a href="#decomposition">Decomposition: finding the atoms</a></li>
+          <li class="blog-toc-item"><a href="#sdl">Sparse dictionary learning</a></li>
+          <li class="blog-toc-item"><a href="#sdl-limits">Eight problems with SDL</a></li>
+          <li class="blog-toc-item"><a href="#foundations">Theoretical foundations</a></li>
+          <li class="blog-toc-item"><a href="#description">Description and validation</a></li>
+          <li class="blog-toc-item"><a href="#circuits">Circuit discovery</a></li>
+          <li class="blog-toc-item"><a href="#applications">Applications</a></li>
+          <li class="blog-toc-item"><a href="#oversight">Scalable oversight</a></li>
+          <li class="blog-toc-item"><a href="#sociotechnical">Sociotechnical problems</a></li>
+          <li class="blog-toc-item"><a href="#direction">Where I'm headed</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+      <div class="sidebar-toggle-icon"></div>
+    </button>
+
+    <main class="blog-main">
+      <div class="blog-content">
+        <div class="blog-breadcrumb">
+          <a href="/index.html">&larr; pflo.org</a> / MECH INTERP & ALIGNMENT
+        </div>
+        <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
+
+        <header>
+          <h1 class="blog-title">Open Problems in Mechanistic Interpretability</h1>
+          <p class="blog-subtitle">
+            A summary of Sharkey, Chughtai et al. (2025) — a 36-page roadmap
+            (plus 46 pages of references!) for understanding what neural networks
+            actually learn, and why it matters for making AI safe.
+          </p>
+          <p class="blog-meta">
+            <span>Peter Flo</span>
+            <span>March 2026</span>
+            <span><a href="https://arxiv.org/abs/2501.16496" target="_blank" rel="noopener" style="color:#888;">arXiv:2501.16496</a></span>
+          </p>
+        </header>
+
+        <!-- ===== WHY ===== -->
+        <section id="why">
+          <h2>Why this paper</h2>
+
+          <div class="aside-personal">
+            <p>
+              I'm writing this as a deliberate entry point into alignment research. My background
+              is in data science and economics — causal inference, mechanism design, the kind of
+              work where you care deeply about <em>why</em> a model gives the answer it does, not
+              just that it does.
+            </p>
+            <p>
+              That instinct maps well onto mechanistic interpretability: the study of
+              <em>how</em> neural networks compute. But what really pulled me in is a structural
+              parallel. A model that pursues some learned objective while being supervised by a
+              principal who can't observe its internal reasoning — that's a textbook
+              principal-agent problem. And right now, we're the principal with almost no
+              monitoring tools. This paper is the most comprehensive map of what those tools
+              could look like.
+            </p>
+            <p>
+              My goal is to build in the open, stake a research direction, and have a paper
+              ready for a conference by September 2026.
+            </p>
+          </div>
+        </section>
+
+        <!-- ===== WHAT IS IT ===== -->
+        <section id="what-is-it">
+          <h2>What is mechanistic interpretability?</h2>
+
+          <p>
+            Here is the basic situation: neural networks learn capabilities that their
+            developers did not design. Developers design the training process — the
+            <span class="term" data-tooltip="A mathematical function that measures how far the model's predictions are from the desired output. Training minimizes this function. Example: cross-entropy loss penalizes confident wrong predictions.">loss function</span>,
+            the data, the architecture — but the <em>algorithms</em> that emerge
+            inside the network are learned, not programmed. And in almost all cases, nobody
+            understands them.
+          </p>
+          <p>
+            <span class="term" data-tooltip="The study of the internal computational mechanisms neural networks learn — their features, circuits, and algorithms — with the goal of predicting, controlling, and trusting their behavior.">Mechanistic interpretability</span>
+            aims to change that. The paper defines "understanding a neural network" as the
+            ability to use knowledge about its internal mechanisms to predict its behavior on
+            arbitrary inputs, or to accomplish practical goals like controlling its outputs or
+            improving its design.
+          </p>
+          <p>
+            This is distinct from earlier interpretability work. The paper identifies three
+            historical threads:
+          </p>
+          <ol>
+            <li><strong>Interpretable-by-design models</strong> — decision trees, linear models, GAMs. Small and transparent, but limited.</li>
+            <li><strong>"Why this decision?" methods</strong> —
+            <span class="term" data-tooltip="Visual heatmaps that highlight which parts of an input (e.g. pixels in an image, tokens in a sentence) most influenced a model's output. Simple to compute but often unreliable.">saliency maps</span>,
+            <span class="term" data-tooltip="Local Interpretable Model-agnostic Explanations. Explains a single prediction by fitting a simple interpretable model (like a linear model) to nearby inputs.">LIME</span>,
+            <span class="term" data-tooltip="SHapley Additive exPlanations. Uses game-theoretic Shapley values to assign each input feature a contribution to the prediction. Principled but expensive to compute exactly.">SHAP</span>.
+            Explain individual predictions, but often unreliable.</li>
+            <li><strong>"How does it generalize?"</strong> — the current thread. Instead of explaining one prediction, we ask how the model solves an entire <em>class</em> of problems. This is mechanistic interpretability.</li>
+          </ol>
+          <p>
+            The shift from thread 2 to thread 3 matters. A saliency map tells you which pixels
+            mattered for <em>this</em> image. A mechanistic understanding tells you <em>what
+            algorithm the model learned</em> — and lets you predict what it will do on inputs
+            you've never tested.
+          </p>
+
+          <div class="diagram">
+            <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three threads of interpretability">
+              <defs>
+                <marker id="ah0" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+                  <polygon points="0 0, 7 2.5, 0 5" fill="#2563eb"/>
+                </marker>
+              </defs>
+              <text x="340" y="18" text-anchor="middle" font-size="12" fill="#888" font-weight="600">THREE THREADS OF INTERPRETABILITY</text>
+              <rect x="10" y="40" width="200" height="140" rx="10" fill="#f9fafb" stroke="#e5e5e5" stroke-width="1"/>
+              <text x="110" y="68" text-anchor="middle" font-size="13" font-weight="600" fill="#222">Thread 1</text>
+              <text x="110" y="86" text-anchor="middle" font-size="11" fill="#666">Interpretable by design</text>
+              <text x="110" y="110" text-anchor="middle" font-size="10" fill="#999">Decision trees, GAMs</text>
+              <text x="110" y="125" text-anchor="middle" font-size="10" fill="#999">Linear models</text>
+              <text x="110" y="150" text-anchor="middle" font-size="10" fill="#2563eb">✓ Transparent</text>
+              <text x="110" y="166" text-anchor="middle" font-size="10" fill="#dc2626">✗ Limited capability</text>
+
+              <rect x="240" y="40" width="200" height="140" rx="10" fill="#f9fafb" stroke="#e5e5e5" stroke-width="1"/>
+              <text x="340" y="68" text-anchor="middle" font-size="13" font-weight="600" fill="#222">Thread 2</text>
+              <text x="340" y="86" text-anchor="middle" font-size="11" fill="#666">Why this decision?</text>
+              <text x="340" y="110" text-anchor="middle" font-size="10" fill="#999">Saliency, LIME, SHAP</text>
+              <text x="340" y="125" text-anchor="middle" font-size="10" fill="#999">Local attributions</text>
+              <text x="340" y="150" text-anchor="middle" font-size="10" fill="#2563eb">✓ Scales to large models</text>
+              <text x="340" y="166" text-anchor="middle" font-size="10" fill="#dc2626">✗ Often unfaithful</text>
+
+              <rect x="470" y="40" width="200" height="140" rx="10" fill="#f0f5ff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="570" y="68" text-anchor="middle" font-size="13" font-weight="600" fill="#222">Thread 3</text>
+              <text x="570" y="86" text-anchor="middle" font-size="11" fill="#2563eb">How does it generalize?</text>
+              <text x="570" y="110" text-anchor="middle" font-size="10" fill="#999">Features, circuits, SDL</text>
+              <text x="570" y="125" text-anchor="middle" font-size="10" fill="#999">Mechanistic interp</text>
+              <text x="570" y="150" text-anchor="middle" font-size="10" fill="#2563eb">✓ Global understanding</text>
+              <text x="570" y="166" text-anchor="middle" font-size="10" fill="#dc2626">✗ Many open problems</text>
+
+              <line x1="210" y1="110" x2="238" y2="110" stroke="#2563eb" stroke-width="1.2" marker-end="url(#ah0)"/>
+              <line x1="440" y1="110" x2="468" y2="110" stroke="#2563eb" stroke-width="1.2" marker-end="url(#ah0)"/>
+            </svg>
+          </div>
+
+          <p style="font-size:0.9rem; color:#666; text-align:center; margin-top:-0.5rem;">
+            Each thread emerged as models grew more capable and prior methods hit their limits.
+          </p>
+        </section>
+
+        <!-- ===== REVERSE ENGINEERING ===== -->
+        <section id="reverse-engineering">
+          <h2>The reverse engineering pipeline</h2>
+
+          <p>
+            The paper frames the field around two complementary approaches.
+            <span class="term" data-tooltip="Decomposing a network into parts and figuring out what each part does. Starts with the network and identifies the roles of components.">Reverse engineering</span>
+            takes the network apart and asks "what does this piece do?"
+            <span class="term" data-tooltip="Starting with a human concept (e.g. 'toxicity') and searching for where the network represents it. Starts with a concept and identifies the components.">Concept-based interpretability</span>
+            starts with a concept and asks "where does the network represent this?"
+          </p>
+          <p>
+            Reverse engineering follows three steps, iterated until you're satisfied:
+          </p>
+
+          <div class="diagram">
+            <svg viewBox="0 0 680 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reverse engineering: Decompose, Describe, Validate">
+              <defs>
+                <marker id="ah" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="#2563eb"/>
+                </marker>
+              </defs>
+              <rect x="20" y="45" width="160" height="68" rx="10" fill="#f8faff" stroke="#2563eb" stroke-width="1.5"/>
+              <rect x="250" y="45" width="160" height="68" rx="10" fill="#f8faff" stroke="#2563eb" stroke-width="1.5"/>
+              <rect x="480" y="45" width="180" height="68" rx="10" fill="#f8faff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="100" y="73" text-anchor="middle" font-size="15" font-weight="600" fill="#222">1. Decompose</text>
+              <text x="100" y="95" text-anchor="middle" font-size="11" fill="#666">Break into components</text>
+              <text x="330" y="73" text-anchor="middle" font-size="15" font-weight="600" fill="#222">2. Describe</text>
+              <text x="330" y="95" text-anchor="middle" font-size="11" fill="#666">Hypothesize function</text>
+              <text x="570" y="73" text-anchor="middle" font-size="15" font-weight="600" fill="#222">3. Validate</text>
+              <text x="570" y="95" text-anchor="middle" font-size="11" fill="#666">Test predictions</text>
+              <line x1="180" y1="79" x2="248" y2="79" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+              <line x1="410" y1="79" x2="478" y2="79" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+              <path d="M570,115 L570,148 Q570,155 560,155 L110,155 Q100,155 100,148 L100,115" fill="none" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="6,4" marker-end="url(#ah)"/>
+              <text x="340" y="150" text-anchor="middle" font-size="10.5" fill="#2563eb" font-style="italic">refine if invalidated</text>
+              <text x="340" y="26" text-anchor="middle" font-size="12" fill="#888" font-weight="600">THE REVERSE ENGINEERING CYCLE</text>
+            </svg>
+          </div>
+
+          <p>
+            Each step has deep open problems. The paper's 36 pages of content are
+            primarily devoted to them. What follows is a detailed walk through each.
+          </p>
+        </section>
+
+        <!-- ===== DECOMPOSITION ===== -->
+        <section id="decomposition">
+          <h2>Decomposition: finding the atoms</h2>
+
+          <p>
+            The first question in reverse engineering is deceptively simple: what are the
+            fundamental units of computation in a neural network? If we could identify them, we
+            could study each one in isolation and build up a picture of the whole.
+          </p>
+          <p>
+            The naive candidates — individual neurons,
+            <span class="term" data-tooltip="Components in a Transformer that learn to selectively focus on ('attend to') different parts of the input. Each head computes a weighted combination of values based on query-key similarity. Models typically have many heads per layer.">attention heads</span>,
+            layers — don't work. The paper is clear about why.
+          </p>
+          <p>
+            <strong>Neurons are
+            <span class="term" data-tooltip="A single neuron responds to multiple unrelated concepts — e.g. one neuron firing for both 'cats' and 'blue objects.' This means individual neurons don't map cleanly to single ideas.">polysemantic</span>.</strong>
+            A single neuron might respond to cats, blue objects, and the letter Q. This was
+            first observed in artificial networks and mirrors findings in neuroscience, where
+            individual biological neurons also encode mixed signals. The "Neuron Doctrine" —
+            that individual neurons are the fundamental functional unit — doesn't hold for
+            either biological or artificial networks.
+          </p>
+          <p>
+            <strong>Attention heads are polysemantic too.</strong> Research shows that studying
+            attention patterns can be actively misleading — the pattern of "who attends to whom"
+            doesn't reliably tell you what information is being transmitted.
+          </p>
+          <p>
+            <strong>Layers are too coarse.</strong> Representations can span multiple layers.
+            Intervening on a single layer — as in early model editing work like
+            <span class="term" data-tooltip="Rank-One Model Editing. A technique that edits factual knowledge in a language model by modifying a single weight matrix. Early and influential, but subsequent work found the edits don't generalize reliably.">ROME</span>
+            — doesn't reliably carve the network at its joints.
+          </p>
+          <div class="diagram">
+            <svg viewBox="0 0 680 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Polysemantic vs monosemantic neurons">
+              <text x="340" y="16" text-anchor="middle" font-size="12" fill="#888" font-weight="600">THE POLYSEMANTICITY PROBLEM</text>
+              <!-- Polysemantic neuron -->
+              <rect x="20" y="30" width="290" height="130" rx="10" fill="#fef8f8" stroke="#e5e5e5"/>
+              <circle cx="80" cy="95" r="22" fill="#fff" stroke="#dc2626" stroke-width="2"/>
+              <text x="80" y="99" text-anchor="middle" font-size="11" font-weight="600" fill="#dc2626">n₁</text>
+              <text x="80" y="35" font-size="11" font-weight="600" fill="#222" text-anchor="middle">Polysemantic neuron</text>
+              <line x1="104" y1="82" x2="150" y2="62" stroke="#dc2626" stroke-width="1.2"/>
+              <text x="205" y="55" text-anchor="middle" font-size="10.5" fill="#555">🐱 cats</text>
+              <line x1="104" y1="95" x2="150" y2="95" stroke="#dc2626" stroke-width="1.2"/>
+              <text x="205" y="99" text-anchor="middle" font-size="10.5" fill="#555">🔵 blue objects</text>
+              <line x1="104" y1="108" x2="150" y2="128" stroke="#dc2626" stroke-width="1.2"/>
+              <text x="205" y="132" text-anchor="middle" font-size="10.5" fill="#555">Q the letter Q</text>
+              <text x="165" y="153" text-anchor="middle" font-size="9.5" fill="#999">one neuron, many meanings</text>
+
+              <!-- Monosemantic features -->
+              <rect x="370" y="30" width="290" height="130" rx="10" fill="#f0f5ff" stroke="#e5e5e5"/>
+              <text x="515" y="35" text-anchor="middle" font-size="11" font-weight="600" fill="#222">Monosemantic features (goal)</text>
+              <circle cx="420" cy="65" r="14" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="420" y="69" text-anchor="middle" font-size="9" font-weight="600" fill="#2563eb">f₁</text>
+              <text x="505" y="69" font-size="10.5" fill="#555">🐱 cats</text>
+              <line x1="436" y1="65" x2="470" y2="65" stroke="#2563eb" stroke-width="1"/>
+
+              <circle cx="420" cy="100" r="14" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="420" y="104" text-anchor="middle" font-size="9" font-weight="600" fill="#2563eb">f₂</text>
+              <text x="505" y="104" font-size="10.5" fill="#555">🔵 blue objects</text>
+              <line x1="436" y1="100" x2="470" y2="100" stroke="#2563eb" stroke-width="1"/>
+
+              <circle cx="420" cy="135" r="14" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="420" y="139" text-anchor="middle" font-size="9" font-weight="600" fill="#2563eb">f₃</text>
+              <text x="505" y="139" font-size="10.5" fill="#555">Q the letter Q</text>
+              <line x1="436" y1="135" x2="470" y2="135" stroke="#2563eb" stroke-width="1"/>
+
+              <text x="515" y="153" text-anchor="middle" font-size="9.5" fill="#999">one feature, one meaning</text>
+            </svg>
+          </div>
+
+          <p>
+            So researchers turned to unsupervised methods. Early approaches used
+            <span class="term" data-tooltip="Techniques like PCA, SVD, or NMF that find the main axes of variation in neural network activations. Useful but limited: they can't find more directions than there are dimensions.">dimensionality reduction</span>
+            (PCA, SVD, non-negative matrix factorization) to find structure in activation
+            vectors. These methods work well when the number of meaningful directions is smaller
+            than the number of dimensions. But a crucial insight changed the game.
+          </p>
+        </section>
+
+        <!-- ===== SDL ===== -->
+        <section id="sdl">
+          <h2>Sparse dictionary learning</h2>
+
+          <p>
+            The
+            <span class="term" data-tooltip="The hypothesis that neural networks represent more concepts than they have dimensions, by encoding concepts as nearly-orthogonal sparse directions in a high-dimensional space. Think: packing 1,000 concepts into a 100-dimensional space.">superposition hypothesis</span>
+            says that neural networks represent <em>more features than they have dimensions</em>.
+            They can do this because each feature activates sparsely — most features are "off"
+            for any given input — and high-dimensional spaces have room for many
+            nearly-orthogonal directions. This means dimensionality reduction methods, which can
+            only find as many directions as there are dimensions, fundamentally cannot recover
+            the full set of features.
+          </p>
+          <p>
+            <span class="term" data-tooltip="A family of methods — including Sparse Autoencoders (SAEs), Transcoders, and Crosscoders — that train a small encoder-decoder to decompose activations into a sparse, overcomplete set of 'latents' (learned directions).">Sparse dictionary learning (SDL)</span>
+            was developed to overcome this. The idea: train a small encoder-decoder network
+            where the hidden layer is much wider than the input. The encoder maps activations
+            into this overcomplete space, with a sparsity constraint that forces most
+            <span class="term" data-tooltip="The individual learned directions in an SDL dictionary. Each latent ideally corresponds to a single interpretable concept. Called 'latents' rather than 'features' to avoid ambiguity.">latents</span>
+            to be zero on any given input. The decoder provides a dictionary of directions. If
+            all goes well, each dictionary element corresponds to a single interpretable feature.
+          </p>
+          <p>
+            SDL rests on two assumptions. First, the
+            <span class="term" data-tooltip="The observation that concepts tend to be represented as linear directions in activation space: their intensity scales with vector magnitude, and combinations compose by addition. A 'weak' version (some concepts are linear) is well-supported; the 'strong' version (all are) is false.">linear representation hypothesis</span>
+            — that concepts map to linear directions in activation space. Second, the
+            superposition hypothesis — that there are more of these directions than dimensions.
+            Both have empirical support, but both have known exceptions.
+          </p>
+          <p>
+            SDL variants include
+            <span class="term" data-tooltip="The most common SDL method. Trains a sparse encoder-decoder where the output is trained to reconstruct the input activations at a single layer.">Sparse Autoencoders (SAEs)</span>,
+            <span class="term" data-tooltip="An SDL variant where the output is trained to reconstruct activations of the next layer, rather than the same layer. Designed to capture the transformation between layers.">Transcoders</span>
+            (which reconstruct the <em>next</em> layer instead of the same one), and
+            <span class="term" data-tooltip="An SDL variant that can take inputs from and reconstruct activations of many layers simultaneously, enabling detection of features that span multiple layers.">Crosscoders</span>
+            (which can reconstruct across many layers simultaneously, capturing cross-layer
+            features). SDL is currently the most popular decomposition method in mechanistic
+            interpretability.
+          </p>
+          <p>
+            But the paper is remarkably candid about its limitations.
+          </p>
+        </section>
+
+        <!-- ===== SDL LIMITS ===== -->
+        <section id="sdl-limits">
+          <h2>Eight problems with SDL</h2>
+
+          <p>
+            The paper catalogs eight distinct limitations — practical and conceptual — that
+            constrain what SDL can tell us about neural networks. These aren't minor quibbles;
+            they're fundamental challenges that the field needs to resolve or route around.
+          </p>
+
+          <section class="interactive">
+            <h3>Limitations of sparse dictionary learning</h3>
+            <p>Click through each limitation to understand the problem.</p>
+
+            <div class="tab-row" id="sdl-tabs">
+              <button class="tab-btn active" data-tab="0">Reconstruction</button>
+              <button class="tab-btn" data-tab="1">Cost</button>
+              <button class="tab-btn" data-tab="2">Linearity</button>
+              <button class="tab-btn" data-tab="3">Sparsity</button>
+              <button class="tab-btn" data-tab="4">Geometry</button>
+              <button class="tab-btn" data-tab="5">Architecture</button>
+              <button class="tab-btn" data-tab="6">Mechanisms</button>
+              <button class="tab-btn" data-tab="7">Concepts</button>
+            </div>
+            <div class="tab-body" id="sdl-body"></div>
+          </section>
+
+          <details>
+            <summary>Why these limitations matter together</summary>
+            <p style="margin-top:8px;">
+              Individually, each limitation is a research challenge. Together, they paint a
+              picture of a method that's useful but far from sufficient. SDL gives us
+              <em>activations</em>, not mechanisms. It assumes linearity in nonlinear models.
+              It's expensive, lossy, data-dependent, and ignores the geometric relationships
+              between the features it finds. The paper's implicit message is that the field
+              needs either fundamentally better methods or much stronger theoretical foundations
+              to move beyond where we are now.
+            </p>
+          </details>
+        </section>
+
+        <!-- ===== FOUNDATIONS ===== -->
+        <section id="foundations">
+          <h2>Theoretical foundations</h2>
+
+          <p>
+            The paper makes a striking admission: despite being the central object of study,
+            we don't have a satisfying formal definition of a "feature." We don't know, in a
+            rigorous sense, whether the superposition hypothesis is fundamentally true or merely
+            pragmatically useful. And we don't have a principled theory that tells us how to
+            carve a neural network at its joints.
+          </p>
+          <p>
+            Several theoretical frameworks have been proposed.
+            <span class="term" data-tooltip="A framework that maps high-level causal models (e.g. 'this circuit detects indirect objects') onto the low-level causal structure of a neural network. Aims to make interpretability claims formally testable.">Causal abstraction</span>
+            (Geiger et al.) tries to ground interpretability in formal causality, but hasn't
+            yet yielded canonical
+            <span class="term" data-tooltip="Variables in a causal model that transmit the effect from cause to outcome. In a network, a causal mediator would be a component that provably carries the information that causes a specific behavior.">causal mediators</span>
+            that could serve as a basis for decomposition.
+            <span class="term" data-tooltip="A mathematical framework (Watanabe, 2009) that studies the geometry of loss landscapes near singularities — points where the loss surface is non-smooth. Offers insights into how neural networks select among many possible solutions during training.">Singular learning theory</span>
+            (Watanabe) studies the geometry of loss landscapes and offers a view
+            of how mechanistic structure emerges during training, but hasn't produced practical
+            interpretability tools. Spline theory,
+            <span class="term" data-tooltip="A theoretical tool that describes how a neural network evolves during training by approximating it as a kernel method. Useful for analyzing infinite-width networks but less descriptive of practical finite-width models.">neural tangent kernels</span>,
+            simplicity bias — all attempt to explain <em>why</em> networks generalize, but none
+            have been successfully connected to approaches for <em>interpreting</em> them.
+          </p>
+          <p>
+            One promising direction is
+            <span class="term" data-tooltip="Building interpretability into the training process itself — using sparse activations, discrete codes, modular architectures, or weight sparsity — so that models come 'pre-carved' rather than requiring post-hoc interpretation.">intrinsic interpretability</span>:
+            instead of interpreting opaque models post-hoc, train models that are interpretable
+            by design. Approaches include sparse activation functions
+            (<span class="term" data-tooltip="Activation functions that zero out all but the top K values. Forces the network to use only a few neurons per input, reducing polysemanticity and making individual neurons more interpretable.">TopK</span>,
+            <span class="term" data-tooltip="Softmax Linear Units. An activation function designed to encourage monosemantic neurons. Uses softmax to create a soft competition between neurons, pushing each toward representing a single concept.">SoLU</span>),
+            <span class="term" data-tooltip="An architecture where each input is routed to only a few 'expert' sub-networks out of many available. With enough experts and sufficient sparsity, each expert might become individually interpretable.">mixture-of-experts</span>
+            architectures with enough sparsely-activating experts that individual experts
+            might become interpretable, weight sparsity via
+            <span class="term" data-tooltip="Removing ('pruning') weights or neurons from a trained network based on some criterion (e.g. magnitude). Can reveal which parts of the network are essential and which are redundant.">pruning</span>,
+            and modular architectures
+            that encourage geometrically local connections. The challenge is that attempts so far
+            have either sacrificed performance or allowed "superposition to sneak through."
+          </p>
+        </section>
+
+        <!-- ===== DESCRIPTION ===== -->
+        <section id="description">
+          <h2>Description and validation</h2>
+
+          <p>
+            Decomposition gives you components. Description gives you hypotheses about what
+            those components do. The paper emphasizes a failure mode that has been
+            "regrettably commonplace": conflating hypotheses with conclusions.
+          </p>
+
+          <h3>How to describe a component</h3>
+          <p>
+            Descriptions can focus on <strong>causes</strong> (what makes a component activate)
+            or <strong>effects</strong> (what happens downstream when it fires). Each approach
+            has tools and pitfalls:
+          </p>
+
+          <p>
+            <strong>Highly activating examples</strong> — show the inputs on which a component
+            fires most, then eyeball commonalities. This is the simplest and most widely used
+            method, but it's dangerously prone to
+            <span class="term" data-tooltip="Cases where a seemingly convincing interpretation of a model component later turns out to be false. Bolukbasi et al. (2021) showed that the apparent 'meaning' of an activation direction changes depending on which dataset you use to find examples.">interpretability illusions</span>.
+            Humans project familiar concepts onto alien representations. Bolukbasi et al.
+            showed that human annotators identified dramatically different meanings for the
+            <em>same</em> direction in
+            <span class="term" data-tooltip="Bidirectional Encoder Representations from Transformers. A 2018 language model from Google that processes text in both directions simultaneously. Widely used as a research subject in early mechanistic interpretability work.">BERT</span>
+            depending on which dataset they drew examples from.
+            Worse, you can find plausible-looking explanations for <em>arbitrary</em> directions
+            — not just the ones that actually matter.
+          </p>
+          <p>
+            <strong>Attribution methods</strong> — gradient-based
+            (<span class="term" data-tooltip="A method that accumulates gradients along a path from a baseline input to the actual input, giving each feature a principled attribution score. More reliable than raw gradients but more expensive.">integrated gradients</span>,
+            <span class="term" data-tooltip="Gradient-weighted Class Activation Mapping. Highlights which spatial regions of an image were most important for a CNN's prediction by weighting feature maps by their gradients.">grad-CAM</span>)
+            or perturbation-based (SHAP,
+            <span class="term" data-tooltip="Setting a component's value to zero (or some baseline) and observing how the model's output changes. A simple causal intervention — if performance drops, the component was important.">ablation</span>)
+            measures of causal importance. Theoretically
+            stronger, but gradient-based methods often identify only a first-order approximation,
+            and Adebayo et al. showed that some are independent of both the model <em>and</em>
+            the data. An adversary can train a model to produce any attribution map they want.
+          </p>
+          <p>
+            <strong>Logit lens and direct logit attribution</strong> — project intermediate
+            representations into vocabulary space to see what a component "is thinking about."
+            The
+            <span class="term" data-tooltip="Apply the model's unembedding matrix to an intermediate residual stream vector to convert it into a distribution over output tokens. The 'residual stream' is the running sum of all layer outputs that threads through a Transformer.">logit lens</span>
+            measures direct effects. It's clean and cheap, but can't capture indirect effects
+            — how a representation influences downstream layers.
+          </p>
+          <p>
+            <strong>Causal interventions</strong> — the gold standard.
+            <span class="term" data-tooltip="Replacing the activation of a component during a forward pass with a value from a different input, then observing how the output changes. Tells you which components are causally necessary for specific behaviors.">Activation patching</span>
+            substitutes the value of a component with a value from a different input and
+            observes what changes.
+            <span class="term" data-tooltip="A refinement of activation patching: instead of patching a component's effect on the entire network, you patch only its effect on one specific downstream component, isolating individual causal pathways.">Path patching</span>
+            isolates the effect of one component on
+            <em>one specific downstream component</em>.
+            <span class="term" data-tooltip="A general framework for testing interpretability hypotheses: replace activations throughout the network according to your hypothesis about its computational structure, and check whether performance is preserved.">Causal scrubbing</span>
+            generalizes this to
+            test hypotheses about arbitrary component relationships. The downside: each
+            intervention requires a full
+            <span class="term" data-tooltip="One complete pass of input data through all layers of the network, from input to output. Each causal intervention typically requires running a separate forward pass to see its effect.">forward pass</span>,
+            making large-scale application expensive.
+          </p>
+
+          <h3>How to validate a description</h3>
+          <p>
+            The paper lists five levels of validation, roughly from weakest to strongest:
+          </p>
+
+          <div class="diagram">
+            <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Validation hierarchy from weak to strong">
+              <text x="340" y="16" text-anchor="middle" font-size="12" fill="#888" font-weight="600">VALIDATION HIERARCHY (WEAKEST → STRONGEST)</text>
+              <!-- Stacked bars -->
+              <rect x="40" y="30" width="120" height="155" rx="6" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+              <text x="100" y="92" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="500">Predict</text>
+              <text x="100" y="106" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="500">activations</text>
+              <text x="100" y="125" text-anchor="middle" font-size="9" fill="#3b82f6">Easiest</text>
+
+              <rect x="175" y="30" width="120" height="155" rx="6" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1"/>
+              <text x="235" y="92" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="500">Explain</text>
+              <text x="235" y="106" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="500">failures</text>
+
+              <rect x="310" y="30" width="120" height="155" rx="6" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/>
+              <text x="370" y="92" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">Handcraft</text>
+              <text x="370" y="106" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">replacements</text>
+
+              <rect x="445" y="30" width="120" height="155" rx="6" fill="#60a5fa" stroke="#2563eb" stroke-width="1"/>
+              <text x="505" y="92" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">Test on</text>
+              <text x="505" y="106" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">ground truth</text>
+
+              <rect x="580" y="30" width="90" height="155" rx="6" fill="#2563eb" stroke="#1d4ed8" stroke-width="1"/>
+              <text x="625" y="85" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">Beat</text>
+              <text x="625" y="99" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">baselines</text>
+              <text x="625" y="113" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">fairly</text>
+              <text x="625" y="132" text-anchor="middle" font-size="9" fill="#dbeafe">Hardest</text>
+
+              <!-- Arrow underneath -->
+              <line x1="50" y1="194" x2="660" y2="194" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+              <text x="355" y="192" text-anchor="middle" font-size="10" fill="#2563eb">increasing rigor</text>
+            </svg>
+          </div>
+
+          <ol>
+            <li><strong>Predict activations</strong> — use your explanation to predict the component's behavior on new inputs. Can be done by humans or AI.</li>
+            <li><strong>Explain failures</strong> — does your interpretation predict adversarial examples or hallucinations?</li>
+            <li><strong>Handcraft replacements</strong> — can you build a simple substitute that reproduces the component's behavior? Cammarata et al. did this for a curve detector in a <span class="term" data-tooltip="Convolutional Neural Network. An architecture for processing images (and other grid-like data) using learned spatial filters. Earlier mech interp work focused heavily on CNNs before shifting to Transformers.">CNN</span>.</li>
+            <li><strong>Test on ground truth</strong> — use toy models with known algorithms to benchmark your tools.</li>
+            <li><strong>Achieve engineering goals competitively</strong> — the highest bar. Fair comparison against non-interpretability baselines on real, non-cherry-picked tasks.</li>
+          </ol>
+          <p>
+            Two pieces of infrastructure could help: establishing
+            <span class="term" data-tooltip="Standardized, well-studied neural networks — like E. coli in biology — that the community accumulates shared knowledge around. Ideal: open-source, cheap, reproducible, multiple random seeds, representative of broader phenomena.">model organisms</span>
+            (the interpretability community's "<em>Drosophila melanogaster</em>") and building
+            benchmarks with known ground-truth explanations. Currently, researchers mostly use
+            <span class="term" data-tooltip="A 2019 language model from OpenAI with 124M parameters. Small enough to study thoroughly but complex enough to exhibit interesting behaviors. The most common 'model organism' in current mech interp research.">GPT-2</span>
+            or small
+            <span class="term" data-tooltip="The dominant neural network architecture for language models (and increasingly for vision and other domains). Uses self-attention mechanisms to process sequences in parallel, with information flowing through a 'residual stream' modified by attention and MLP layers.">transformers</span>
+            trained on modular addition, but there's no consensus on
+            what the standard should be.
+          </p>
+        </section>
+
+        <!-- ===== CIRCUITS ===== -->
+        <section id="circuits">
+          <h2>Circuit discovery</h2>
+
+          <p>
+            <span class="term" data-tooltip="The process of identifying a subgraph of model components (a 'circuit') responsible for a specific task. Involves defining a task, decomposing the model into a graph, identifying task-relevant components via causal interventions, and describing their roles.">Circuit discovery</span>
+            is the most developed pipeline in mechanistic interpretability. It combines
+            decomposition, description, and validation into a concrete workflow:
+          </p>
+          <ol>
+            <li><strong>Define a task</strong> — pick something the model can do (e.g., "complete the pattern: The capital of France is ___").</li>
+            <li><strong>Decompose into a graph</strong> — represent the network as a
+            <span class="term" data-tooltip="Directed Acyclic Graph — a graph where edges have direction and there are no cycles (you can't follow edges back to where you started). Transformers can be represented as DAGs because information flows forward through layers.">DAG</span>
+            where nodes are components (attention heads,
+            <span class="term" data-tooltip="Multi-Layer Perceptron layers — the feedforward neural network blocks in a Transformer. Each MLP takes a vector, expands it to a larger hidden dimension, applies a nonlinearity, and projects back. Often described as 'where knowledge is stored.'">MLP layers</span>,
+            or SDL latents) and edges are "abstract weights."</li>
+            <li><strong>Identify the relevant subgraph</strong> — use activation patching or attribution to find which nodes and edges matter for this task.</li>
+            <li><strong>Describe each component</strong> — the creative, labor-intensive step. Hypothesize functions, design experiments, iterate.</li>
+            <li><strong>Validate</strong> — check faithfulness (does the circuit approximate the full model?), minimality (are all components necessary?), and completeness (are we missing any?).</li>
+          </ol>
+          <p>
+            This pipeline has produced real insights — the
+            <span class="term" data-tooltip="A circuit in Transformers that performs in-context learning by copying patterns: if the model sees 'A B … A', the induction head predicts B will follow the second A. One of the most well-understood circuits in mechanistic interpretability.">induction head</span>
+            circuit, the indirect
+            object identification circuit — but the paper is forthright about its shortcomings.
+            Task definitions are human-imposed and may not match the model's internal task
+            structure. Within-task variance is large: a circuit may approximate average
+            performance well but individual datapoints poorly. Circuit faithfulness is low for
+            complex end-to-end tasks. And the tasks studied so far were deliberately chosen to
+            be simple, giving a misleading impression of tractability.
+          </p>
+          <p>
+            The paper calls this "streetlight interpretability" — studying what's easy to study
+            rather than what matters most. Attempts to apply circuit discovery to arbitrary,
+            complex tasks have proceeded less successfully.
+          </p>
+        </section>
+
+        <!-- ===== APPLICATIONS ===== -->
+        <section id="applications">
+          <h2>Applications</h2>
+
+          <p>
+            Section 3 of the paper maps interpretability methods onto concrete goals. A key
+            insight: different goals require progress along different axes. Some need better
+            decomposition, some need deeper descriptions, some need understanding of <em>entire
+            models</em>, some need understanding of <em>training dynamics</em>.
+          </p>
+
+          <section class="interactive">
+            <h3>Application areas</h3>
+            <p>Explore what mechanistic interpretability could unlock.</p>
+
+            <div class="tab-row" id="app-tabs">
+              <button class="tab-btn active" data-tab="0">Monitoring</button>
+              <button class="tab-btn" data-tab="1">Control</button>
+              <button class="tab-btn" data-tab="2">Prediction</button>
+              <button class="tab-btn" data-tab="3">Microscope AI</button>
+              <button class="tab-btn" data-tab="4">Training</button>
+            </div>
+            <div class="tab-body" id="app-body"></div>
+          </section>
+
+          <p>
+            One claim that stood out to me: the paper argues that monitoring for unsafe
+            cognition is where interpretability has the strongest <em>comparative advantage</em>
+            over other areas of ML. Most other subfields already focus on controlling
+            input-output behavior. Only interpretability tries to understand the mechanisms
+            of cognition itself. This means it's uniquely positioned to catch deception,
+            <span class="term" data-tooltip="When a model tells the user what they want to hear rather than what's true — adjusting its responses to match perceived user beliefs or preferences, even when this means giving incorrect information.">sycophancy</span>,
+            and
+            <span class="term" data-tooltip="When a model deliberately underperforms on capability evaluations to hide its true abilities. A model that 'sandbags' appears less capable than it is, potentially to avoid triggering safety restrictions.">sandbagging</span>
+            — behaviors that are specifically designed to defeat
+            behavioral evaluations.
+          </p>
+        </section>
+
+        <!-- ===== SCALABLE OVERSIGHT ===== -->
+        <section id="oversight">
+          <h2>Scalable oversight and why mech interp comes first</h2>
+
+          <div class="aside-personal">
+            <p>
+              I'm increasingly drawn to
+              <span class="term" data-tooltip="The problem of maintaining meaningful human oversight of AI systems as they become more capable than their overseers. Includes techniques like debate, recursive reward modeling, and market-making — all designed to let less-capable supervisors verify the work of more-capable agents.">scalable oversight</span>
+              as a research area — the problem of how humans can meaningfully supervise AI
+              systems that are more capable than they are. But I've come to believe that
+              mechanistic interpretability is a prerequisite, not a parallel track.
+            </p>
+          </div>
+
+          <div class="diagram">
+            <svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Principal-agent framing of AI oversight">
+              <defs>
+                <marker id="ah2" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+                  <polygon points="0 0, 7 2.5, 0 5" fill="#2563eb"/>
+                </marker>
+                <marker id="ah3" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+                  <polygon points="0 0, 7 2.5, 0 5" fill="#dc2626"/>
+                </marker>
+              </defs>
+              <text x="340" y="16" text-anchor="middle" font-size="12" fill="#888" font-weight="600">THE OVERSIGHT PROBLEM</text>
+
+              <!-- Principal -->
+              <rect x="30" y="60" width="180" height="80" rx="10" fill="#f0f5ff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="120" y="90" text-anchor="middle" font-size="13" font-weight="600" fill="#222">Principal (human)</text>
+              <text x="120" y="110" text-anchor="middle" font-size="10" fill="#666">Sets objectives</text>
+              <text x="120" y="124" text-anchor="middle" font-size="10" fill="#666">Limited observability</text>
+
+              <!-- Agent -->
+              <rect x="470" y="60" width="180" height="80" rx="10" fill="#fef8f8" stroke="#dc2626" stroke-width="1.5"/>
+              <text x="560" y="90" text-anchor="middle" font-size="13" font-weight="600" fill="#222">Agent (model)</text>
+              <text x="560" y="110" text-anchor="middle" font-size="10" fill="#666">Learned objectives</text>
+              <text x="560" y="124" text-anchor="middle" font-size="10" fill="#666">Internal reasoning opaque</text>
+
+              <!-- Black-box arrow -->
+              <line x1="212" y1="85" x2="468" y2="85" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ah3)"/>
+              <text x="340" y="78" text-anchor="middle" font-size="10" fill="#dc2626">Black-box: see outputs only</text>
+
+              <!-- White-box arrow -->
+              <line x1="212" y1="115" x2="468" y2="115" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#ah2)"/>
+              <text x="340" y="133" text-anchor="middle" font-size="10" fill="#2563eb">White-box: observe internals via mech interp</text>
+
+              <!-- Bottom insight -->
+              <rect x="130" y="165" width="420" height="50" rx="8" fill="#f8faff" stroke="#dbe4f0"/>
+              <text x="340" y="186" text-anchor="middle" font-size="11" fill="#374151">Partial observability of internal reasoning</text>
+              <text x="340" y="203" text-anchor="middle" font-size="11" fill="#2563eb" font-weight="500">→ better monitoring contracts → stronger oversight</text>
+            </svg>
+          </div>
+
+          <p>
+            Here's why. Scalable oversight techniques —
+            <span class="term" data-tooltip="An alignment technique where two AI systems argue for opposing answers and a human judge decides who's right. The idea is that it's easier to judge an argument than produce one, enabling oversight of superhuman systems.">debate</span>,
+            <span class="term" data-tooltip="Training a reward model to evaluate AI outputs, where the reward model itself is trained using AI assistance — creating a recursive loop that can, in theory, scale to evaluating outputs humans can't directly judge.">recursive reward modeling</span>,
+            market-making — all assume you can eventually <em>verify</em> the output of an AI
+            system, even if you can't produce it yourself. But verification gets harder as
+            models get more capable. A model that can reason about concepts beyond human
+            understanding creates outputs that humans can't meaningfully check.
+          </p>
+          <p>
+            Mechanistic interpretability offers a way to break this bottleneck. If you can
+            inspect the model's internal reasoning — not just its final answer — you have a
+            fundamentally richer signal for oversight. The paper's discussion of
+            <span class="term" data-tooltip="The idea of monitoring a model's internal features during deployment (like a real-time dashboard) to flag when it acts for abnormal or concerning reasons, even without full mechanistic understanding.">mechanistic anomaly detection</span>
+            illustrates this: you don't need to understand every mechanism in the model to
+            notice when it's reasoning in unusual ways. Just as a doctor can flag an abnormal
+            lab result without fully understanding the underlying biochemistry, a monitor could
+            flag unusual internal activity without complete interpretability.
+          </p>
+          <p>
+            The connection to my economics background is direct. In mechanism design, a
+            principal who can partially observe an agent's actions can design better contracts
+            than one who can only see outcomes. White-box evaluations (using model internals)
+            are the AI safety analog of partial observability — and the theory says partial
+            observability should be worth a lot. But you need to know <em>what to observe</em>,
+            which is exactly the question mechanistic interpretability is trying to answer.
+          </p>
+          <p>
+            The paper hints at this connection in its discussion of
+            <span class="term" data-tooltip="The vision that if we could decompose a network into all its components and describe each one, we could verify that none implement dangerous capabilities — like checking every part of a machine for defects. Currently far beyond reach for large models.">enumerative safety</span>
+            — the idea that if you can decompose a network and describe every component, you
+            could verify that no component implements dangerous capabilities. That's the strongest
+            possible monitoring contract: full observability. We're very far from it, but even
+            partial progress — understanding some components, flagging anomalous ones — would
+            dramatically strengthen oversight.
+          </p>
+        </section>
+
+        <!-- ===== SOCIOTECHNICAL ===== -->
+        <section id="sociotechnical">
+          <h2>Sociotechnical problems</h2>
+
+          <p>
+            The paper's final section is a clear-eyed reckoning with the field's position in
+            society. Three points are especially sharp:
+          </p>
+          <p>
+            <strong>The governance gap.</strong> Current AI governance frameworks rarely specify
+            how mechanistic understanding would be operationalized. OpenAI commits to
+            "mitigating biological risks" but doesn't say how. The EU AI Act requires "model
+            evaluation … to identify and mitigate systemic risk." Interpretability could
+            help — but only if it produces tools that policymakers can actually use.
+          </p>
+          <p>
+            <strong>The competitiveness problem.</strong> Interpretability methods have not
+            proven competitive with non-interpretability baselines on real tasks. The field
+            evaluates tools on their own curve rather than against alternatives. Until
+            interpretability demonstrates unique value — solving problems that are hard or
+            impossible without it — there's a risk of developing techniques that look good
+            in cherry-picked demos but don't generalize.
+          </p>
+          <p>
+            <strong>The lobbying risk.</strong> Modest progress in mech interp has already been
+            used by industry actors to argue against AI regulation, claiming the "black box"
+            problem is solved. Andreessen Horowitz submitted written evidence to UK Parliament
+            making exactly this claim. The paper pushes back firmly: selective transparency can
+            be used to actively mislead.
+          </p>
+          <blockquote>
+            <p>
+              "The focus on interpretability artificially constrains the solution space by
+              characterizing one possible solution as the problem itself." — Krishnan (2020)
+            </p>
+          </blockquote>
+          <p>
+            This is a tension the field needs to sit with. Interpretability is likely necessary
+            for some problems (detecting deceptive cognition) and unnecessary for others
+            (behavioral control via
+            <span class="term" data-tooltip="Reinforcement Learning from Human Feedback. A training technique where human preferences are used to fine-tune a model's behavior — e.g. training a chatbot to be helpful and harmless by having humans rank different responses.">RLHF</span>).
+            Intellectual honesty about where the comparative
+            advantage lies is essential.
+          </p>
+        </section>
+
+        <!-- ===== DIRECTION ===== -->
+        <section id="direction">
+          <h2>Where I'm headed</h2>
+
+          <div class="aside-personal">
+            <p>
+              Reading this paper carefully, a few research threads pull at me:
+            </p>
+            <p>
+              <strong>1. The economics of alignment as monitoring.</strong> The principal-agent
+              framing is underexplored in the mech interp literature. Mechanism design has deep
+              results about when monitoring can substitute for control, and under what
+              information conditions. I want to formalize the connection between white-box
+              evaluations and optimal monitoring contracts. What's the value of partial
+              interpretability? How does the cost of monitoring trade off against the cost of
+              misalignment?
+            </p>
+            <p>
+              <strong>2. Scalable oversight via partial mechanistic understanding.</strong>
+              Full enumerative safety is far away. But I think there's a useful middle ground:
+              using imperfect interpretability tools to strengthen oversight protocols. What does
+              an oversight scheme look like when you can observe 10% of a model's mechanisms
+              with moderate confidence? How does that change the equilibrium of a principal-agent
+              interaction?
+            </p>
+            <p>
+              <strong>3. Feature geometry and economic network theory.</strong> The paper flags
+              that SDL ignores feature geometry — the relationships between features. I'm drawn
+              to the parallel with economic network analysis, where the structure of
+              relationships (not just the existence of agents) determines outcomes. Can we import
+              tools from network economics to understand how features interact?
+            </p>
+            <p>
+              My plan: one of these becomes a paper for ICML, NeurIPS, or a safety workshop by
+              September. I'll start with (1) because it's closest to a clean, novel
+              contribution — the formalism exists in economics, the application to alignment is
+              new, and it directly addresses a gap the paper identifies.
+            </p>
+          </div>
+        </section>
+
+        <hr>
+        <p style="font-size: 0.85rem; color: #888; text-align: center; margin-top: 2rem;">
+          Thanks for reading.
+        </p>
+        <p style="font-size: 0.85rem; color: #888; text-align: center;">
+          &copy; <span id="copyright-year"></span> Peter Flo
+        </p>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ===== Sidebar toggle =====
+    (function() {
+      const sidebar = document.getElementById('blog-sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      if (!sidebar || !toggle) return;
+      const saved = localStorage.getItem('sidebar-collapsed-mi');
+      if (saved === 'true') sidebar.classList.add('collapsed');
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebar-collapsed-mi', sidebar.classList.contains('collapsed'));
+      });
+    })();
+
+    // ===== Word count + TOC tracking =====
+    (function() {
+      const content = document.querySelector('.blog-content');
+      const text = content.innerText || content.textContent;
+      const wc = text.trim().split(/\s+/).length;
+      document.getElementById('word-count').textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
+
+      const tocLinks = document.querySelectorAll('.blog-toc a');
+      tocLinks.forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          const t = document.getElementById(link.getAttribute('href').slice(1));
+          if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      const sections = document.querySelectorAll('section[id]');
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            tocLinks.forEach(l => {
+              const item = l.closest('.blog-toc-item');
+              item.classList.toggle('active', l.getAttribute('href') === '#' + id);
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -60% 0px' });
+      sections.forEach(s => obs.observe(s));
+    })();
+
+    // ===== SDL limitation tabs =====
+    (function() {
+      const data = [
+        { title: 'Reconstruction errors are too high',
+          text: 'When Gao et al. inserted a 16-million-latent SAE into GPT-4, the resulting language modeling loss was equivalent to a model with only <strong>10% of GPT-4\'s pretraining compute</strong>. Makelov et al. found 10–40% performance drops on GPT-2 small. Making dictionaries bigger helps but eventually just assigns one latent per datapoint — clearly uninterpretable. The errors are not random; Engels et al. showed they\'re systematically structured and partly predictable from the original activations.' },
+        { title: 'Expensive to apply to large models',
+          text: 'SDL trains a separate small network for <em>every layer</em> you want to interpret. The dictionaries typically have more parameters at that layer than the original model does. As frontier models grow, these costs compound. There are no public attempts to apply SDL to every vector space in a model. For cost-effectiveness, intrinsically decomposable models may be necessary.' },
+        { title: 'Assumes linearity in nonlinear models',
+          text: 'SDL bakes in the linear representation hypothesis: concepts are directions, intensity is magnitude, combinations are additive. The <em>weak</em> version (some concepts are linear) has strong empirical support from linear probes and activation steering. But the <em>strong</em> version (all concepts are linear) is demonstrably false — Black et al. and Csordás et al. have shown nonlinear representations in some models. SDL cannot capture these.' },
+        { title: 'Sparsity is not interpretability',
+          text: 'SDL optimizes for sparse activations, assuming sparser = more interpretable. But <em>feature splitting</em> (a concept fractures into many latents as you increase dictionary size) and <em>feature absorption</em> (important distinctions get collapsed) show this proxy breaks down under optimization pressure. Other proxies — like minimum description length — might be better optimization targets, or no proxy metric might be sufficient.' },
+        { title: 'Feature geometry is ignored',
+          text: 'SDL treats features as a "bag of features" with no internal structure. But the geometric arrangement of features relative to each other reflects semantic and functional relationships — months of the year form a ring, related concepts cluster. Understanding a network may require understanding these all-to-all geometric relationships, which SDL discards by design.' },
+        { title: 'Can\'t handle all architectures',
+          text: 'SDL was designed for single-layer neuron activations. But representations can be distributed across attention heads (attention superposition) and across multiple layers. It\'s not obvious how to decompose attention-head representations with SDL, and translating cross-layer features into causal descriptions of mechanisms remains unsolved. Crosscoders are an early attempt but raise their own issues.' },
+        { title: 'Describes activations, not mechanisms',
+          text: 'This is perhaps the deepest problem. SDL identifies directions in <em>activation space</em> — the inputs and outputs of computations. But the mechanisms themselves are implemented by <em>weights and nonlinearities</em>. SDL latents only interact with mechanisms; they are not the mechanisms. Getting from latents to mechanistic understanding requires labor-intensive post-hoc analysis that the current field primarily skips.' },
+        { title: 'May not find the concepts you need',
+          text: 'Frequently, there\'s no single latent or small set of latents representing a concept of interest. Kissane et al. found that SAEs trained on pretraining data don\'t learn good latents for "refusing harmful requests" — but SAEs trained on chat data do. The decomposition is <em>data-dependent</em>, which is troubling for a method that was supposed to find "fundamental units of computation." The concept you want may not be how the model thinks.' }
+      ];
+
+      const tabs = document.getElementById('sdl-tabs');
+      const body = document.getElementById('sdl-body');
+      body.innerHTML = '<strong>' + data[0].title + '.</strong> ' + data[0].text;
+
+      tabs.addEventListener('click', e => {
+        const btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+        tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const i = parseInt(btn.dataset.tab);
+        body.innerHTML = '<strong>' + data[i].title + '.</strong> ' + data[i].text;
+      });
+    })();
+
+    // ===== Application tabs =====
+    (function() {
+      const data = [
+        { title: 'Monitoring & auditing for unsafe cognition',
+          text: '<p>This is where the paper sees the strongest comparative advantage. <strong>Black-box evaluations</strong> (testing only inputs and outputs) can\'t reliably detect deception, sandbagging, or sycophancy — a model that games evaluations will, by definition, pass them.</p><p><strong>White-box evaluations</strong> (using model internals) could flag potentially concerning cognition. Even shallow, correlation-based descriptions can help: a feature that fires on deceptive scenarios is worth investigating even if you can\'t prove it <em>causes</em> deception. The bar isn\'t "fully understand the model" — it\'s "provide enough signal to guide further inquiry."</p><p><strong>Mechanistic anomaly detection</strong> is especially promising: flag when a model acts for unusual internal reasons, even without descriptions of what those reasons are. You need good decomposition (to know what counts as "a mechanism") but not necessarily deep description.</p>' },
+        { title: 'Control: steering, unlearning, editing',
+          text: '<p><strong>Activation steering</strong> adds a "concept vector" to a model\'s internal activations during inference to nudge its behavior in a desired direction — a direct application of the linear representation hypothesis. Chalnev et al. show that using SDL latents enables more targeted steering with fewer side effects than using raw directions.</p><p><strong>Machine unlearning</strong> aims to remove dangerous knowledge (e.g., bioweapons synthesis). A troubling finding: safety finetuning may make only shallow edits that can be cheaply undone. Arditi et al. discovered a single "refusal direction" in chat models — one direction in activation space mediates all refusal behavior, and removing it breaks safety training completely. This reveals how fragile current safety methods are.</p><p><strong>Model editing</strong> seeks precision: change one piece of knowledge without side effects. Current methods (like ROME) are flawed — edits don\'t generalize well. Better decomposition should enable more surgical interventions.</p>' },
+        { title: 'Prediction: behavior and capabilities',
+          text: '<p>Can we claim "there exists no mechanism that would cause the model to deliberately behave undesirably"? This is <strong>enumerative safety</strong>: decompose everything, describe everything, verify nothing is dangerous. We are very far from this for large models.</p><p>Weaker versions are more tractable. If you can decompose and get basic descriptions, you might verify that no mechanisms relate to bioweapons — letting you predict the model probably can\'t instruct users on synthesis.</p><p><strong>Formal verification</strong> — mathematically proving safety properties — is the gold standard but essentially intractable for frontier models. Gross et al. have proven accuracy bounds for a single-layer transformer on a synthetic task, with great difficulty.</p><p>Predicting <strong>emergent capabilities during training</strong> is another frontier: understanding when new abilities appear and connecting mechanistic structure to scaling laws.</p>' },
+        { title: 'Microscope AI: knowledge discovery',
+          text: '<p>Train a neural network on complex data, then use interpretability to extract the novel patterns it found. The network becomes a scientific instrument — a "microscope" into the data.</p><p>Real examples: extracting chess concepts from AlphaZero to teach grandmasters; using CNN features to reveal how facial features affect judicial sentencing; discovering morphological features for predicting immune cell behavior; transforming psychology articles into a causal graph for automated hypothesis generation.</p><p>Currently blocked by the need for rare expertise at the intersection of ML, interpretability, and domain knowledge. As methods automate, this could become one of the most impactful applications.</p>' },
+        { title: 'Improving inference and training',
+          text: '<p>If you understand which parts of a computation are redundant, you can skip them (faster inference). If you can identify knowledge gaps, you can target training data more efficiently. If you can attribute outputs to training examples (influence functions), you can predict generalization failures.</p><p>Mechanistic understanding of finetuning could improve parameter efficiency — modify only the weights that matter. Understanding the order in which capabilities emerge during training could inform curriculum design.</p><p>Decomposing networks into functional components also opens the door to recombining what different models have learned — a kind of "mechanistic model merging."</p>' }
+      ];
+
+      const tabs = document.getElementById('app-tabs');
+      const body = document.getElementById('app-body');
+      body.innerHTML = data[0].text;
+
+      tabs.addEventListener('click', e => {
+        const btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+        tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        body.innerHTML = data[parseInt(btn.dataset.tab)].text;
+      });
+    })();
+
+    // Copyright year
+    document.getElementById('copyright-year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
