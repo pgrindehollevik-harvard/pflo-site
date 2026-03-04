@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Steering Large Language Models with Concept Vectors — Peter Flo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A reflection on Beaglehole et al. (Science, 2026): concept vectors, steering, and steerable oversight." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Steering Large Language Models with Concept Vectors" />
+  <meta property="og:description" content="A reflection on Beaglehole et al. (Science, 2026): concept vectors, steering, and why internal representations can beat judge models." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:100%; margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
+    .blog-breadcrumb a { color:var(--link); text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration:underline; }
+    .blog-meta-bar { font-size:12px; color:#888; margin-bottom:24px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
+    .blog-title { font-size:2.8rem; margin-bottom:16px; letter-spacing:-.03em; font-family:'Georgia','Times New Roman',serif; font-weight:400; line-height:1.15; }
+    .blog-subtitle { font-size:1.1rem; color:#666; margin-bottom:24px; line-height:1.6; }
+    .blog-meta { font-size:.9rem; color:#888; margin-bottom:2rem; }
+    .blog-meta span + span::before { content:"•"; margin:0 8px; opacity:.5; }
+
+    .blog-content p { margin:0 0 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content h2 { margin-top:4rem; margin-bottom:1.2rem; font-size:1.8rem; letter-spacing:-.02em; font-weight:400; font-family:'Georgia','Times New Roman',serif; scroll-margin-top:20px; }
+    .blog-content h2:first-of-type { margin-top:2rem; }
+    .blog-content h3 { font-size:1.15rem; margin-top:2rem; margin-bottom:.8rem; font-weight:600; }
+    .blog-content ul, .blog-content ol { margin:0 0 1.5rem 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content li { margin-bottom:.4rem; }
+    .blog-content blockquote { border-left:3px solid var(--accent); padding:.6rem 1.2rem; margin:1.5rem 0; background:#faf8f5; color:#444; font-style:italic; }
+    .blog-content blockquote p { margin-bottom:.5rem; }
+    .blog-content hr { border:none; border-top:1px solid #e5e5e5; margin:3rem 0; }
+
+    .aside-personal { background:#faf8f5; border-radius:12px; border:1px solid #e8e0d5; padding:20px 24px; margin:2rem 0; }
+    .aside-personal p:last-child { margin-bottom:0; }
+
+    .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; }
+
+    .term { position:relative; cursor:help; border-bottom:1px dotted rgba(0,0,0,.3); }
+    .term::after { content:attr(data-tooltip); position:absolute; left:50%; bottom:120%; transform:translateX(-50%); background:#111827; color:#f9fafb; font-size:.75rem; line-height:1.4; padding:6px 8px; border-radius:6px; white-space:normal; min-width:180px; max-width:280px; opacity:0; pointer-events:none; transition:opacity .12s; box-shadow:0 4px 12px rgba(15,23,42,.25); z-index:20; }
+    .term::before { content:""; position:absolute; left:50%; bottom:110%; transform:translateX(-50%); border-width:6px; border-style:solid; border-color:#111827 transparent transparent transparent; opacity:0; transition:opacity .12s; z-index:19; }
+    .term:hover::after, .term:hover::before { opacity:1; }
+
+    @media (max-width:600px) { .blog-title { font-size:1.8rem; } }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="main" aria-label="content">
+    <div class="blog-content">
+      <div class="blog-breadcrumb">
+        <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
+      </div>
+      <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
+
+      <header>
+        <h1 class="blog-title">Steering Large Language Models with Concept Vectors</h1>
+        <p class="blog-subtitle">A reflection on Beaglehole et al., Science (2026)</p>
+        <p class="blog-meta">
+          <span>Peter Flo</span>
+          <span>March 2026</span>
+        </p>
+      </header>
+
+      <div class="aside-personal">
+        <p><strong>TL;DR.</strong> The paper extracts a <span class="term" data-tooltip="A direction in activation space that corresponds to a semantic concept. One per layer.">concept vector</span> at each <span class="term" data-tooltip="A layer in a transformer model (e.g. one attention + MLP block).">layer</span> of a model and <span class="term" data-tooltip="Modifying model behavior by adding a concept vector to internal activations during the forward pass.">steers</span> behavior by adding that vector to <span class="term" data-tooltip="The numerical values (layer outputs) produced by a neural network as it processes input.">activations</span> during the <span class="term" data-tooltip="A single pass of input through the network from input to output.">forward pass</span>. Surprisingly often, that simple move behaves like <span class="term" data-tooltip="Controlling model behavior by manipulating internal representations (e.g. adding concept vectors) rather than only via prompts or outputs.">semantic control</span>. The deeper question is not whether it works — but why it works so broadly, and what we can build on top of it.</p>
+      </div>
+
+      <hr>
+
+      <section id="core">
+        <h2>The core move</h2>
+        <p>
+          Large language models compute in <span class="term" data-tooltip="The stacked processing stages of a transformer. Each layer processes the output of the previous one.">layers</span>. At each layer $\ell$, the model maintains an <span class="term" data-tooltip="The high-dimensional vector of layer outputs — what the model 'knows' at that point in the computation.">activation</span> $A_\ell$: a high-dimensional representation of what it currently "knows" about the input.
+        </p>
+        <p>
+          The authors ask:
+        </p>
+        <p>
+          Can we identify a direction in this <span class="term" data-tooltip="The high-dimensional space of neural network layer outputs. Each point is a vector of activations; directions in this space can correspond to semantic concepts.">activation space</span> that corresponds to a semantic concept?
+        </p>
+        <p>
+          For example:
+        </p>
+        <ul>
+          <li>"conspiracy tone"</li>
+          <li>"anti-refusal"</li>
+          <li>"translate to C++"</li>
+          <li>"hallucination"</li>
+          <li>"toxic content"</li>
+        </ul>
+        <p>
+          They build labeled datasets for each concept, compute activations at every <span class="term" data-tooltip="A layer in a transformer model (e.g. one attention + MLP block). The paper extracts a concept vector per block.">block</span>, and use a feature-learning method (<span class="term" data-tooltip="A method for finding directions in high-dimensional data that best separate or predict classes. The paper uses it to extract concept directions.">Recursive Feature Machines</span>) to extract a direction $v_\ell$ per block that best tracks the concept.
+        </p>
+        <p>
+          Then, during <span class="term" data-tooltip="The process of producing text token-by-token. Steering injects the concept vector at each step.">generation</span>, they modify the forward pass:
+        </p>
+        <div class="eq-block">$$A_\ell \leftarrow A_\ell + \varepsilon v_\ell$$</div>
+        <p>
+          That's the <span class="term" data-tooltip="The rule: add a scaled concept vector to activations at each layer. The sign of ε controls direction (toward or away from the concept).">steering rule</span>.
+        </p>
+        <p>
+          If $\varepsilon > 0$, the model moves toward the concept.<br>
+          If $\varepsilon < 0$, it moves away from it.
+        </p>
+        <p>
+          For multiple concepts, they simply add a <span class="term" data-tooltip="A weighted sum of vectors: e.g. v = α·v₁ + β·v₂. Here, combining concept vectors lets you steer toward multiple concepts at once.">linear combination</span> of vectors.
+        </p>
+        <p>
+          No <span class="term" data-tooltip="Training a model on new data by updating its weights. The paper uses steering instead — no weight updates.">fine-tuning</span>. No weight updates. Just additive perturbations inside the computation.
+        </p>
+        <p>
+          And across hundreds of concepts, model sizes, and even <span class="term" data-tooltip="The type of data the model handles: text, images, audio, etc. The paper shows steering across modalities.">modalities</span>, this often works.
+        </p>
+      </section>
+
+      <hr>
+
+      <section id="interesting">
+        <h2>What makes this interesting</h2>
+        <p>
+          Two empirical results matter.
+        </p>
+        <p>
+          First, <span class="term" data-tooltip="Modifying model behavior by adding a concept vector to internal activations.">steering</span> is surprisingly general. They evaluate 512 concepts across multiple Llama models and find that larger models are generally more <span class="term" data-tooltip="Responsive to steering — i.e. adding concept vectors produces coherent behavioral shifts.">steerable</span>. They also show steering can improve performance on precision tasks like Python-to-C++ translation and even reasoning tasks.
+        </p>
+        <p>
+          Second, monitoring via internal representations outperforms <span class="term" data-tooltip="Using an LLM to evaluate another model's outputs (e.g. 'Is this toxic?'). Often less reliable than probing internal activations.">LLM judges</span> prompted to evaluate outputs. Instead of asking a model to critique text, they project internal activations onto concept vectors and train classifiers on those <span class="term" data-tooltip="Dot products of activations with concept vectors — a scalar 'how much' of each concept is present. Used as features for probes.">projections</span>. On several hallucination and toxicity benchmarks, these internal <span class="term" data-tooltip="Classifiers trained on internal activations to predict a property (e.g. hallucination, toxicity). Often simpler and more reliable than LLM judges.">probes</span> outperform output-based judges.
+        </p>
+        <p>
+          That suggests something subtle:
+        </p>
+        <blockquote>
+          <p>The model's internal representations may contain signal that its outputs do not fully express.</p>
+        </blockquote>
+        <p>
+          Steering and monitoring are two sides of the same interface: concept vectors give you both control and measurement.
+        </p>
+      </section>
+
+      <hr>
+
+      <section id="linearity">
+        <h2>The linearity puzzle</h2>
+        <p>
+          The authors connect this to the "<span class="term" data-tooltip="The hypothesis that neural networks represent concepts as directions (or subspaces) in activation space — so that semantic relationships can be captured by linear operations like addition.">linear representation hypothesis</span>": the idea that semantic relationships are encoded as linear structure in representation space.
+        </p>
+        <p>
+          But the interesting tension is this:
+        </p>
+        <ul>
+          <li>A direction that separates two classes (e.g., English vs Hindi) need not be the direction that maps one to the other.</li>
+          <li><span class="term" data-tooltip="The task of predicting which class a point belongs to. The direction that best separates classes may differ from the steering direction.">Classification</span> and <span class="term" data-tooltip="Directions in activation space that, when added during the forward pass, steer model behavior toward a concept.">steering vectors</span> could, in principle, differ.
+        </ul>
+        <p>
+          Yet in practice, <span class="term" data-tooltip="Finding concept directions by training a classifier to predict concept presence, then using the classifier weights as the direction. Simpler than causal methods but may not always align with steering.">classification-style extraction</span> often yields directions that also steer.
+        </p>
+        <p>
+          The paper is explicit that this alignment is not guaranteed. That it works as often as it does is part of the mystery.
+        </p>
+        <p>
+          Two open questions remain:
+        </p>
+        <ol>
+          <li>Why are so many concepts <span class="term" data-tooltip="Encoded as a direction (or low-dimensional subspace) in activation space, so that linear operations like addition can manipulate them.">linearly represented</span>?</li>
+          <li>Why does classification reliably recover usable steering directions?</li>
+        </ol>
+        <p>
+          The results are operationally strong. The underlying mechanism is still not fully understood.
+        </p>
+      </section>
+
+      <hr>
+
+      <section id="pipeline">
+        <h2>From steering to steerable oversight</h2>
+        <p>
+          If you treat concept vectors as a low-dimensional control interface to a model, an obvious next question is: what sits on top of that interface?
+        </p>
+        <p>
+          Here's one possible pipeline.
+        </p>
+
+        <h3>Step 0: Precompute a "control library" for model $t$</h3>
+        <p>
+          Using the paper's method, build a library of concept vectors for the target model $t$.
+        </p>
+        <p>
+          For each concept $c$ and each block $\ell$, extract $v_{\ell,c}$.
+        </p>
+        <p>
+          Optionally extract multiple vectors per block for monitoring (the paper uses top-$p$ <span class="term" data-tooltip="The principal directions of variation in a data matrix. Used here for richer monitoring features.">eigenvectors</span> for this).
+        </p>
+        <p>
+          This gives you a menu of controls:
+        </p>
+        <ul>
+          <li>"more cautious"</li>
+          <li>"less hallucination"</li>
+          <li>"more literal"</li>
+          <li>"refuse harmful"</li>
+          <li>"cite sources"</li>
+          <li>"more concise"</li>
+          <li>"less speculative"</li>
+          <li>etc.</li>
+        </ul>
+        <p>
+          These are not claimed to be <span class="term" data-tooltip="The actual computational units and pathways inside a neural network — e.g. specific neurons or circuits that implement a feature.">mechanistic circuits</span>. They are usable control directions.
+        </p>
+
+        <h3>Step 1: A $t-1$ controller proposes a steering policy</h3>
+        <p>
+          Now introduce a smaller model — call it $t-1$ — as a <span class="term" data-tooltip="A model that decides which steering interventions to apply, given inputs and objectives.">controller</span>.
+        </p>
+        <p>
+          Given an input $x$, the controller outputs:
+        </p>
+        <ul>
+          <li>which concepts to activate or suppress</li>
+          <li>which layers to apply them to</li>
+          <li><span class="term" data-tooltip="The scalar ε that controls how strongly each concept vector is added at each layer.">steering strengths</span> $\varepsilon_{\ell,c}$</li>
+        </ul>
+        <p>
+          The intervention becomes:
+        </p>
+        <div class="eq-block">$$A_\ell \leftarrow A_\ell + \sum_c \varepsilon_{\ell,c} v_{\ell,c}$$</div>
+        <p>
+          This is just automated <span class="term" data-tooltip="Steering toward multiple concepts at once by using a linear combination of individual concept vectors.">multiconcept steering</span>.
+        </p>
+        <p>
+          Instead of a human choosing the linear combination, the controller does.
+        </p>
+
+        <h3>Step 2: Run model $t$ under steering</h3>
+        <p>
+          Generate output $y$ with those perturbations applied during the forward pass.
+        </p>
+
+        <h3>Step 3: Score against a bundle of criteria</h3>
+        <p>
+          Evaluate $y$ according to multiple objectives, for example:
+        </p>
+        <ul>
+          <li>safety policy adherence</li>
+          <li>factuality / groundedness</li>
+          <li>helpfulness</li>
+          <li>not over-refusing</li>
+          <li>tone and formatting constraints</li>
+        </ul>
+        <p>
+          Crucially, scoring need not rely only on output-based judgments.
+        </p>
+        <p>
+          You can incorporate the paper's monitoring signals:
+        </p>
+        <ul>
+          <li>projections of activations onto hallucination or toxicity vectors</li>
+          <li>ensemble blockwise features</li>
+        </ul>
+        <p>
+          This combines output-based metrics with internal representation metrics.
+        </p>
+
+        <h3>Step 4: Optimize the controller</h3>
+        <p>
+          Now treat steering as an action space and optimize the controller to improve the score.
+        </p>
+        <p>
+          Possible approaches:
+        </p>
+        <ul>
+          <li>supervised learning (if steering labels exist)</li>
+          <li><span class="term" data-tooltip="A class of algorithms where an agent chooses actions and receives rewards, learning from exploration without full environment models.">bandits</span> or <span class="term" data-tooltip="Training agents to maximize cumulative reward through trial and error. Often used when the optimal policy is unknown.">reinforcement learning</span></li>
+          <li><span class="term" data-tooltip="Optimization that models uncertainty over the objective function and uses it to select the next evaluation point.">Bayesian optimization</span> over coefficients</li>
+          <li><span class="term" data-tooltip="Learning from human preference judgments (e.g. 'A is better than B') without explicit reward labels.">offline preference learning</span> using human ratings</li>
+        </ul>
+        <p>
+          The appeal is that the action space is small.
+        </p>
+        <p>
+          You are not fine-tuning billions of weights.<br>
+          You are tuning coefficients over a concept basis.
+        </p>
+        <p>
+          Steering becomes a structured control problem rather than a <span class="term" data-tooltip="Crafting input text to elicit desired behavior. Often fragile and rhetorical.">prompting</span> problem.
+        </p>
+      </section>
+
+      <hr>
+
+      <section id="matters">
+        <h2>Why this matters</h2>
+        <p>
+          Prompting is rhetorical. Fine-tuning is entangled.
+        </p>
+        <p>
+          Concept steering exposes a geometric control surface.
+        </p>
+        <p>
+          If that surface is stable and general, you can:
+        </p>
+        <ul>
+          <li>calibrate behavior dynamically</li>
+          <li>reduce hallucinations without full retraining</li>
+          <li>trade off safety and helpfulness more precisely</li>
+          <li>potentially build layered oversight systems that operate inside the model rather than outside it</li>
+        </ul>
+        <p>
+          But there are risks.
+        </p>
+        <ul>
+          <li>Optimizing against monitors may encourage gaming them.</li>
+          <li>Classification directions may not remain causal under pressure.</li>
+          <li>Steering may generalize poorly outside curated settings.</li>
+        </ul>
+        <p>
+          The paper doesn't solve these problems. It exposes the interface.
+        </p>
+      </section>
+
+      <hr>
+
+      <section id="changed">
+        <h2>What actually changed my mind</h2>
+        <p>
+          I expected <span class="term" data-tooltip="Controlling model behavior by manipulating internal representations (e.g. adding concept vectors) rather than only via prompts or outputs.">representation-level control</span> to require deep <span class="term" data-tooltip="Understanding how neural networks compute internally — their features, circuits, and algorithms — not just input-output behavior.">mechanistic understanding</span> — <span class="term" data-tooltip="Maps of which neurons or subcircuits implement which features. Often sparse and interpretable.">circuit maps</span>, <span class="term" data-tooltip="Decomposing activations into sparse combinations of interpretable features.">sparse decompositions</span>, neuron-level analysis.
+        </p>
+        <p>
+          This paper suggests a cruder form of control already exists.
+        </p>
+        <p>
+          The surprising fact may not be that steering works for some concepts.
+        </p>
+        <p>
+          It's that concept vectors exist at all.
+        </p>
+        <p>
+          If that's true, the next frontier isn't discovering whether models have handles.
+        </p>
+        <p>
+          It's learning how to use them responsibly — and understanding what those handles actually are.
+        </p>
+      </section>
+
+      <hr>
+      <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">&copy; <span id="copyright-year"></span> Peter Flo</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function() {
+    const c = document.querySelector('.blog-content');
+    if (!c) return;
+    const wc = (c.innerText || c.textContent).trim().split(/\s+/).length;
+    const el = document.getElementById('word-count');
+    if (el) el.textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
+  })();
+  document.getElementById('copyright-year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
