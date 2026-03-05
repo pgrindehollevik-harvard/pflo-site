@@ -63,6 +63,16 @@
     .tab-body { font-size:.9rem; margin-top:6px; color:#374151; line-height:1.7; }
     .tab-body p { margin:0 0 .8rem; font-size:.9rem; }
 
+    .step-btn { padding:8px 16px; border-radius:8px; border:1px solid var(--accent); background:#fff; color:var(--accent); font-size:.9rem; cursor:pointer; margin-right:8px; margin-bottom:8px; transition:background .15s, color .15s; }
+    .step-btn:hover { background:var(--accent); color:#fff; }
+    .step-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .step-label { font-size:.9rem; color:#555; margin-top:8px; min-height:1.4em; }
+
+    .slider-wrap { margin:16px 0; }
+    .slider-wrap label { font-size:.9rem; color:#555; display:block; margin-bottom:6px; }
+    .slider-wrap input[type="range"] { width:100%; max-width:300px; margin-right:12px; }
+    .slider-value { font-weight:600; font-family:monospace; }
+
     .term { position:relative; cursor:help; border-bottom:1px dotted rgba(0,0,0,.3); }
     .term::after { content:attr(data-tooltip); position:absolute; left:50%; bottom:120%; transform:translateX(-50%); background:#111827; color:#f9fafb; font-size:.75rem; line-height:1.4; padding:6px 8px; border-radius:6px; white-space:normal; min-width:180px; max-width:280px; opacity:0; pointer-events:none; transition:opacity .12s; box-shadow:0 4px 12px rgba(15,23,42,.25); z-index:20; }
     .term::before { content:""; position:absolute; left:50%; bottom:110%; transform:translateX(-50%); border-width:6px; border-style:solid; border-color:#111827 transparent transparent transparent; opacity:0; transition:opacity .12s; z-index:19; }
@@ -414,6 +424,44 @@
           But SPE is fragile — "seemingly-irrelevant transformations of the game tree can
           eliminate subgames," and with them all the rationality requirements that SPE imposed.
         </p>
+
+        <section class="interactive">
+          <h3>Backward induction: step through</h3>
+          <p>Click to walk through the solution from the end of the game backward.</p>
+          <div style="margin:12px 0;">
+            <button class="step-btn" id="bi-reset">Reset</button>
+            <button class="step-btn" id="bi-step">Next step</button>
+          </div>
+          <div class="step-label" id="bi-label">Click "Next step" to start.</div>
+          <div class="diagram">
+            <svg id="entry-tree" viewBox="0 0 520 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Extensive form game tree: entry deterrence">
+              <text x="260" y="18" text-anchor="middle" font-size="11" fill="#666" font-weight="600">ENTRY DETERRENCE (extensive form)</text>
+              <circle id="n1" cx="80" cy="100" r="18" fill="#fff" stroke="#AD7C03" stroke-width="2"/>
+              <text x="80" y="105" text-anchor="middle" font-size="11" font-weight="600">1</text>
+              <line id="stay" x1="98" y1="85" x2="180" y2="50" stroke="#333" stroke-width="1.5"/>
+              <text x="125" y="60" font-size="10" fill="#333">Stay out</text>
+              <circle id="t02" cx="200" cy="40" r="14" fill="#f5f5f5" stroke="#999" stroke-width="1"/>
+              <text x="200" y="44" text-anchor="middle" font-size="9">0, 2</text>
+              <line id="enter" x1="98" y1="115" x2="180" y2="150" stroke="#333" stroke-width="1.5"/>
+              <line id="enter2" x1="180" y1="150" x2="242" y2="170" stroke="#333" stroke-width="1.5"/>
+              <text x="125" y="140" font-size="10" fill="#333">Enter</text>
+              <circle id="n2" cx="260" cy="170" r="18" fill="#fff" stroke="#1a2d5f" stroke-width="2"/>
+              <text x="260" y="175" text-anchor="middle" font-size="11" font-weight="600">2</text>
+              <line id="fight" x1="260" y1="152" x2="346" y2="100" stroke="#333" stroke-width="1.5"/>
+              <text x="280" y="130" font-size="10" fill="#333">Fight</text>
+              <circle id="t00" cx="360" cy="100" r="14" fill="#f5f5f5" stroke="#999" stroke-width="1"/>
+              <text x="360" y="104" text-anchor="middle" font-size="9">0, 0</text>
+              <line id="acc" x1="260" y1="188" x2="346" y2="240" stroke="#333" stroke-width="1.5"/>
+              <text x="295" y="218" font-size="10" fill="#333">Accommodate</text>
+              <circle id="t11" cx="360" cy="240" r="14" fill="#f5f5f5" stroke="#999" stroke-width="1"/>
+              <text x="360" y="244" text-anchor="middle" font-size="9">1, 1</text>
+              <text x="260" y="275" text-anchor="middle" font-size="9" fill="#888" font-style="italic">Player 1 (entrant) moves first; Player 2 (incumbent) if entry occurs.</text>
+            </svg>
+          </div>
+        </section>
+        <p>
+          Numbered circles are decision nodes, branches are actions, terminal nodes show payoffs (player 1, player 2). An entrant decides whether to enter a market; if they do, the incumbent can fight (price war, both lose) or accommodate (share the market). Backward induction from the end: the incumbent prefers (1,1) to (0,0), so accommodates; the entrant thus gets 1 from entering vs 0 from staying out, so enters. The unique subgame-perfect outcome is (Enter, Accommodate).
+        </p>
       </section>
 
       <!-- ===== SEQUENTIAL ===== -->
@@ -478,6 +526,34 @@
             changed how I think, it's this one.
           </p>
         </div>
+
+        <p>
+          A concrete example: a firm chooses output level $x$. When the price of its product
+          (parameter $t$) rises, producing one more unit becomes more attractive — so optimal
+          output $x^*$ goes up. The question is: what's the <em>minimal</em> structure needed
+          to make that conclusion rigorous?
+        </p>
+
+        <section class="interactive">
+          <h3>Price → output: comparative statics</h3>
+          <p>Profit $\pi(x,t) = tx - x^2$. Optimal output $x^*(t) = t/2$. Drag the price slider — as $t$ rises, the peak of the profit curve shifts right.</p>
+          <div class="slider-wrap">
+            <label>Price $t$: <span class="slider-value" id="mcs-t-val">2</span></label>
+            <input type="range" id="mcs-t" min="0.5" max="4" step="0.1" value="2" />
+          </div>
+          <div class="diagram" style="max-width:400px; margin:12px auto;">
+            <svg id="mcs-plot" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Profit curve and optimal output">
+              <text x="200" y="14" text-anchor="middle" font-size="11" fill="#666" font-weight="600">Profit π(x) = tx − x²</text>
+              <line x1="50" y1="150" x2="350" y2="150" stroke="#ccc" stroke-width="1"/>
+              <line x1="50" y1="150" x2="50" y2="30" stroke="#ccc" stroke-width="1"/>
+              <text x="200" y="172" text-anchor="middle" font-size="9" fill="#666">output x</text>
+              <text x="28" y="95" text-anchor="middle" font-size="9" fill="#666" transform="rotate(-90,28,95)">π</text>
+              <path id="mcs-curve" d="" fill="none" stroke="#AD7C03" stroke-width="2"/>
+              <circle id="mcs-opt" cx="200" cy="150" r="6" fill="#AD7C03" stroke="#fff" stroke-width="2"/>
+              <text id="mcs-opt-label" x="200" y="168" text-anchor="middle" font-size="9" fill="#333">x* = 1</text>
+            </svg>
+          </div>
+        </section>
 
         <p>
           The traditional approach to comparative statics: maximize $b(x, t) - c(x)$, take the
@@ -582,6 +658,13 @@
           (Milgrom & Roberts, 1990) is one where players' strategies are
           <span class="term" data-tooltip="When one player increases their action, other players want to increase theirs too. The economic intuition: actions reinforce each other. Contrast with strategic substitutes, where one player increasing makes others want to decrease.">strategic complements</span>:
           when one player increases their action, others want to increase theirs.
+        </p>
+        <p>
+          <em>Example:</em> Two firms competing on quality. When Firm A raises quality, Firm B's
+          best response is also to raise quality — consumers compare them, so matching high
+          quality becomes more valuable when the rival is better. That's strategic
+          complementarity. The payoff: there's a "low-quality" equilibrium and a "high-quality"
+          equilibrium, and every rational outcome lies between them.
         </p>
         <p>
           The headline result: supermodular games have <strong>extremal pure-strategy Nash
@@ -821,6 +904,111 @@
       body.innerHTML = data[parseInt(btn.dataset.tab)];
       if (window.MathJax) MathJax.typesetPromise([body]);
     });
+  })();
+
+  // Monotone comparative statics slider
+  (function() {
+    const slider = document.getElementById('mcs-t');
+    const valEl = document.getElementById('mcs-t-val');
+    const curve = document.getElementById('mcs-curve');
+    const opt = document.getElementById('mcs-opt');
+    const label = document.getElementById('mcs-opt-label');
+    if (!slider || !curve) return;
+
+    const xMax = 2.5, piMax = 5;
+    const toPx = x => 50 + (x / xMax) * 300;
+    const toPy = pi => 150 - (pi / piMax) * 120;
+
+    function update(t) {
+      t = parseFloat(t);
+      valEl.textContent = t.toFixed(1);
+      const xStar = t / 2;
+      const piStar = t * xStar - xStar * xStar;
+      const pts = [];
+      for (let i = 0; i <= 50; i++) {
+        const x = (i / 50) * xMax;
+        const pi = Math.max(0, t * x - x * x);
+        pts.push(`${toPx(x)},${toPy(pi)}`);
+      }
+      curve.setAttribute('d', 'M' + pts.join(' L'));
+      opt.setAttribute('cx', toPx(xStar));
+      opt.setAttribute('cy', toPy(piStar));
+      label.textContent = `x* = ${xStar.toFixed(2)}`;
+      label.setAttribute('x', toPx(xStar));
+    }
+
+    slider.addEventListener('input', () => update(slider.value));
+    update(slider.value);
+  })();
+
+  // Backward induction step-through
+  (function() {
+    const svg = document.getElementById('entry-tree');
+    if (!svg) return;
+    const label = document.getElementById('bi-label');
+    const stepBtn = document.getElementById('bi-step');
+    const resetBtn = document.getElementById('bi-reset');
+    const steps = [
+      { text: 'Start: we solve from the end of the game backward.', highlight: [], dim: [] },
+      { text: 'At node 2: Fight gives (0,0), Accommodate gives (1,1). Player 2 prefers Accommodate → cross out Fight.', highlight: ['n2','acc','t11'], dim: ['fight','t00'] },
+      { text: 'Player 1 anticipates 2 accommodates. Stay out → (0,2), Enter → (1,1). Player 1 prefers Enter.', highlight: ['n1','enter','enter2','n2','acc','t11'], dim: ['stay','t02'] },
+      { text: 'SPE: Enter → Accommodate. Payoff (1,1).', highlight: ['enter','enter2','n2','acc','t11'], dim: ['stay','t02','fight','t00'] }
+    ];
+    let step = 0;
+    const dimOpacity = 0.25;
+    const highlightStroke = '#AD7C03';
+    const highlightStroke2 = '#1a2d5f';
+
+    function setState(s) {
+      const all = ['n1','stay','t02','enter','enter2','n2','fight','t00','acc','t11'];
+      all.forEach(id => {
+        const el = svg.querySelector('#' + id);
+        if (!el) return;
+        el.style.opacity = '';
+        el.style.stroke = '';
+        el.style.strokeWidth = '';
+      });
+      if (s.dim && s.dim.length) {
+        s.dim.forEach(id => {
+          const el = svg.querySelector('#' + id);
+          if (el) el.style.opacity = dimOpacity;
+        });
+      }
+      if (s.highlight && s.highlight.length) {
+        s.highlight.forEach(id => {
+          const el = svg.querySelector('#' + id);
+          if (!el) return;
+          if (el.tagName === 'circle') {
+            el.style.stroke = id === 'n1' ? highlightStroke : (id === 'n2' ? highlightStroke2 : '');
+            el.style.strokeWidth = id === 'n1' || id === 'n2' ? '3' : '';
+          } else if (el.tagName === 'line') {
+            el.style.stroke = highlightStroke;
+            el.style.strokeWidth = '2.5';
+          }
+        });
+      }
+    }
+
+    function go() {
+      if (step >= steps.length) return;
+      const s = steps[step];
+      setState(s);
+      label.textContent = s.text;
+      step++;
+      stepBtn.textContent = step >= steps.length ? 'Done' : 'Next step';
+      stepBtn.disabled = step >= steps.length;
+    }
+
+    function reset() {
+      step = 0;
+      setState({ highlight: [], dim: [] });
+      label.textContent = 'Click "Next step" to start.';
+      stepBtn.textContent = 'Next step';
+      stepBtn.disabled = false;
+    }
+
+    stepBtn.addEventListener('click', go);
+    resetBtn.addEventListener('click', reset);
   })();
 
   document.getElementById('copyright-year').textContent = new Date().getFullYear();
