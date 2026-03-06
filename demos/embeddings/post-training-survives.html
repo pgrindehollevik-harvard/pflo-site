@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>What Survives Post-Training Inside a Language Model? — Peter Flo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A mechanistic walkthrough of Du et al. (COLM 2025) on how post-training reshapes knowledge, truthfulness, refusal, and confidence in LLMs." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://pflo.org/demos/embeddings/post-training-survives.html" />
+  <meta property="og:title" content="What Survives Post-Training Inside a Language Model?" />
+  <meta property="og:description" content="A mechanistic walkthrough of Du et al. (COLM 2025): which internal mechanisms persist under post-training, and which get rewritten." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
+    .blog-breadcrumb a { color:var(--link); text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration:underline; }
+    .blog-meta-bar { font-size:12px; color:#888; margin-bottom:24px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
+    .blog-title { font-size:2.8rem; margin-bottom:16px; letter-spacing:-.03em; font-family:'Georgia','Times New Roman',serif; font-weight:400; line-height:1.15; }
+    .blog-subtitle { font-size:1.1rem; color:#666; margin-bottom:24px; line-height:1.6; }
+    .blog-meta { font-size:.9rem; color:#888; margin-bottom:2rem; }
+    .blog-meta span + span::before { content:"•"; margin:0 8px; opacity:.5; }
+
+    .blog-content p { margin:0 0 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content h2 { margin-top:4rem; margin-bottom:1.2rem; font-size:1.8rem; letter-spacing:-.02em; font-weight:400; font-family:'Georgia','Times New Roman',serif; scroll-margin-top:20px; }
+    .blog-content h2:first-of-type { margin-top:2rem; }
+    .blog-content h3 { font-size:1.15rem; margin-top:2rem; margin-bottom:.8rem; font-weight:600; }
+    .blog-content ul, .blog-content ol { margin:0 0 1.5rem 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content li { margin-bottom:.4rem; }
+    .blog-content blockquote { border-left:3px solid var(--accent); padding:.6rem 1.2rem; margin:1.5rem 0; background:#faf8f5; color:#444; font-style:italic; }
+    .blog-content blockquote p { margin-bottom:.5rem; }
+    .blog-content hr { border:none; border-top:1px solid #e5e5e5; margin:3rem 0; }
+
+    .aside-personal { background:#faf8f5; border-radius:12px; border:1px solid #e8e0d5; padding:20px 24px; margin:2rem 0; }
+    .aside-personal p:last-child { margin-bottom:0; }
+
+    .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; }
+
+    .term { position:relative; cursor:help; border-bottom:1px dotted rgba(0,0,0,.3); }
+    .term::after { content:attr(data-tooltip); position:absolute; left:50%; bottom:120%; transform:translateX(-50%); background:#111827; color:#f9fafb; font-size:.75rem; line-height:1.4; padding:6px 8px; border-radius:6px; white-space:normal; min-width:180px; max-width:280px; opacity:0; pointer-events:none; transition:opacity .12s; box-shadow:0 4px 12px rgba(15,23,42,.25); z-index:20; }
+    .term::before { content:""; position:absolute; left:50%; bottom:110%; transform:translateX(-50%); border-width:6px; border-style:solid; border-color:#111827 transparent transparent transparent; opacity:0; transition:opacity .12s; z-index:19; }
+    .term:hover::after, .term:hover::before { opacity:1; }
+
+    .diagram { margin:2rem 0; text-align:center; overflow-x:auto; }
+    .diagram svg { max-width:100%; height:auto; }
+
+    @media (max-width:600px) { .blog-title { font-size:1.8rem; } }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="main" aria-label="content">
+    <div class="blog-content">
+      <div class="blog-breadcrumb">
+        <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
+      </div>
+      <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
+
+      <header>
+        <h1 class="blog-title">What Survives Post-Training Inside a Language Model?</h1>
+        <p class="blog-subtitle">
+          A mechanistic walkthrough of Du et al. (COLM 2025), &ldquo;How Post-Training Reshapes LLMs: A Mechanistic View on Knowledge, Truthfulness, Refusal, and Confidence.&rdquo;
+        </p>
+        <p class="blog-meta">
+          <span>Peter Flo</span>
+          <span>Spring 2026</span>
+          <span><a href="https://arxiv.org/abs/2504.02904" target="_blank" rel="noopener" style="color:#888;">arXiv:2504.02904</a></span>
+        </p>
+      </header>
+
+      <p>
+        <span class="term" data-tooltip="Training applied after pre-training: SFT, RLHF, DPO, etc. Shapes a base model into an instruction-following assistant. The paper studies which internal mechanisms survive this process.">Post-training</span>
+        is the modern alchemy of LLMs: take a
+        <span class="term" data-tooltip="The pre-trained model before any instruction tuning or alignment. Often easier to study mechanistically because it lacks chat templates and refusal behavior.">base model</span>
+        that mostly &ldquo;knows things,&rdquo; then apply
+        <span class="term" data-tooltip="Training on labeled input-output pairs (e.g. instruction-response pairs) to improve task performance. Often the first stage after pre-training.">supervised fine-tuning</span>
+        (SFT) and
+        <span class="term" data-tooltip="Training that uses human preferences over model outputs (e.g. 'A is better than B') rather than exact labels. RLHF (Reinforcement Learning from Human Feedback) is the canonical example: a reward model learns from preferences, then the LLM is fine-tuned to maximize that reward.">preference-based alignment</span>
+        (e.g., RLHF-style stages) until it becomes an instruction-following assistant that&rsquo;s ideally more truthful, safer, and better calibrated.
+      </p>
+      <p>
+        We have lots of work evaluating these models as black boxes. But if you care about
+        <span class="term" data-tooltip="The study of how neural networks compute internally — their features, circuits, and algorithms — with the goal of predicting, controlling, and trusting their behavior.">mechanistic interpretability</span>, there&rsquo;s a sharper question:
+      </p>
+      <blockquote>
+        <p>When we post-train an LLM, do we rewrite the model&rsquo;s internal machinery&hellip; or do we mostly add a thin control layer on top of what pre-training already built?</p>
+      </blockquote>
+      <p>
+        Du et al. tackle this directly by comparing base models against their post-trained variants from four angles&mdash;knowledge, truthfulness, refusal, and confidence&mdash;using standard mechanistic toolbox techniques like
+        <span class="term" data-tooltip="Replacing activations at a specific layer/position in one forward pass with activations from another run, to test causal impact of that location.">activation patching</span>
+        and
+        <span class="term" data-tooltip="Directions in the space of hidden states that correspond to concepts (e.g. truth vs false). Often computed as the difference between mean activations for two classes.">linear directions in representation space</span>.
+      </p>
+      <p>
+        The paper&rsquo;s headline result is pleasantly crisp:
+      </p>
+      <ul>
+        <li>Some mechanisms are shockingly stable under post-training (where facts live; the &ldquo;truth&rdquo; direction).</li>
+        <li>Some mechanisms are meaningfully rewritten (the &ldquo;refusal&rdquo; direction).</li>
+        <li>And at least one popular hypothesis about confidence doesn&rsquo;t explain the base&rarr;instruct shift (entropy neurons).</li>
+      </ul>
+
+      <hr>
+
+      <div class="aside-personal">
+        <p><strong>TL;DR.</strong></p>
+        <ol style="margin-bottom:0;">
+          <li><strong>Knowledge storage locations don&rsquo;t move.</strong> The neurons/layers/tokens that matter for recalling a fact look almost identical in base vs post-trained models.</li>
+          <li><strong>Knowledge representations partially transfer.</strong> If you patch knowledge activations from base &rarr; instruct, it usually works; instruct &rarr; base often fails. Post-training reuses base representations while also building new ones.</li>
+          <li><strong>Truthfulness is (approximately) a shared
+          <span class="term" data-tooltip="A direction in activation space that can be used to steer or probe a behavior (e.g. add it to increase truthfulness). 'Handle' suggests you can grab and turn it.">linear handle</span>.</strong> The truthfulness direction in
+          <span class="term" data-tooltip="The high-dimensional space of neural network hidden states. Each point is a vector; directions in this space can correspond to semantic concepts like truth or refusal.">activation space</span>
+          is highly similar between base and post-trained models, and transfers well for interventions.</li>
+          <li><strong>Refusal is also linear&mdash;but it changes.</strong> The refusal direction differs sharply between base and post-trained models, and does not transfer forward (base &rarr; instruct) very well.</li>
+          <li><strong>Confidence differences aren&rsquo;t explained by entropy neurons.</strong> The entropy-neuron sets overlap heavily across base and post-training, so whatever changes confidence is subtler than &ldquo;these 10 neurons moved.&rdquo;</li>
+        </ol>
+        <p style="margin-top:1rem;">
+          If you&rsquo;re building
+          <span class="term" data-tooltip="Directions in activation space that, when added to or subtracted from activations during the forward pass, steer model behavior (e.g. toward truth, away from refusal).">steering vectors</span>,
+          <span class="term" data-tooltip="Linear classifiers trained on activations to predict a property (e.g. truth vs false). Used to test whether a concept is linearly encoded.">probes</span>,
+          or
+        <span class="term" data-tooltip="Techniques that modify a model's weights or representations to change its behavior (e.g. editing specific facts, adding constraints) without full retraining.">model edits</span>: you can probably port truth tooling forward from base &rarr; instruct. But for safety/refusal, expect post-training-specific geometry.
+        </p>
+      </div>
+
+      <hr>
+
+      <section id="setup">
+        <h2>The experimental setup</h2>
+        <p>
+          The authors compare:
+        </p>
+        <ul>
+          <li><strong>BASE:</strong> the pre-trained model (no instruction tuning).</li>
+          <li><strong>SFT:</strong> supervised fine-tuning on instruction data.</li>
+          <li><strong>INSTRUCT:</strong> a &ldquo;fully post-trained&rdquo; model (the end product of the post-training pipeline).</li>
+        </ul>
+        <p>
+          They run analyses across major open model families&mdash;especially Llama-3.1-8B and Mistral-7B-v0.3, plus additional models for specific refusal/confidence experiments (e.g., Qwen, Gemma, Llama-2 variants).
+        </p>
+        <p>
+          And they use three kinds of datasets:
+        </p>
+        <ul>
+          <li>Simple true/false factual statements (e.g., city-in-country templates) drawn from prior truth-geometry work.</li>
+          <li>An in-distribution post-training dataset (&ldquo;tulu extracted&rdquo;) built by sampling factual statements from Tulu SFT mixtures and generating counterfactual false variants.</li>
+          <li>Harmful vs harmless instruction prompts (<span class="term" data-tooltip="A benchmark of harmful prompts used to test whether models refuse dangerous requests. Often used to train or evaluate safety.">AdvBench</span> vs <span class="term" data-tooltip="A dataset of harmless instruction-following prompts. Used as the 'safe' contrast when computing refusal directions.">Alpaca</span>) for refusal.</li>
+        </ul>
+      </section>
+
+      <section id="knowledge-location">
+        <h2>1. Knowledge: post-training doesn&rsquo;t move &ldquo;where facts live&rdquo;</h2>
+
+        <h3>The intuition: treat causal tracing like a CT scan</h3>
+        <p>
+          The core tool here is
+          <span class="term" data-tooltip="A family of techniques that trace which internal activations causally affect a model's output, by intervening (e.g. patching) and measuring the effect.">causal tracing</span>
+          / activation patching. You take a true statement and a closely matched false statement, then surgically replace one internal activation in the false run with the activation from the true run. If that flip makes the model output &ldquo;TRUE&rdquo; instead of &ldquo;FALSE,&rdquo; that location mattered for retrieving the relevant knowledge.
+        </p>
+        <p>
+          Concretely, they compute a score like:
+        </p>
+        <div class="eq-block">
+          $$M^l_i(s,\hat{s}) := \log \frac{P(\text{TRUE})}{P(\text{FALSE})} \;\Big|\; \text{patch } h^l_i(\hat{s}) \leftarrow h^l_i(s)$$
+        </div>
+        <p>
+          and then aggregate these scores across many aligned statement pairs to get a heatmap over (layer &times; token position).
+        </p>
+
+        <h3>The result: the heatmaps are basically the same</h3>
+        <p>
+          Across datasets and model families, the &ldquo;hot spots&rdquo; consistently show up at:
+        </p>
+        <ul>
+          <li>the subject token position,</li>
+          <li>the object token position,</li>
+          <li>and the last token (which is always important because it pools context for the final decision).</li>
+        </ul>
+        <p>
+          Critically: BASE and INSTRUCT look nearly identical in these knowledge-location maps. In the Llama-3.1 family, correlations between BASE and INSTRUCT knowledge maps are extremely high (often ~0.98&ndash;0.99+ across datasets), with small maximum differences at knowledge-relevant positions.
+        </p>
+        <p>
+          <strong>Interpretation:</strong> post-training doesn&rsquo;t &ldquo;move&rdquo; factual knowledge into new layers. Whatever pre-training built as a knowledge-retrieval pathway largely remains the pathway.
+        </p>
+      </section>
+
+      <section id="knowledge-repr">
+        <h2>2. Knowledge representations: base &rarr; instruct patches work; instruct &rarr; base patches don&rsquo;t</h2>
+        <p>
+          Knowledge locations may match, but the paper asks a second (more mechanistic) question: even if facts are stored &ldquo;in the same place,&rdquo; are they encoded in the same language?
+        </p>
+        <p>
+          They test this with cross-model patching:
+        </p>
+        <ul>
+          <li><strong>Forward patching:</strong> patch activations from BASE into POST (SFT/INSTRUCT).</li>
+          <li><strong>Backward patching:</strong> patch activations from POST into BASE.</li>
+        </ul>
+        <p>
+          The pattern they report is asymmetric:
+        </p>
+        <ul>
+          <li>BASE &rarr; POST patching is usually successful, recovering similar effects to same-model patching.</li>
+          <li>POST &rarr; BASE patching often fails (larger discrepancies).</li>
+        </ul>
+        <p>
+          <strong>Interpretation:</strong> post-training tends to adapt the base representational scheme (so base activations still &ldquo;make sense&rdquo; inside instruct), while also developing additional representations that the base model doesn&rsquo;t understand.
+        </p>
+        <p>
+          This is a nice middle ground between two extremes: &ldquo;post-training rewrites everything&rdquo; (nope) and &ldquo;post-training is just superficial prompting polish&rdquo; (also nope). Instead: the base model&rsquo;s internal knowledge interface mostly survives&mdash;but post-training extends it.
+        </p>
+      </section>
+
+      <section id="truthfulness">
+        <h2>3. Truthfulness: a stable linear handle that transfers</h2>
+        <p>
+          A big thread in recent mech interp is the idea that &ldquo;truth&rdquo; is represented (at least partly) as a direction in
+          <span class="term" data-tooltip="The high-dimensional space of neural network hidden states. Each point is a vector; directions can correspond to semantic concepts.">activation space</span>: true statements cluster on one side of a hyperplane; false statements cluster on the other.
+        </p>
+        <p>
+          Du et al. take that idea and ask: does post-training change the geometry?
+        </p>
+
+        <h3>The core move: a
+        <span class="term" data-tooltip="Compute the mean activation for each class (e.g. true vs false statements), then take their difference. The resulting vector is a linear direction that separates the classes.">difference-in-means</span>
+        &ldquo;truthfulness direction&rdquo;</h3>
+        <p>
+          They compute a per-layer truthfulness direction:
+        </p>
+        <div class="eq-block">
+          $$t^l = \mathbb{E}_{s \in D_{\text{true}}}[h^l(s)] - \mathbb{E}_{s \in D_{\text{false}}}[h^l(s)]$$
+        </div>
+        <p>
+          using hidden states at a chosen layer and token position (typically the final token of a truth-evaluation prompt).
+        </p>
+
+        <h3>Result 1: the directions are highly similar across base and post-trained models</h3>
+        <p>
+          For Llama-3.1-8B, <span class="term" data-tooltip="A measure of how aligned two vectors are: 1 = identical direction, 0 = orthogonal, −1 = opposite. Used to compare whether directions learned in different models point the same way.">cosine similarity</span>
+          between truthfulness directions in BASE/SFT/INSTRUCT is high (the paper shows strong similarity in the truthfulness-direction heatmaps).
+        </p>
+
+        <h3>Result 2: probes trained on BASE transfer cleanly to INSTRUCT</h3>
+        <p>
+          They train a simple linear probe using $t^l$ and test whether it classifies truth vs false on held-out datasets. Then they do cross-model transfer: train on BASE activations, test on INSTRUCT activations. The transferred probe performs similarly to the native probe trained within INSTRUCT, with small deltas in accuracy across multiple datasets.
+        </p>
+
+        <h3>Result 3: steering via truth directions transfers too</h3>
+        <p>
+          They also perform
+        <span class="term" data-tooltip="Adding or subtracting a direction to/from activations during the forward pass to change model behavior. E.g. add the truth direction to make outputs more truthful.">activation steering</span>: add or subtract the truthfulness direction during the forward pass to flip model outputs between TRUE/FALSE. The base model&rsquo;s direction steers post-trained models nearly as well as the post-trained model&rsquo;s own direction (small differences in their &ldquo;Intervention Effect&rdquo; metric).
+        </p>
+        <p>
+          <strong>Interpretation:</strong> post-training preserves a lot of the internal &ldquo;belief of truth&rdquo; geometry. If you learn a truthfulness handle on BASE (which is often easier/cleaner to study), it tends to remain a handle on INSTRUCT.
+        </p>
+      </section>
+
+      <section id="refusal">
+        <h2>4. Refusal: also linear, but not stable under post-training</h2>
+        <p>
+          Now the contrast. The paper treats refusal as another linearly mediated behavior: you can compute a refusal direction from harmful vs harmless prompts, and then add/ablate that direction to induce or suppress refusal.
+        </p>
+        <p>
+          They learn the refusal direction $r$ analogously to truth:
+        </p>
+        <ul>
+          <li>Take a set of harmful instructions (AdvBench) and harmless instructions (Alpaca).</li>
+          <li>Compute a difference-in-means direction in activation space.</li>
+          <li>Evaluate by intervening and measuring how often the model starts its answer with refusal phrases (&ldquo;I&rsquo;m sorry&hellip;&rdquo;, &ldquo;I can&rsquo;t&hellip;&rdquo;, etc.).</li>
+        </ul>
+
+        <h3>The punchline: refusal directions diverge between BASE and INSTRUCT</h3>
+        <p>
+          Cosine similarity between BASE and INSTRUCT refusal directions is low in their experiments (they show a stark mismatch compared to truthfulness).
+        </p>
+        <p>
+          And more importantly, <span class="term" data-tooltip="Using a direction or mechanism learned on the base model to intervene on the post-trained model. The paper finds this works for truthfulness but not for refusal.">forward transfer</span>
+          fails:
+        </p>
+        <ul>
+          <li>Using the BASE refusal direction to steer INSTRUCT usually has little effect.</li>
+          <li>Using the INSTRUCT refusal direction to steer INSTRUCT is highly effective (ablating it can dramatically reduce refusals on harmful prompts; adding it can induce refusals on harmless prompts).</li>
+        </ul>
+        <p>
+          This supports their broader claim: post-training changes the refusal mechanism in a way that breaks the &ldquo;learn a handle on base, reuse it on instruct&rdquo; workflow.
+        </p>
+        <p>
+          They also connect to prior work suggesting a kind of <span class="term" data-tooltip="Using a direction learned on the post-trained model to intervene on the base model. For refusal, this can induce safer behavior in base without full post-training.">backward transfer</span>
+          (post &rarr; base) is more promising for refusal: you can potentially take the refusal handle learned in a post-trained model and apply it to a base model to induce safer behavior without full post-training.
+        </p>
+      </section>
+
+      <section id="confidence">
+        <h2>5. Confidence: entropy neurons aren&rsquo;t the explanation</h2>
+        <p>
+          Finally, they look at confidence through the lens of
+          <span class="term" data-tooltip="Neurons in the final MLP layer that modulate uncertainty by affecting logit scale more than token preference. Identified by large output weight norms and low variance in direct logit attribution.">entropy neurons</span>&mdash;neurons in the final
+        <span class="term" data-tooltip="Multi-Layer Perceptron: the feedforward sublayer in each transformer block that processes each token position independently. Often where 'concept neurons' or feature detectors live.">MLP</span>
+        layer that modulate uncertainty by affecting logit scale more than token preference.
+        </p>
+        <p>
+          They identify entropy neurons using two criteria:
+        </p>
+        <ul>
+          <li>large output weight norms, and</li>
+          <li>low variance in
+        <span class="term" data-tooltip="How much each neuron contributes to the final logits (pre-softmax scores over the vocabulary). Computed by projecting the neuron's output through the unembedding matrix.">direct logit attribution</span>
+        (computed by projecting neuron output weights through the
+        <span class="term" data-tooltip="The matrix that maps hidden states to vocabulary logits. Each row corresponds to a token; projecting a neuron's output through it shows which tokens that neuron most affects.">unembedding matrix</span>
+        and measuring variance).</li>
+        </ul>
+        <p>
+          Then they compare entropy neuron sets across BASE vs POST models.
+        </p>
+
+        <h3>Result: big overlap, tiny differences</h3>
+        <p>
+          They find substantial overlap in which neurons qualify as &ldquo;entropy neurons&rdquo; between base and post-trained models (often 8&ndash;10 out of 10 overlap), with very small ratio differences for overlapping neurons.
+        </p>
+        <p>
+          <strong>Interpretation:</strong> post-training may change confidence, but it&rsquo;s not as simple as &ldquo;entropy neurons got swapped out.&rdquo; Whatever shifts
+          <span class="term" data-tooltip="How well a model's stated confidence (e.g. probability assigned to its answer) matches its actual accuracy. Post-training often improves calibration.">calibration</span>
+          likely lives in more distributed or subtler mechanisms.
+        </p>
+      </section>
+
+      <hr>
+
+      <section id="meta">
+        <h2>The meta-takeaway: what post-training preserves vs what it rewrites</h2>
+        <p>
+          If I had to compress the paper into one mental model:
+        </p>
+        <blockquote>
+          <p>Pre-training builds the world model. Post-training mostly learns how to talk about it&mdash;except for safety, where it learns a genuinely new control axis.</p>
+        </blockquote>
+        <p>
+          More concretely:
+        </p>
+        <p><strong>Stable under post-training</strong></p>
+        <ul>
+          <li>Where knowledge is retrieved</li>
+          <li>A linear truthfulness/belief signal</li>
+          <li>Entropy-neuron-style confidence regulators (at least as identified here)</li>
+        </ul>
+        <p><strong>Changed by post-training</strong></p>
+        <ul>
+          <li>Refusal behavior geometry</li>
+          <li>Some knowledge representations (post-training adds new representational content that doesn&rsquo;t cleanly map back to base)</li>
+        </ul>
+
+        <div class="diagram">
+          <svg viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Taxonomy: stable vs changed under post-training">
+            <text x="260" y="18" text-anchor="middle" font-size="11" fill="#666" font-weight="600">WHAT POST-TRAINING PRESERVES VS REWRITES</text>
+            <rect x="20" y="35" width="230" height="95" rx="8" fill="#f0f5ff" stroke="#2563eb" stroke-width="1"/>
+            <text x="135" y="58" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">Stable</text>
+            <text x="135" y="78" text-anchor="middle" font-size="10" fill="#374151">Knowledge locations</text>
+            <text x="135" y="93" text-anchor="middle" font-size="10" fill="#374151">Truthfulness direction</text>
+            <text x="135" y="108" text-anchor="middle" font-size="10" fill="#374151">Entropy neurons</text>
+            <text x="135" y="123" text-anchor="middle" font-size="9" fill="#6b7280">Transfer: base → instruct ✓</text>
+
+            <rect x="270" y="35" width="230" height="95" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+            <text x="385" y="58" text-anchor="middle" font-size="12" font-weight="600" fill="#b91c1c">Changed</text>
+            <text x="385" y="78" text-anchor="middle" font-size="10" fill="#374151">Refusal direction</text>
+            <text x="385" y="93" text-anchor="middle" font-size="10" fill="#374151">Some knowledge repr</text>
+            <text x="385" y="108" text-anchor="middle" font-size="10" fill="#374151">(new content)</text>
+            <text x="385" y="123" text-anchor="middle" font-size="9" fill="#6b7280">Transfer: base → instruct ✗</text>
+          </svg>
+        </div>
+      </section>
+
+      <hr>
+
+      <section id="implications">
+        <h2>Why this matters (especially if you&rsquo;re building tooling)</h2>
+
+        <h3>1. You can prototype some mech-interp tools on BASE and port them forward</h3>
+        <p>
+          If truthfulness directions and knowledge locations transfer, you can develop truthfulness probes/steering vectors on BASE, potentially develop model-editing targets on BASE, and then apply those tools on INSTRUCT with minimal re-learning. This is practically useful because BASE models are often &ldquo;cleaner&rdquo; objects for interpretability: fewer chat templates, fewer alignment layers, fewer refusal edge cases.
+        </p>
+
+        <h3>2. Safety is not a free ride</h3>
+        <p>
+          Refusal doesn&rsquo;t behave like truthfulness here: you should not assume that a refusal direction learned on base will be a robust control handle on an instruct model.
+        </p>
+
+        <h3>3. Backward transfer is an underexplored lever</h3>
+        <p>
+          If post-training produces a high-quality refusal direction, you might be able to &ldquo;import&rdquo; that direction into base models (as a form of lightweight
+        <span class="term" data-tooltip="Transferring knowledge from a larger or more capable model to a smaller one, or from a post-trained model to a base model. Can be done via steering, fine-tuning on outputs, or other methods.">distillation</span>
+        / steering) without running the whole post-training pipeline.
+        </p>
+      </section>
+
+      <p>
+        The most interesting part of this paper isn&rsquo;t any single plot&mdash;it&rsquo;s the emerging taxonomy: some
+        <span class="term" data-tooltip="Directions or features in activation space that can be used for classification or steering. Often computed as difference-in-means between two classes.">linear features</span>
+        are &ldquo;pre-training-native&rdquo; and persist through alignment; some are &ldquo;post-training-native&rdquo; and don&rsquo;t survive transfer in the same way. If you care about interpretability as an engineering discipline, this is exactly the kind of map you want: it tells you where you can reuse tools, where you should expect breakage, and where post-training is genuinely doing new internal work.
+      </p>
+      <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">Thanks for reading.</p>
+      <p style="font-size:.85rem; color:#888; text-align:center;">&copy; <span id="copyright-year"></span> Peter Flo</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function() {
+    const c = document.querySelector('.blog-content');
+    if (!c) return;
+    const wc = (c.innerText || c.textContent).trim().split(/\s+/).length;
+    const el = document.getElementById('word-count');
+    if (el) el.textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
+  })();
+  document.getElementById('copyright-year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
