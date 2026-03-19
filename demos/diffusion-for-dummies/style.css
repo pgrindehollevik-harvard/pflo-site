@@ -1,0 +1,67 @@
+/* --- Layout & type --- */
+:root{
+    --bg:#0b0b0c;
+    --card:#131316;
+    --muted:#a9acb2;
+    --text:#f5f7fb;
+    --accent:#7aa8ff;
+    --grid:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color:var(--text);
+    background:radial-gradient(1200px 800px at 70% -20%, #1b1d28 0%, #0b0b0c 55%);
+    line-height:1.7;
+  }
+  main{max-width:860px;margin:0 auto;padding:40px 24px 80px}
+  
+  /* --- Headings & copy --- */
+  h1{font-size:clamp(2rem, 4vw, 3rem);letter-spacing:-.02em;margin:0 0 6px}
+  header p{color:var(--muted);margin:0 0 24px}
+  h2{margin:40px 0 10px;font-size:clamp(1.3rem, 2.6vw, 1.8rem)}
+  p,li{color:#dfe3ec}
+  .math{font-feature-settings:"tnum";font-variant-numeric:tabular-nums}
+  
+  /* --- Cards (viz containers) --- */
+  .viz{
+    margin-top:12px;
+    background:linear-gradient(180deg, #131316, #0f0f12);
+    border:1px solid #23242a;
+    border-radius:16px;
+    padding:14px;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  canvas, img{display:block;width:100%;border-radius:12px}
+  
+  /* --- Range inputs --- */
+  input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:4px;
+    background:#2a2c33; border-radius:999px; margin-top:10px;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:var(--accent); border:2px solid white; box-shadow:0 0 0 4px rgba(122,168,255,.25);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:18px; height:18px; border-radius:50%; background:var(--accent); border:2px solid white;
+  }
+  
+  /* --- Callouts --- */
+  .callout{
+    background:#0f1219; border:1px solid #202433; border-left:4px solid var(--accent);
+    padding:12px 14px; border-radius:12px; color:#dfe3ec;
+    margin:14px 0;
+  }
+  
+  /* --- Code --- */
+  pre{background:#0f1014;border:1px solid #1f2230;border-radius:12px;padding:14px;overflow:auto}
+  code{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#cfe1ff}
+  footer{color:#8991a3;margin-top:36px;text-align:center}
+  
+  /* Utility */
+  .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+  .small{font-size:.9rem;color:var(--muted)}
+  .center{text-align:center}

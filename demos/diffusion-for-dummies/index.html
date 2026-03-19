@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diffusion for Dummies – An Interactive Walkthrough</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- KaTeX for math -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]});"></script>
+</head>
+<body>
+  <main id="main">
+    <header>
+      <h1>Diffusion for Dummies</h1>
+      <p>A visual, intuitive, math-grounded guide to how diffusion models turn noise into images.</p>
+      <div class="callout small">
+        Tip: in the forward process slider, <strong>t = 0</strong> is a clean image and <strong>t = 1</strong> is full noise.
+      </div>
+    </header>
+
+    <nav class="viz" style="padding:10px">
+      <div class="row small">
+        <span>Quick navigation</span>
+        <span><a href="#forward">Forward</a> · <a href="#reverse">Reverse</a> · <a href="#training">Training</a> · <a href="#sampling">Sampling</a> · <a href="#latent">Latents</a></span>
+      </div>
+    </nav>
+
+    <section id="intro" class="step">
+      <h2>1. Why Diffusion?</h2>
+      <p>We make generation easy by breaking it into <em>tiny denoising steps</em>. First, we corrupt an image with Gaussian noise (the <strong>forward process</strong>). Then we learn to reverse those steps (the <strong>reverse process</strong>).</p>
+      <div class="viz" id="viz-intro">
+        <canvas id="noiseCanvas" width="768" height="432" aria-label="noise – image mix"></canvas>
+        <input type="range" id="noiseSlider" min="0" max="1000" value="0" aria-label="reverse slider (0=noise, 1=image)">
+        <div class="small center">Reverse intuition: slide right = remove noise.</div>
+      </div>
+    </section>
+
+    <section id="forward" class="step">
+      <h2>2. The Forward Process</h2>
+      <p>We corrupt a clean image \(x_0\) at step \(t\) via</p>
+      <p class="math">\( x_t = \sqrt{\bar{\alpha}_t}\,x_0 + \sqrt{1 - \bar{\alpha}_t}\,\varepsilon,\quad \varepsilon\sim\mathcal N(0,I) \)</p>
+      <div class="callout">Here \( \beta_t \) is a small “noise rate” per step, \( \alpha_t = 1-\beta_t \), and \( \bar\alpha_t = \prod_{s=1}^{t}\alpha_s \). Larger \(t\) ⇒ more noise.</div>
+
+      <div class="viz" id="viz-forward">
+        <canvas id="forwardCanvas" width="768" height="432"></canvas>
+        <input type="range" id="forwardSlider" min="0" max="1000" value="0" aria-label="forward slider (0=clean, 1=noise)">
+        <div class="row small">
+          <span>Schedule:</span>
+          <select id="schedule">
+            <option value="linear">Linear β</option>
+            <option value="cosine">Cosine</option>
+          </select>
+          <span id="tLabel">t = 0</span>
+        </div>
+        <canvas id="schedulePlot" width="768" height="120" aria-label="alpha-bar plot"></canvas>
+        <div class="small center">Plot of \( \bar\alpha_t \) (amount of signal kept). It decreases as noise increases.</div>
+      </div>
+    </section>
+
+    <section id="reverse" class="step">
+      <h2>3. The Reverse Process (Toy)</h2>
+      <p>The model learns \( \varepsilon_\theta(x_t,t) \) so it can step toward a cleaner \(x_{t-1}\). Below, a simple <em>toy denoiser</em> (box blur) stands in for the learned network to show the iterative feel:</p>
+      <p class="math">
+        \( x_{t-1} \approx \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{1-\alpha_t}{\sqrt{1-\bar\alpha_t}}\;\hat\varepsilon(x_t,t)\right). \)
+      </p>
+      <div class="viz">
+        <canvas id="reverseCanvas" width="768" height="432"></canvas>
+        <div class="row small">
+          <button id="reverseRun">Run 25 steps</button>
+          <span id="reverseLabel">status: ready</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="training" class="step">
+      <h2>4. Training Objective</h2>
+      <p>We train by predicting the noise we added:</p>
+      <p class="math">\( \mathcal L_{\text{simple}} = \mathbb E_{x_0,t,\varepsilon}\big[\|\varepsilon - \varepsilon_\theta(x_t,t)\|^2\big]. \)</p>
+      <pre><code class="language-python">for x0 in dataloader:
+  t = torch.randint(0, T, (B,))
+  eps = torch.randn_like(x0)
+  xt = sqrt_alphabar[t]*x0 + sqrt_one_minus_alphabar[t]*eps
+  pred = model(xt, t)
+  loss = F.mse_loss(pred, eps)</code></pre>
+    </section>
+
+    <section id="sampling" class="step">
+      <h2>5. Sampling (DDPM)</h2>
+      <pre><code class="language-python">x = torch.randn((1,3,64,64))
+for t in reversed(range(T)):
+  z = torch.randn_like(x) if t > 0 else 0
+  eps = model(x, t)
+  x = (x - coef(t)*eps)/sqrt(alpha[t]) + sigma(t)*z</code></pre>
+      <div class="callout">Classifier-free guidance (CFG) mixes conditional and unconditional predictions to steer samples without an explicit classifier.</div>
+    </section>
+
+    <section id="latent" class="step">
+      <h2>6. Latent Diffusion</h2>
+      <p>Stable Diffusion runs the same math in the autoencoder’s latent space \(z\) (much smaller than pixels), then decodes back to the image. That’s why it’s fast.</p>
+      <img src="latent-diagram.png" alt="Latent diffusion diagram placeholder" />
+    </section>
+
+    <section id="outro" class="step">
+      <h2>7. Try It Yourself</h2>
+      <pre><code class="language-python">from diffusers import StableDiffusionPipeline
+pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
+pipe.to("cuda")
+image = pipe("a fox in a misty forest", num_inference_steps=25, guidance_scale=7.5).images[0]
+image.save("out.png")</code></pre>
+    </section>
+
+    <footer>
+      <p>Built by Peter. Math via KaTeX. Schedules & toy reverse simulated on-page.</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -350,6 +350,43 @@
       }
     }
 
+    .blog-shell { min-height: 100vh; display: flex; }
+    .blog-sidebar {
+      width: 280px; min-width: 280px; background: #fafafa; border-right: 1px solid #e5e5e5;
+      padding: 40px 32px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      font-family: 'SF Mono','Monaco','Inconsolata','Fira Code',monospace;
+    }
+    .blog-sidebar-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 10px; letter-spacing: 0.02em; }
+    .blog-sidebar-subtitle { font-size: 12px; color: #888; margin-bottom: 22px; line-height: 1.5; }
+    .blog-toc { list-style: none; padding: 0; margin: 0; }
+    .blog-toc-item { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
+    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding:4px 0; transition: color 0.2s; }
+    .blog-toc-item a:hover { color:#222; }
+    .blog-toc-item.active > a { color: var(--accent); font-weight: 600; }
+    .blog-toc-sublist { list-style: none; padding: 0; margin: 6px 0 14px 14px; }
+    .blog-toc-sublist .blog-toc-item { font-size: 12px; margin-bottom: 4px; }
+    .blog-main { flex: 1; min-width: 0; }
+    .blog-sidebar.collapsed { transform: translateX(-100%); width: 0; min-width: 0; padding: 40px 0; border-right: none; overflow: hidden; }
+    .sidebar-toggle {
+      position: fixed; left: 280px; top: 18px; width: 28px; height: 28px; background: #fff;
+      border: 1px solid #e5e5e5; border-left: none; border-radius: 0 7px 7px 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; z-index: 101;
+      transition: left 0.25s ease, box-shadow 0.2s ease; box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+    .sidebar-toggle:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.14); }
+    .blog-sidebar.collapsed ~ .sidebar-toggle { left: 0; }
+    .sidebar-toggle-icon { width: 9px; height: 9px; border-right: 1.8px solid #666; border-bottom: 1.8px solid #666; transform: rotate(135deg); transition: transform 0.25s ease; }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform: rotate(-45deg); }
+    @media (max-width: 900px) {
+      .blog-shell { flex-direction: column; }
+      .blog-sidebar {
+        width: 100%; height: auto; position: relative; border-right: none;
+        border-bottom: 1px solid #e5e5e5; padding: 20px 24px;
+      }
+      .blog-sidebar.collapsed { display: none; }
+      .sidebar-toggle { display: none; }
+    }
+
     /* --- Term tooltips --- */
     .term {
       position: relative;
@@ -568,7 +605,14 @@
   </style>
 </head>
 <body>
-  <main class="wrap">
+  <div class="blog-shell">
+    <aside class="blog-sidebar" id="sidebar" aria-label="table of contents">
+      <div class="blog-sidebar-title">GAME THEORY</div>
+      <div class="blog-sidebar-subtitle">Hiring essay<br/>Spring 2026</div>
+      <nav><ul class="blog-toc" id="blog-toc"></ul></nav>
+    </aside>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar"><div class="sidebar-toggle-icon"></div></button>
+    <main class="blog-main"><div class="wrap">
     <section class="main" aria-label="content">
       <div class="blog-content">
         <div class="blog-breadcrumb">
@@ -1144,9 +1188,21 @@
         </section>
       </div>
     </section>
-  </main>
+  </div></main></div>
 
   <script>
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      if (!sidebar || !toggle) return;
+      const saved = localStorage.getItem('game-theory-hiring-sidebar-collapsed');
+      if (saved === 'true') sidebar.classList.add('collapsed');
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('game-theory-hiring-sidebar-collapsed', sidebar.classList.contains('collapsed'));
+      });
+    })();
+
     // ===== Word count =====
     (function() {
       const content = document.querySelector('.blog-content');
@@ -1503,6 +1559,65 @@
       if (yearEl) {
         yearEl.textContent = new Date().getFullYear();
       }
+    })();
+
+    (function() {
+      const toc = document.getElementById('blog-toc');
+      const content = document.querySelector('.blog-content');
+      if (!toc || !content) return;
+      const secs = Array.from(content.querySelectorAll('section[id]')).filter(s => s.querySelector('h2'));
+      function slugify(s) { return s.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-'); }
+      const tocItems = [];
+      secs.forEach(sec => {
+        const h2 = sec.querySelector('h2');
+        if (!h2) return;
+        if (!sec.id) sec.id = slugify(h2.textContent);
+        const li = document.createElement('li');
+        li.className = 'blog-toc-item';
+        const a = document.createElement('a');
+        a.href = `#${sec.id}`;
+        a.textContent = h2.textContent;
+        li.appendChild(a);
+        const h3s = Array.from(sec.querySelectorAll('h3'));
+        if (h3s.length) {
+          const sub = document.createElement('ul');
+          sub.className = 'blog-toc-sublist';
+          h3s.forEach(h3 => {
+            if (!h3.id) h3.id = `${sec.id}--${slugify(h3.textContent)}`;
+            const subli = document.createElement('li');
+            subli.className = 'blog-toc-item';
+            const suba = document.createElement('a');
+            suba.href = `#${h3.id}`;
+            suba.textContent = h3.textContent;
+            subli.appendChild(suba);
+            sub.appendChild(subli);
+          });
+          li.appendChild(sub);
+        }
+        toc.appendChild(li);
+        tocItems.push(li);
+      });
+      toc.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href') || '';
+          if (!href.startsWith('#')) return;
+          const target = document.querySelector(href);
+          if (!target) return;
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', href);
+        });
+      });
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.id;
+          tocItems.forEach(item => item.classList.remove('active'));
+          const activeLink = toc.querySelector(`a[href="#${CSS.escape(id)}"]`);
+          activeLink?.closest('.blog-toc-item')?.classList.add('active');
+        });
+      }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+      secs.forEach(s => observer.observe(s));
     })();
   </script>
 </body>

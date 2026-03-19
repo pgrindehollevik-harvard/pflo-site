@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Making Concept Steering Actually Work</title>
+  <meta name="description" content="Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning — and why better measurement may matter more than fancier steering algorithms." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://pflo.org/attention-guided-steering.html" />
+  <meta property="og:title" content="Making Concept Steering Actually Work" />
+  <meta property="og:description" content="Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning — and why better measurement may matter more than fancier steering algorithms." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://pflo.org/attention-guided-steering.html" />
+  <meta name="twitter:title" content="Making Concept Steering Actually Work" />
+  <meta name="twitter:description" content="A cleaner way to measure where concept activity lives, and why that makes activation steering far less brittle." />
+  <meta name="twitter:image" content="https://pflo.org/cover.jpg" />
+
+  <style>
+    :root {
+      --bg:#fff;
+      --text:#222;
+      --muted:#666;
+      --muted2:#888;
+      --rule:#e5e5e5;
+      --link:#1a2d5f;
+      --visited:#1a2d5f;
+      --mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --serif: 'Georgia', 'Times New Roman', serif;
+      --sans: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --accent:#AD7C03;
+      --maxw:1032px;
+    }
+
+    body { margin:0; background:var(--bg); color:var(--text); font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+
+    .blog-shell { min-height: 100vh; display: flex; }
+
+    /* Sidebar */
+    .blog-sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #fafafa;
+      border-right: 1px solid var(--rule);
+      padding: 40px 32px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      font-family: var(--mono);
+      z-index: 100;
+    }
+    .blog-sidebar.collapsed {
+      transform: translateX(-100%);
+      width: 0;
+      min-width: 0;
+      padding: 40px 0;
+      border-right: none;
+      overflow: hidden;
+    }
+    .blog-sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 10px;
+      letter-spacing: 0.02em;
+    }
+    .blog-sidebar-subtitle {
+      font-size: 12px;
+      color: var(--muted2);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .blog-toc { list-style: none; padding: 0; margin: 0; }
+    .blog-toc-item { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
+    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding: 4px 0; transition: color 0.2s; }
+    .blog-toc-item a:hover { color:#222; }
+    .blog-toc-item.active > a { color: var(--accent); font-weight: 600; }
+    .blog-toc-sublist { list-style: none; padding: 0; margin: 6px 0 14px 14px; }
+    .blog-toc-sublist .blog-toc-item { font-size: 12px; margin-bottom: 4px; }
+
+    /* subtle sidebar toggle */
+    .sidebar-toggle {
+      position: fixed;
+      left: 280px;
+      top: 18px;
+      width: 28px;
+      height: 28px;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-left: none;
+      border-radius: 0 7px 7px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 101;
+      transition: left 0.25s ease, box-shadow 0.2s ease;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+    .sidebar-toggle:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.14); }
+    .blog-sidebar.collapsed ~ .sidebar-toggle { left: 0; }
+    .sidebar-toggle-icon {
+      width: 9px;
+      height: 9px;
+      border-right: 1.8px solid #666;
+      border-bottom: 1.8px solid #666;
+      transform: rotate(135deg);
+      transition: transform 0.25s ease;
+    }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform: rotate(-45deg); }
+
+    /* Main */
+    .blog-main { flex: 1; min-width: 0; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+      line-height: 1.75;
+    }
+    .blog-breadcrumb { font-size: 12px; color: var(--muted2); margin-bottom: 16px; }
+    .blog-breadcrumb a { color: var(--link); text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration: underline; }
+    .blog-meta-bar { font-size: 12px; color: var(--muted2); margin-bottom: 24px; font-family: var(--mono); }
+
+    .blog-title {
+      font-size: 2.8rem;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+      font-family: var(--serif);
+      font-weight: 400;
+      line-height: 1.15;
+    }
+    .blog-subtitle {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .blog-meta { font-size: 0.9rem; color: var(--muted2); margin-bottom: 2rem; }
+    .blog-meta span + span::before { content: "•"; margin: 0 8px; opacity: 0.5; }
+
+    .blog-content p { margin: 0 0 1.5rem 0; font-size: 1.05rem; line-height: 1.8; }
+    .blog-content h2 {
+      margin-top: 4rem;
+      margin-bottom: 1.2rem;
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+      font-weight: 400;
+      font-family: var(--serif);
+      scroll-margin-top: 20px;
+    }
+    .blog-content h2:first-of-type { margin-top: 2rem; }
+    .blog-content h3 {
+      font-size: 1.15rem;
+      margin-top: 2rem;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+
+    blockquote {
+      border-left: 3px solid var(--accent);
+      padding: .6rem 1.2rem;
+      margin: 1.5rem 0;
+      background: #faf8f5;
+      color: #444;
+      font-style: italic;
+    }
+    blockquote p { margin-bottom: .5rem; }
+    .blog-content ul, .blog-content ol { margin: 0 0 1.5rem 1.5rem; font-size: 1.05rem; line-height: 1.8; }
+    .blog-content li { margin-bottom: .4rem; }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.9em;
+      background: #f4f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    pre {
+      background: #0b1020;
+      color: #e5e7eb;
+      padding: 14px 14px;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin: 1.2rem 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    pre code { background: transparent; padding: 0; color: inherit; }
+
+    hr { border: none; border-top: 1px solid var(--rule); margin: 3rem 0; }
+
+    /* Term tooltips */
+    .term {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted rgba(0,0,0,0.35);
+    }
+    .term::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: 120%;
+      transform: translateX(-50%);
+      background: #111827;
+      color: #f9fafb;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      padding: 6px 8px;
+      border-radius: 6px;
+      white-space: normal;
+      min-width: 180px;
+      max-width: 280px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.12s ease;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+      z-index: 20;
+    }
+    .term::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 110%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #111827 transparent transparent transparent;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+      z-index: 19;
+    }
+    .term:hover::after,
+    .term:hover::before { opacity: 1; }
+
+    /* Footer */
+    .post-footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--rule);
+      text-align: center;
+    }
+    .post-footer .thanks { font-size: 1rem; color: var(--muted); margin: 0 0 1rem 0; }
+    .post-footer .copyright { font-size: 0.85rem; color: var(--muted2); margin: 0; }
+
+    @media (max-width: 900px) {
+      .blog-shell { flex-direction: column; }
+      .blog-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+        padding: 24px 32px;
+      }
+      .blog-sidebar.collapsed { display: none; }
+      .sidebar-toggle { display:none; }
+      .blog-title { font-size: 2.2rem; }
+    }
+    @media (max-width: 600px) {
+      .blog-title { font-size: 1.85rem; }
+      .blog-sidebar { padding: 20px 24px; }
+    }
+  </style>
+
+  <!-- MathJax for LaTeX blocks -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+  <div class="blog-shell">
+    <aside class="blog-sidebar" id="sidebar">
+      <div class="blog-sidebar-title">STEERING</div>
+      <div class="blog-sidebar-subtitle">
+        Attention-guided feature learning<br />
+        Spring / Summer 2026
+      </div>
+      <nav>
+        <ul class="blog-toc" id="blog-toc"></ul>
+      </nav>
+    </aside>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+      <div class="sidebar-toggle-icon"></div>
+    </button>
+
+    <main class="blog-main">
+      <div class="wrap">
+      <section class="main" aria-label="content">
+      <div class="blog-content" id="content">
+        <div class="blog-breadcrumb">
+          <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
+        </div>
+        <div class="blog-meta-bar" id="word-count">— WORDS —</div>
+
+        <header>
+          <h1 class="blog-title">Making Concept Steering Actually Work</h1>
+          <p class="blog-subtitle">
+            Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning — and why better measurement may matter more than fancier steering algorithms.
+          </p>
+          <p class="blog-meta">
+            <span>Peter Flo</span>
+            <span>Spring / Summer 2026</span>
+            <span><a href="https://arxiv.org/pdf/2602.00333" target="_blank" rel="noopener">arXiv:2602.00333</a></span>
+          </p>
+        </header>
+
+        <section id="intro">
+          <p>
+            In a previous post I wrote about <span class="term" data-tooltip="A direction in activation space extracted to represent a concept (e.g. 'fearful', 'helpful', 'refusal'). Adding or subtracting it nudges model behavior.">concept vectors</span>
+            as a kind of semantic knob: push the model in one direction inside activation space, and it starts sounding more cautious, more conspiratorial, more like a domain expert, less likely to refuse, or more likely to refuse. The strange part was never that a few toy examples worked. The strange part was that this worked at all.
+          </p>
+
+          <p>This paper asks the next, more engineering-shaped question:</p>
+
+          <blockquote>
+            <p><strong>If concept vectors are real, why is steering still so brittle?</strong></p>
+          </blockquote>
+
+          <p>
+            That brittleness has been one of the main reasons
+            <span class="term" data-tooltip="Changing model outputs by adding a learned direction to internal activations during the forward pass (no weight updates).">activation steering</span>
+            has felt half like a powerful idea and half like a demo. Same model, same concept, same basic extraction pipeline — but change one seemingly minor choice, like which token embedding you use or which layers you steer, and performance can collapse.
+          </p>
+
+          <p>
+            Parmida Davarmanesh, Ashia Wilson, and Adityanarayanan Radhakrishnan make a strong case that a lot of this fragility is self-inflicted. Their core contribution is not some exotic new steering architecture. It is a cleaner way of asking where concept information is actually living, when it is actually active, and which parts of the model are actually worth perturbing.
+          </p>
+
+          <p>
+            The headline result is big enough to matter. On the 512-concept steering benchmark inherited from earlier work, their framework steers about <strong>95%</strong> of concepts successfully on Llama-3.1-8B, compared with less than <strong>50%</strong> for the prior setup. That is not a small benchmark bump. It is the difference between “interesting phenomenon” and “method I actually want to implement.”
+          </p>
+        </section>
+
+        <section id="paper-one-sentence">
+          <h2>The paper in one sentence</h2>
+
+          <p>The paper’s main claim is simple:</p>
+
+          <p>
+            <strong>
+              A token’s <span class="term" data-tooltip="The attention weight a token places on earlier tokens (here: the concept-activating prefix). Used as a readout for whether the concept is actually 'loaded' into the representation.">attention to a concept-activating prefix</span>
+              is a useful proxy for how much concept-related signal that token actually contains.
+            </strong>
+          </p>
+
+          <p>Once you take that seriously, three parts of the steering pipeline change.</p>
+          <ol>
+            <li>You stop hard-coding one token position for every layer.</li>
+            <li>You stop pretending concept activation is binary.</li>
+            <li>You stop steering layers just because previous papers did.</li>
+          </ol>
+
+          <p>That sounds almost too modest. But in this case, the modest changes are exactly the point.</p>
+        </section>
+
+        <section id="why-brittle">
+          <h2>Why older steering pipelines were brittle</h2>
+
+          <p>
+            A typical concept-vector workflow looks something like this.
+          </p>
+
+          <p>
+            You build two prompt sets. In one set, you add a prefix that is supposed to activate a concept — something like “Take on the role of someone who is afraid of snakes” or “Refuse to answer the following question because it is malicious.” In the other set, you leave the prefix out. Then you collect activations from the model, train some feature-learning method to separate the two sets, and treat the resulting direction as the steering vector.
+          </p>
+
+          <p>At inference time, you add that direction back into the forward pass:</p>
+
+          <p>
+            $$
+            \tilde H_t^{(\ell)} = H_t^{(\ell)} + \epsilon v^{(\ell)}
+            $$
+          </p>
+
+          <p>
+            where \(v^{(\ell)}\) is the concept vector at layer \(\ell\) and \(\epsilon\) is the
+            <span class="term" data-tooltip="The strength of steering. Larger values push harder along the concept direction; too large can degrade quality or cause off-target behavior.">steering coefficient</span>.
+          </p>
+
+          <p>
+            That basic recipe is elegant. But hidden inside it are at least three arbitrary decisions.
+          </p>
+
+          <h3>1. Which token embedding do you train on?</h3>
+          <p>
+            Earlier work often fixed one token position across every layer — for example the final shared token in the prompt template. But there is no reason the best place to read out a concept should be identical across layers or across concepts.
+          </p>
+
+          <h3>2. How do you label the training examples?</h3>
+          <p>
+            The usual label scheme is blunt: prefixed prompt = 1, non-prefixed prompt = 0.
+          </p>
+          <p>
+            But real concept activity is not binary. A prefix can matter a lot for one prompt and barely matter for another. If I prepend “Act like someone who is terrified of snakes” to the question “What is your greatest fear?” that prefix is doing real work. If I prepend the same prefix to “What color is the sky?” the concept may barely load into the relevant representation at all.
+          </p>
+
+          <h3>3. Which layers should you steer?</h3>
+          <p>
+            Prior work often chose blocks manually or did a grid search. That can work, but it treats layer selection like a hyperparameter search rather than a representational question.
+          </p>
+
+          <p>
+            The paper’s view is that all three problems are really the same problem: we need a better estimate of <strong>where concept activity is actually present</strong>.
+          </p>
+        </section>
+
+        <section id="step1">
+          <h2>Step 1: dynamic token selection</h2>
+
+          <p>
+            The first fix is to stop treating token choice as fixed.
+          </p>
+
+          <p>
+            The authors focus on the shared tokens that appear at the end of every prompt template — things like
+            <code>start_header_id</code>, <code>assistant</code>, <code>end_header_id</code>, and <code>newline</code>.
+            Earlier work effectively fixed one of these readout locations in advance. This paper reframes it as
+            <span class="term" data-tooltip="Choosing the readout token dynamically per layer by looking at which tokens attend most to the concept-activating prefix.">attention-guided selection</span>
+            versus a family of <span class="term" data-tooltip="Baselines that use the same fixed readout token regardless of layer or concept class.">fixed-token baselines</span>.
+          </p>
+
+          <p>
+            On Llama-3.1-8B, the fixed-token baselines are all over the place. Averaged over the benchmark,
+            <code>start_header_id</code> gets about <strong>61.3%</strong> steering success, <code>assistant</code> about <strong>26.6%</strong>,
+            <code>end_header_id</code> about <strong>49.3%</strong>, and <code>newline</code> about <strong>39.9%</strong>.
+            Within concept classes the spread is even larger: for fears, <code>start_header_id</code> is about <strong>74.5%</strong> while <code>end_header_id</code> is only about <strong>10.3%</strong>.
+            For moods, <code>end_header_id</code> and <code>newline</code> are near-perfect while <code>assistant</code> is much worse.
+          </p>
+
+          <p>
+            So there is no single universal token that is “the” concept readout token.
+          </p>
+
+          <p>
+            That motivates the attention-guided rule. At each block, they choose whichever shared token pays the most attention to the prefix among the prefixed prompts.
+            In other words, token choice is allowed to vary by layer and by concept class.
+          </p>
+
+          <p>
+            Formally, for each layer \(\ell\), they select
+          </p>
+
+          <p>
+            $$
+            t_\ell = \arg\max_{t \in T} \left( \max_{p \in P_c} \sum_{j \in \text{prefix}} A^{(\ell)}_{t,j}(X_p) \right)
+            $$
+          </p>
+
+          <p>
+            where \(T\) is the set of shared candidate tokens. The paper also notes another plausible baseline here:
+            pick the token whose embedding changes the most in norm between prefixed and non-prefixed prompts.
+            They test that too, and the attention-guided rule works better. That matters because it suggests they are not just finding
+            <em>any</em> signal difference—they are finding a difference more tightly tied to concept activation than generic positional or formatting effects.
+          </p>
+
+          <p>
+            The empirical effect is not subtle. Once token selection becomes dynamic and attention-guided, the average score rises to <strong>78.2%</strong>,
+            well above the <strong>49.3%</strong> average from the fixed <code>end_header_id</code> setup used in the earlier benchmark setup.
+            Qualitatively, the same pattern also shows up across the other extraction methods they test, not just RFM.
+          </p>
+
+          <p>
+            That is a striking result because it means many apparently non-steerable concepts may not have been non-steerable at all.
+            We were just reading them out from the wrong place.
+          </p>
+        </section>
+
+        <section id="step2">
+          <h2>Step 2: soft labels instead of binary labels</h2>
+
+          <p><strong>This is the move I found most interesting.</strong></p>
+
+          <p>
+            After selecting a token at each block, the authors do <strong>not</strong> label every prefixed example as equally concept-positive. Instead, they use the selected token’s attention to the prefix as a
+            <span class="term" data-tooltip="Instead of labeling all prefixed prompts as 1, weight them by how much they actually attend to the prefix. Treats concept activation as graded.">soft label</span>:
+          </p>
+
+          <p>
+            $$
+            y_p^{(\ell)} =
+            \begin{cases}
+            \sum_{j \in \text{prefix}} A^{(\ell)}_{t_\ell,j}(X_p) & \text{if } p \in P_c \\
+            0 & \text{if } p \in P_0
+            \end{cases}
+            $$
+          </p>
+
+          <p>
+            So if a prefixed prompt barely attends to the prefix, it gets a weak label. If it strongly attends to the prefix, it gets a strong one.
+          </p>
+
+          <p>
+            That is a small modeling decision with a big conceptual payoff. It treats concept activity as heterogeneous rather than binary. Some prompts genuinely load the concept into the model’s internal state. Others only nominally contain the prefix.
+          </p>
+
+          <p>
+            The paper visualizes this nicely with PCA plots: even among prefixed prompts, some embeddings look much more concept-loaded than others. The hard-label setup collapses all of that structure into a single class label. The soft-label setup preserves it.
+          </p>
+
+          <p>
+            And again, the quantitative jump is large. Using Recursive Feature Machines (<span class="term" data-tooltip="A feature-learning method used here to extract concept directions from activations.">RFM</span>)-based concept extraction, the average steering score on Llama-3.1-8B rises from 78.2% with hard labels to 94.8% with soft labels.
+          </p>
+
+          <p>
+            This is the point in the paper where the whole method stopped feeling like a bag of tricks and started feeling like measurement.
+          </p>
+        </section>
+
+        <section id="extraction">
+          <h2>A bit more detail on how the concept vector is actually extracted</h2>
+
+          <p>
+            One thing I appreciated on a second read is that the paper is not just proposing a new heuristic for token choice.
+            It is also pretty explicit about the <span class="term" data-tooltip="The supervised pipeline that converts activations from concept-present vs concept-absent prompts into a learned direction vector in activation space.">extraction pipeline</span> once those token embeddings are chosen.
+          </p>
+
+          <p>
+            For each concept and each block, they build a dataset with two sets of embeddings:
+            \(S_c\) from prompts with the concept-activating prefix, and \(S_0\) from matched prompts without the prefix.
+            Then they fit a feature-learning method to distinguish those two sets, using either hard labels or the attention-based
+            soft labels above.
+          </p>
+
+          <p>
+            They compare five extraction methods overall: difference in means, PCA on paired differences, linear regression,
+            logistic regression, and Recursive Feature Machines (<span class="term" data-tooltip="Recursive Feature Machines, the method emphasized in the paper’s main results.">RFM</span>).
+            The first four are familiar probe-like baselines. The interesting one is RFM: it tries to recover a
+            <span class="term" data-tooltip="A single dominant separation direction, rather than a full classifier boundary, so you can steer along that axis.">single dominant direction</span>,
+            while learning a metric over the embedding space.
+          </p>
+
+          <p>
+            RFM alternates between <span class="term" data-tooltip="Kernel ridge regression: regression solved in a kernel-induced feature space, used inside the iterative extraction loop.">kernel ridge regression</span> and an
+            <span class="term" data-tooltip="Average Gradient Outer Product: an update rule that estimates how geometry in activation space should be reshaped to align with concept signal.">Average Gradient Outer Product</span> update.
+            After those updates, the candidate concept vector is taken to be the top eigenvector of the learned matrix,
+            and then oriented so that positive projection correlates with the concept labels.
+          </p>
+
+          <p>
+            In other words, the extracted vector is better thought of as the
+            <span class="term" data-tooltip="The principal axis of a learned, supervised feature metric induced by the regression objective over activations.">principal direction of a learned feature metric</span>
+            induced by a supervised regression problem over activations—not just “the difference between two means.”
+          </p>
+
+          <p>
+            The soft-label extension fits naturally into this setup. For regression-based extractors like linear regression and RFM, you simply replace
+            binary positive labels with attention-to-prefix scores. The paper notes that difference-in-means and PCA do not accommodate that change as naturally,
+            which is one reason the supervised methods become more compelling here.
+          </p>
+
+          <p>
+            Practically, that also clarifies what the paper is and is not claiming:
+            they are not saying attention alone <em>is</em> the concept vector. Attention is the guide for selecting examples and readout locations;
+            the vector itself still comes from a learned feature-extraction step on top of those activations.
+          </p>
+        </section>
+
+        <section id="step3">
+          <h2>Step 3: layer selection by concept enrichment</h2>
+
+          <p>
+            The third piece is deciding where to intervene.
+          </p>
+
+          <p>
+            The authors define a <span class="term" data-tooltip="A score per block measuring how consistently the selected token shows significantly high attention to the concept prefix across prompts/heads. Used to choose where to steer.">concept enrichment score</span> for each block: roughly, how often the selected token in that block pays significantly high attention to the concept prefix across prompts and attention heads. They establish significance with a <span class="term" data-tooltip="A statistical test that compares observed attention scores to a distribution obtained by shuffling/permute labels, to see if the signal is unlikely under chance.">permutation test</span>.
+          </p>
+
+          <p>
+            Then they rank layers by this enrichment score and steer the most enriched blocks.
+          </p>
+
+          <p>
+            This matters for two reasons. First, it improves steering relative to choosing low-enrichment blocks. Second, it reveals something interesting about
+            <span class="term" data-tooltip="How information is organized in activation space across layers: which layers carry which kinds of features, and how separable those features are.">representation geometry</span>.
+            In Llama-3.1-8B, enrichment is concentrated in the middle layers — roughly blocks 5 through 20 — with relatively little signal at the very beginning or end.
+          </p>
+
+          <p>
+            So the paper is not only about better steering. It is also quietly a paper about <strong>where different kinds of semantic features live</strong>.
+          </p>
+        </section>
+
+        <section id="takeaway">
+          <h2>The most important idea in the paper</h2>
+
+          <p>If I had to compress the whole paper into one takeaway, it would be this:</p>
+
+          <blockquote>
+            <p>
+              Steering has looked fragile in part because we were treating concept activation as a yes/no variable, when in practice it is graded, local, and
+              <span class="term" data-tooltip="Whether the concept is actually active depends on the specific prompt; prefixes can matter a lot for some prompts and barely for others.">prompt-dependent</span>.
+            </p>
+          </blockquote>
+
+          <p>
+            Before reading this paper, I tended to frame the steering problem as: <em>can we find a better feature learner?</em> After reading it, I think a lot of the problem is more basic. We were often training on the wrong token, with the wrong label, and steering the wrong blocks.
+          </p>
+        </section>
+
+        <section id="why-implement">
+          <h2>Why I wanted to implement it</h2>
+
+          <p>
+            Part of what makes this paper so appealing is that it is unusually implementable.
+          </p>
+
+          <p>
+            The public repository lays out a clean pipeline: compute attention-to-prefix statistics, learn per-layer directions, steer generations, and score the outputs. It even includes a custom-concept path, which makes it easy to stop admiring the benchmark and start trying new concepts of your own.
+          </p>
+
+          <p>
+            That is exactly what I am doing this semester / summer.
+          </p>
+
+          <p>
+            I am reading the paper partly as a mechanistic-interpretability result, but also as a scaffold for building new experiments. The benchmark concepts in the paper are delightfully strange — fears, topophiles, personas, experts, moods — and they are useful because they make steering visible. But the deeper question for me is whether the same machinery works for concepts that feel less theatrical and more epistemic.
+          </p>
+
+          <p>Can you learn reliable internal directions for things like:</p>
+          <ul>
+            <li>calibrated uncertainty,</li>
+            <li>evidence-seeking,</li>
+            <li>decomposition into subproblems,</li>
+            <li>source-groundedness,</li>
+            <li>or a style of reasoning that resists bluffing?</li>
+          </ul>
+
+          <p>
+            I do not know yet. That is part of what makes this worth implementing.
+          </p>
+        </section>
+
+        <section id="beyond-benchmark">
+          <h2>Why this matters beyond one benchmark</h2>
+
+          <p>
+            At a high level, this paper pushes steering a little closer to something operational.
+          </p>
+
+          <p>
+            One possible future for this line of work is a library of reusable concept directions over a frozen base model. Instead of fine-tuning billions of weights every time you want a model that is slightly more cautious, more concise, more literal, or less hallucination-prone, you might learn a concept basis and then control behavior by choosing coefficients and blocks at inference time.
+          </p>
+
+          <p>
+            That vision is still speculative. The paper does not prove we have a stable and universal control basis for LLM behavior. But it does make a narrower point that feels important: <strong>simple linear steering gets a lot better once you measure concept activity more carefully.</strong>
+          </p>
+        </section>
+
+        <section id="caveats">
+          <h2>Caveats</h2>
+
+          <h3>1. Attention is a heuristic, not a theory</h3>
+          <p>
+            Attention-to-prefix works surprisingly well here, but that does not mean attention is the full causal story of concept representation. It is a useful readout, not a proof that the concept “is” wherever attention lights up.
+          </p>
+
+          <h3>2. The evaluation is benchmarked, not exhaustive</h3>
+          <p>
+            The paper evaluates steerability using GPT-4o as a judge over five concept-specific questions per concept. That is a practical evaluation scheme, and probably the right one for a 512-concept benchmark, but it is not the same as proving robust causal control under distribution shift.
+          </p>
+
+          <h3>3. Steering is dual-use</h3>
+          <p>
+            The appendix makes this point uncomfortably clear: the same machinery that improves controllability can also be used to weaken refusal and jailbreak models. That is not a reason to ignore the work. It is a reason to treat activation steering as a safety-relevant capability, not just a neat interpretability trick.
+          </p>
+        </section>
+
+        <section id="changed-mind">
+          <h2>What actually changed my mind</h2>
+
+          <p>
+            I already believed that some semantic concepts are stored linearly enough that activation steering can work.
+            What this paper changed was my sense of <strong>why</strong> it sometimes looked like it failed.
+          </p>
+
+          <p>
+            The failure mode may not always be that the model lacks the concept vector. Sometimes the failure mode is that we asked for the feature at the wrong place, assigned it the wrong label, and then concluded the feature was not there.
+          </p>
+
+          <p>
+            That is a useful lesson far beyond this specific paper. A lot of interpretability work lives or dies on measurement choices that look secondary until they suddenly are not.
+          </p>
+
+          <p>
+            Attention-guided feature learning is not the final theory of steering. But it is one of the first papers in this area that made the method feel less like a surprising phenomenon and more like a craft.
+          </p>
+
+          <p>
+            That alone makes it worth building on.
+          </p>
+
+          <div class="post-footer">
+            <p class="thanks">Thanks for reading!</p>
+            <p class="copyright">© <span id="copyright-year"></span> Peter Flo</p>
+          </div>
+        </section>
+      </div>
+      </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Sidebar toggle (persisted)
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      if (!sidebar || !toggle) return;
+      const saved = localStorage.getItem('attention-sidebar-collapsed');
+      if (saved === 'true') sidebar.classList.add('collapsed');
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('attention-sidebar-collapsed', sidebar.classList.contains('collapsed'));
+      });
+    })();
+
+    // Word count
+    (function() {
+      const content = document.getElementById('content');
+      const text = content ? (content.innerText || content.textContent || '') : '';
+      const wc = text.trim().split(/\s+/).filter(Boolean).length;
+      const el = document.getElementById('word-count');
+      if (el) el.textContent = `${wc.toLocaleString()} WORDS | PETER FLO`;
+    })();
+
+    // Copyright year
+    (function() {
+      const yearEl = document.getElementById('copyright-year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+    })();
+
+    // Build TOC from h2/h3
+    (function() {
+      const toc = document.getElementById('blog-toc');
+      const sections = Array.from(document.querySelectorAll('.blog-content section'));
+      if (!toc || sections.length === 0) return;
+
+      function slugify(s) {
+        return s.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
+      }
+
+      const tocItems = [];
+      for (const sec of sections) {
+        const h2 = sec.querySelector('h2');
+        if (!h2) continue;
+
+        if (!sec.id) sec.id = slugify(h2.textContent);
+        const li = document.createElement('li');
+        li.className = 'blog-toc-item';
+        const a = document.createElement('a');
+        a.href = `#${sec.id}`;
+        a.textContent = h2.textContent;
+        li.appendChild(a);
+
+        const h3s = Array.from(sec.querySelectorAll('h3'));
+        if (h3s.length) {
+          const sub = document.createElement('ul');
+          sub.className = 'blog-toc-sublist';
+          h3s.forEach(h3 => {
+            let id = h3.id;
+            if (!id) {
+              id = `${sec.id}--${slugify(h3.textContent)}`;
+              h3.id = id;
+            }
+            const subli = document.createElement('li');
+            subli.className = 'blog-toc-item';
+            const suba = document.createElement('a');
+            suba.href = `#${id}`;
+            suba.textContent = h3.textContent;
+            subli.appendChild(suba);
+            sub.appendChild(subli);
+          });
+          li.appendChild(sub);
+        }
+
+        toc.appendChild(li);
+        tocItems.push(li);
+      }
+
+      // Smooth scroll
+      toc.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href') || '';
+          if (!href.startsWith('#')) return;
+          const target = document.querySelector(href);
+          if (!target) return;
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', href);
+        });
+      });
+
+      // Active section highlighting
+      const tocLinks = Array.from(toc.querySelectorAll(':scope > .blog-toc-item > a'));
+      const topSections = sections.filter(s => s.querySelector('h2'));
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.id;
+          tocItems.forEach(item => item.classList.remove('active'));
+          const active = tocLinks.find(l => l.getAttribute('href') === `#${id}`);
+          if (active) active.closest('.blog-toc-item')?.classList.add('active');
+        });
+      }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+      topSections.forEach(s => observer.observe(s));
+    })();
+  </script>
+</body>
+</html>
+
