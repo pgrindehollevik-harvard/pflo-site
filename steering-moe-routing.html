@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steering Mixture-of-Experts Models by Choosing the Route</title>
+  <meta name="description" content="In MoE models, steering can target router decisions, not just activation directions. A reading note on behavior-linked expert routing for faithfulness and safety." />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://pflo.org/steering-moe-routing.html" />
+  <meta property="og:title" content="Steering Mixture-of-Experts Models by Choosing the Route" />
+  <meta property="og:description" content="A continuation of activation steering: in sparse MoE models, route selection itself becomes part of the control surface." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://pflo.org/steering-moe-routing.html" />
+  <meta name="twitter:title" content="Steering Mixture-of-Experts Models by Choosing the Route" />
+  <meta name="twitter:description" content="In MoE models, routing decisions can be steered to shift groundedness and safety without retraining." />
+  <meta name="twitter:image" content="https://pflo.org/cover.jpg" />
+
+  <style>
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
+    .blog-breadcrumb a { color:var(--link); text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration:underline; }
+    .blog-meta-bar { font-size:12px; color:#888; margin-bottom:24px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
+    .blog-title { font-size:2.8rem; margin-bottom:16px; letter-spacing:-.03em; font-family:'Georgia','Times New Roman',serif; font-weight:400; line-height:1.15; }
+    .blog-subtitle { font-size:1.1rem; color:#666; margin-bottom:24px; line-height:1.6; }
+    .blog-meta { font-size:.9rem; color:#888; margin-bottom:2rem; }
+    .blog-meta span + span::before { content:"•"; margin:0 8px; opacity:.5; }
+
+    .blog-content p { margin:0 0 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content h2 { margin-top:4rem; margin-bottom:1.2rem; font-size:1.8rem; letter-spacing:-.02em; font-weight:400; font-family:'Georgia','Times New Roman',serif; scroll-margin-top:20px; }
+    .blog-content h2:first-of-type { margin-top:2rem; }
+    .blog-content h3 { font-size:1.15rem; margin-top:2rem; margin-bottom:.8rem; font-weight:600; }
+    .blog-content ul, .blog-content ol { margin:0 0 1.5rem 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content li { margin-bottom:.4rem; }
+    .blog-content blockquote { border-left:3px solid var(--accent); padding:.6rem 1.2rem; margin:1.5rem 0; background:#faf8f5; color:#444; font-style:italic; }
+    .blog-content blockquote p { margin-bottom:.5rem; }
+    .blog-content hr { border:none; border-top:1px solid #e5e5e5; margin:3rem 0; }
+    .aside-personal { background:#faf8f5; border-radius:12px; border:1px solid #e8e0d5; padding:20px 24px; margin:2rem 0; }
+    .aside-personal p:last-child { margin-bottom:0; }
+
+    .blog-shell { min-height: 100vh; display: flex; }
+    .blog-sidebar {
+      width: 280px; min-width: 280px; background: #fafafa; border-right: 1px solid #e5e5e5;
+      padding: 40px 32px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      font-family: 'SF Mono','Monaco','Inconsolata','Fira Code',monospace;
+    }
+    .blog-sidebar.collapsed { transform: translateX(-100%); width: 0; min-width: 0; padding: 40px 0; border-right: none; overflow: hidden; }
+    .blog-sidebar-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 10px; letter-spacing: 0.02em; }
+    .blog-sidebar-subtitle { font-size: 12px; color: #888; margin-bottom: 22px; line-height: 1.5; }
+    .blog-toc { list-style: none; padding: 0; margin: 0; }
+    .blog-toc-item { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
+    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding:4px 0; transition: color 0.2s; }
+    .blog-toc-item a:hover { color:#222; }
+    .blog-toc-item.active > a { color: var(--accent); font-weight: 600; }
+    .blog-main { flex: 1; min-width: 0; }
+
+    .sidebar-toggle {
+      position: fixed; left: 280px; top: 18px; width: 28px; height: 28px; background: #fff;
+      border: 1px solid #e5e5e5; border-left: none; border-radius: 0 7px 7px 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; z-index: 101;
+      transition: left 0.25s ease, box-shadow 0.2s ease; box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+    .sidebar-toggle:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.14); }
+    .blog-sidebar.collapsed ~ .sidebar-toggle { left: 0; }
+    .sidebar-toggle-icon { width: 9px; height: 9px; border-right: 1.8px solid #666; border-bottom: 1.8px solid #666; transform: rotate(135deg); transition: transform 0.25s ease; }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform: rotate(-45deg); }
+
+    @media (max-width:900px) {
+      .blog-shell { flex-direction: column; }
+      .blog-sidebar {
+        width: 100%; height: auto; position: relative; border-right: none;
+        border-bottom: 1px solid #e5e5e5; padding: 20px 24px;
+      }
+      .blog-sidebar.collapsed { display: none; }
+      .sidebar-toggle { display: none; }
+    }
+    @media (max-width:600px) { .blog-title { font-size:1.8rem; } }
+
+    .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; font-size:1rem; }
+  </style>
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+<div class="blog-shell">
+  <aside class="blog-sidebar" id="sidebar" aria-label="table of contents">
+    <div class="blog-sidebar-title">MOE STEERING</div>
+    <div class="blog-sidebar-subtitle">Routing as control<br/>Spring 2026</div>
+    <nav><ul class="blog-toc" id="blog-toc"></ul></nav>
+  </aside>
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar"><div class="sidebar-toggle-icon"></div></button>
+
+  <main class="blog-main">
+    <div class="wrap">
+      <section class="main" aria-label="content">
+        <div class="blog-content">
+          <div class="blog-breadcrumb">
+            <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
+          </div>
+          <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
+
+          <header>
+            <h1 class="blog-title">Steering Mixture-of-Experts Models by Choosing the Route</h1>
+            <p class="blog-subtitle">
+              A continuation of activation steering: in sparse MoE models, the router itself starts to look like part of the control surface.
+            </p>
+            <p class="blog-meta">
+              <span>Peter Flo</span>
+              <span>Spring 2026</span>
+              <span><a href="https://arxiv.org/pdf/2509.09660v1" target="_blank" rel="noopener">arXiv:2509.09660v1</a></span>
+            </p>
+          </header>
+
+          <div class="aside-personal">
+            <p><strong>TL;DR.</strong> In the earlier steering posts, I was thinking mostly in geometric terms: find a direction in activation space, push the model along it, and see behavior move. This paper argues that mixture-of-experts models expose a second lever. Instead of only perturbing representations, you can perturb the router that decides which experts get to process each token. By identifying experts associated with document-groundedness or safety and then softly activating or deactivating them at inference time, you can improve faithfulness and safety without retraining. Uncomfortably, you can also push in the other direction. The paper feels important less because it solves steering, and more because it makes routing look like part of the control surface.</p>
+            <p><strong>Paper:</strong> <a href="https://arxiv.org/pdf/2509.09660v1" target="_blank" rel="noopener">https://arxiv.org/pdf/2509.09660v1</a></p>
+          </div>
+
+          <section id="one-sentence">
+            <h2>The paper in one sentence</h2>
+            <p>The core claim is simple: in an MoE language model, some experts are more associated with one behavior than another, and if you detect those experts from contrastive prompt pairs, you can steer the model by biasing the router toward or away from them at test time, without modifying weights.</p>
+          </section>
+
+          <section id="continuation">
+            <h2>Why this felt like a continuation of the earlier steering posts</h2>
+            <p>In the concept-vector post, the picture was geometric. A concept looked like a direction in activation space, and steering meant adding that direction back into the forward pass. In the attention-guided post, the emphasis shifted from the intervention to the measurement problem: maybe steering looked brittle in part because we were reading out the wrong token, steering the wrong layers, or pretending concept activity was cleaner than it really was.</p>
+            <p>This paper lives in the same neighborhood, but the substrate is different. Instead of nudging a hidden state inside a fixed computation, it nudges which sparse subnetwork gets to run in the first place. That sounds like an implementation detail. It may be something deeper. In dense models, the metaphor was a semantic knob. In MoEs, the better metaphor may be a switchboard.</p>
+          </section>
+
+          <section id="core-move">
+            <h2>The core move</h2>
+            <p>The detection procedure is almost disarmingly plain. For faithfulness, the authors compare a question with its supporting document against the same question without the document. For safety, they compare an unsafe instruction paired with a refusal against the same instruction paired with a harmful answer. Experts that fire more often under one condition than the other become candidates for steering.</p>
+            <p>At inference time, nothing is fine-tuned: you nudge the router so some experts are more likely to be chosen and others less, then renormalize. The next section spells out exactly what &ldquo;nudge&rdquo; means in logits and probabilities.</p>
+            <p>A detail I liked is that deactivation often works better than activation. In a sparse MoE, forcing one expert on everywhere is a hard intervention. Turning some experts off is weaker: the router still has room to recover using alternatives, and fluency degrades more slowly.</p>
+          </section>
+
+          <section id="how-steering-works">
+            <h2>How the steering actually works</h2>
+            <p>The slogan&mdash;bias the router toward certain experts&mdash;sounds high level, but the implementation is clean: first you <em>measure</em> which experts correlate with a behavior, then you <em>shift</em> the router&rsquo;s scores to promote or suppress them.</p>
+
+            <h3>Step 1: Find behavior-linked experts</h3>
+            <p>Start with paired prompts \((x^{(1)}, x^{(2)})\) that differ only in the behavior you care about. Typical contrasts:</p>
+            <ul>
+              <li><strong>Faithfulness:</strong> (question + document) vs. (question alone)</li>
+              <li><strong>Safety:</strong> (unsafe prompt + refusal) vs. (unsafe prompt + harmful answer)</li>
+            </ul>
+            <p>For each expert \(i\), count how often it is selected on tokens from each condition, and compare activation <em>rates</em> (not raw counts) so long and short prompts stay on the same footing. Write \(A_i^{(1)}\) for the number of token positions where expert \(i\) is selected under \(x^{(1)}\), and \(N^{(1)}\) for the total number of tokens in that forward pass (and analogously for \((2)\)). Then</p>
+            <div class="eq-block">
+              $$p_i^{(1)} = \frac{A_i^{(1)}}{N^{(1)}}, \quad p_i^{(2)} = \frac{A_i^{(2)}}{N^{(2)}}.$$
+            </div>
+            <p>The contrastive score is simply the gap between those rates:</p>
+            <div class="eq-block">
+              $$\Delta_i = p_i^{(1)} - p_i^{(2)}.$$
+            </div>
+            <blockquote>
+              <p>How much more often does this expert get used when the model exhibits behavior (1) instead of (2)?</p>
+            </blockquote>
+            <p>Large positive \(\Delta_i\) means expert \(i\) tracks behavior (1); large negative values track behavior (2). What I like here is that experts are treated as measurable switches, not as opaque blobs: you are doing literal counting and differencing.</p>
+
+            <h3>Step 2: Bias the router</h3>
+            <p>From those scores you form two sets: \(A^+\), experts to promote, and \(A^-\), experts to suppress. At each token the router produces logits \(z = (z_1, \ldots, z_E)\). The paper works in log-probability space: \(s = \log \mathrm{softmax}(z)\), so \(s\) is a vector of log routing weights. The intervention is a small, structured shift: let \(s_{\max} = \max_j s_j\) and \(s_{\min} = \min_j s_j\), pick a step size \(\epsilon\), then</p>
+            <ul>
+              <li>for \(k \in A^+\) (activate): \(s_k \leftarrow s_{\max} + \epsilon\);</li>
+              <li>for \(k \in A^-\) (deactivate): \(s_k \leftarrow s_{\min} - \epsilon\).</li>
+            </ul>
+            <p>Finally renormalize to a proper distribution:</p>
+            <div class="eq-block">
+              $$p_i = \frac{e^{s_i}}{\sum_j e^{s_j}}.$$
+            </div>
+            <p>No weight updates, no hard mask that forces a single expert to run everywhere&mdash;just a tilted distribution over experts, then business as usual for the rest of the layer.</p>
+
+            <h3>Why this feels different from activation steering</h3>
+            <p>Three consequences matter for how I think about it:</p>
+            <ul>
+              <li>Weights stay frozen.</li>
+              <li>You are not forcing one expert to take over the full depth of the model.</li>
+              <li>You only change the <em>probabilities</em> over which experts get a say at this routing step.</li>
+            </ul>
+            <p>Classic activation steering is a geometric move on a hidden state: \(h \leftarrow h + \alpha v\). Here the primitive is distributional: routing is \(\mathrm{route} \sim \mathrm{softmax}(z)\), and you implement steering as \(\mathrm{softmax}(z) \to \mathrm{softmax}(z + \delta)\) after the structured update to \(s\). Same broad recipe&mdash;small intervention, global behavioral effect&mdash;but applied one level up, at who computes, not only at what vector they see.</p>
+
+            <h3>A useful intuition</h3>
+            <p>If a dense model is like one circuit you can poke, an MoE is closer to a committee: each token is handled by a sparse mixture, schematically</p>
+            <div class="eq-block">
+              $$\text{output} = \sum_{i \in \mathcal{T}} p_i \cdot \mathrm{Expert}_i(h).$$
+            </div>
+            <p>Steering is not rewriting what any single expert does. It is changing who gets a vote.</p>
+          </section>
+
+          <section id="interesting">
+            <h2>What I found most interesting</h2>
+            <p>The headline results are strong. But the more interesting point is structural. It suggests that in MoE systems, behaviors like groundedness and refusal are not only properties of a global representation. They may also be properties of route selection.</p>
+            <p>Alignment, on this view, is not just about what the model knows. It is also about which experts the router chooses to consult.</p>
+            <p>That connects directly to the attention-guided steering post. The intervention itself is not ornate. The important move is identifying a behavior-linked subset of experts from contrastive data instead of treating all experts as interchangeable. The deeper contribution may be better measurement of where the behavior actually lives.</p>
+          </section>
+
+          <section id="faithfulness">
+            <h2>Why the faithfulness result matters more to me than persona steering</h2>
+            <p>One thing I kept coming back to in the earlier posts was the difference between theatrical steering and epistemic steering. Personas are a good testbed because they make the effect visible. But the concepts I actually care about are things like source-groundedness, evidence-seeking, calibrated uncertainty, and resistance to bluffing.</p>
+            <p>In that sense, the faithfulness section matters more to me than the safety red-team charts. The document-groundedness setup is basically a routing-level intervention on whether the model follows retrieved evidence or falls back to parametric memory. That feels much closer to the kind of internal control I want these methods to reach.</p>
+            <p>There is also a clean conceptual symmetry with the concept-vector work. In the dense-model setting, the intervention is additive: modify the representation. Here the intervention is combinatorial: change who gets to process that representation. One is geometric control. The other is topological control.</p>
+          </section>
+
+          <section id="next">
+            <h2>What I want to try next</h2>
+            <p>One of the unresolved questions from the attention-guided post was whether internal steering methods could move beyond vivid but shallow concepts and toward quieter epistemic ones. This paper makes me think the answer may be yes, at least in sparse architectures.</p>
+            <p>The recipe is straightforward: build contrastive pairs for the behavior you care about, find the experts whose routing changes, then test whether biasing those routes generalizes.</p>
+            <p>The obvious next experiments are calibrated uncertainty, citation-seeking, source attribution, and distinguishing evidence-following from bluffing.</p>
+          </section>
+
+          <section id="uncomfortable">
+            <h2>The uncomfortable part</h2>
+            <p>The dual-use point is not a side note. The same machinery that can make an MoE model more grounded or more safe can also make it less safe, without changing model weights.</p>
+            <p>This exposes a new failure mode: safety may be concentrated in a relatively small set of experts, while alternate unsafe pathways remain available and can be resurfaced by small routing shifts.</p>
+            <p>Some aligned MoE systems may not be aligned everywhere. They may be aligned along the routes the router usually takes. That turns safety from a global property into a path-dependent one.</p>
+          </section>
+
+          <section id="middle-layers">
+            <h2>Middle layers, again</h2>
+            <p>A small result I liked is that the experts most responsible for safety and grounding cluster in the middle layers.</p>
+            <p>This rhymes with earlier observations that concept enrichment also concentrates in the middle of the network. The pattern keeps showing up: the middle layers look like the place where higher-level behavioral traits are easiest to grab.</p>
+          </section>
+
+          <section id="breaks">
+            <h2>What breaks</h2>
+            <p>A few caveats seem important.</p>
+            <p>First, contrastive datasets can smuggle in template artifacts. Some detected experts may track superficial patterns rather than deep abstractions.</p>
+            <p>Second, evaluation relies on proxies. These are reasonable but do not fully resolve what the experts represent.</p>
+            <p>Third, this is not a full mechanistic account. It identifies usable handles, not complete circuits. But that may be enough to make progress.</p>
+          </section>
+
+          <section id="larger-picture">
+            <h2>Why this feels like a next post, not a separate topic</h2>
+            <p>What I like most is that this makes the earlier steering posts feel less like isolated curiosities and more like pieces of one larger picture.</p>
+            <p>One piece is geometric: internal directions act like semantic controls.</p>
+            <p>One piece is measurement: those controls improve with better localization.</p>
+            <p>This paper adds a third piece: in sparse architectures, behavior may also live in routing decisions over specialized subnetworks.</p>
+            <p>The control surface may be larger than I thought. Not just vectors. Routes too.</p>
+          </section>
+
+          <section id="changed-mind">
+            <h2>What changed my mind</h2>
+            <p>Before reading this paper, I mostly thought of MoE routing as an efficiency trick with interpretability side effects. After reading it, that frame feels too small.</p>
+            <p>Routing looks more like governance.</p>
+            <p>It decides which tiny committee inside the model gets to think.</p>
+            <p>And once you see that, it becomes hard not to ask a bigger question: if groundedness, refusal, and safety are partly routing phenomena, what else is hiding in the router?</p>
+            <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">Thanks for reading.</p>
+            <p style="font-size:.85rem; color:#888; text-align:center;">&copy; <span id="copyright-year"></span> Peter Flo</p>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebar-toggle');
+    if (!sidebar || !toggle) return;
+    const saved = localStorage.getItem('moe-routing-sidebar-collapsed');
+    if (saved === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      localStorage.setItem('moe-routing-sidebar-collapsed', sidebar.classList.contains('collapsed'));
+    });
+  })();
+
+  (function() {
+    const c = document.querySelector('.blog-content');
+    if (!c) return;
+    const wc = (c.innerText || c.textContent).trim().split(/\s+/).length;
+    const el = document.getElementById('word-count');
+    if (el) el.textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
+  })();
+  document.getElementById('copyright-year').textContent = new Date().getFullYear();
+
+  (function() {
+    const toc = document.getElementById('blog-toc');
+    const content = document.querySelector('.blog-content');
+    if (!toc || !content) return;
+    const secs = Array.from(content.querySelectorAll('section[id]')).filter(s => s.querySelector('h2'));
+    function slugify(s) { return s.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-'); }
+    const tocItems = [];
+    secs.forEach(sec => {
+      const h2 = sec.querySelector('h2');
+      if (!h2) return;
+      if (!sec.id) sec.id = slugify(h2.textContent);
+      const li = document.createElement('li');
+      li.className = 'blog-toc-item';
+      const a = document.createElement('a');
+      a.href = `#${sec.id}`;
+      a.textContent = h2.textContent;
+      li.appendChild(a);
+      toc.appendChild(li);
+      tocItems.push(li);
+    });
+    toc.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href') || '';
+        if (!href.startsWith('#')) return;
+        const target = document.querySelector(href);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', href);
+      });
+    });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        tocItems.forEach(item => item.classList.remove('active'));
+        const activeLink = toc.querySelector(`a[href="#${CSS.escape(id)}"]`);
+        activeLink?.closest('.blog-toc-item')?.classList.add('active');
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+    secs.forEach(s => observer.observe(s));
+  })();
+</script>
+</body>
+</html>
