@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Where Hyperbolic Geometry Helps (and Where It Doesn&rsquo;t)</title>
+  <meta name="description" content="A write-up of our hyperbolic-vs-Euclidean prototype study on WikiArt: 150 runs, three reference trees, and one clean finding about local hierarchy preservation." />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://pflo.org/hyperbolic-style.html" />
+  <meta property="og:title" content="Where Hyperbolic Geometry Helps (and Where It Doesn&rsquo;t)" />
+  <meta property="og:description" content="Hyperbolic prototypes beat Euclidean ones on local hierarchy, tie on global structure, and lose on classification. A local-vs-global trade-off, replicated across three reference trees." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://pflo.org/hyperbolic-style.html" />
+  <meta name="twitter:title" content="Where Hyperbolic Geometry Helps (and Where It Doesn&rsquo;t)" />
+  <meta name="twitter:description" content="On WikiArt with frozen CLIP, hyperbolic prototype geometry improves local hierarchy preservation but not classification or global tree fidelity." />
+  <meta name="twitter:image" content="https://pflo.org/cover.jpg" />
+
+  <style>
+    :root { --accent:#AD7C03; --link:#1a2d5f; --visited:#1a2d5f; --maxw:1032px; }
+    body { margin:0; background:#fff; color:#222; font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
+    .blog-breadcrumb a { color:var(--link); text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration:underline; }
+    .blog-meta-bar { font-size:12px; color:#888; margin-bottom:24px; font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; }
+    .blog-title { font-size:2.8rem; margin-bottom:16px; letter-spacing:-.03em; font-family:'Georgia','Times New Roman',serif; font-weight:400; line-height:1.15; }
+    .blog-subtitle { font-size:1.1rem; color:#666; margin-bottom:24px; line-height:1.6; }
+    .blog-meta { font-size:.9rem; color:#888; margin-bottom:2rem; }
+    .blog-meta span + span::before { content:"•"; margin:0 8px; opacity:.5; }
+
+    .blog-content p { margin:0 0 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content h2 { margin-top:4rem; margin-bottom:1.2rem; font-size:1.8rem; letter-spacing:-.02em; font-weight:400; font-family:'Georgia','Times New Roman',serif; scroll-margin-top:20px; }
+    .blog-content h2:first-of-type { margin-top:2rem; }
+    .blog-content h3 { font-size:1.15rem; margin-top:2rem; margin-bottom:.8rem; font-weight:600; }
+    .blog-content ul, .blog-content ol { margin:0 0 1.5rem 1.5rem; font-size:1.05rem; line-height:1.8; }
+    .blog-content li { margin-bottom:.4rem; }
+    .blog-content blockquote { border-left:3px solid var(--accent); padding:.6rem 1.2rem; margin:1.5rem 0; background:#faf8f5; color:#444; font-style:italic; }
+    .blog-content blockquote p { margin-bottom:.5rem; }
+    .blog-content hr { border:none; border-top:1px solid #e5e5e5; margin:3rem 0; }
+    .aside-personal { background:#faf8f5; border-radius:12px; border:1px solid #e8e0d5; padding:20px 24px; margin:2rem 0; }
+    .aside-personal p:last-child { margin-bottom:0; }
+
+    .blog-shell { min-height: 100vh; display: flex; }
+    .blog-sidebar {
+      width: 280px; min-width: 280px; background: #fafafa; border-right: 1px solid #e5e5e5;
+      padding: 40px 32px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      font-family: 'SF Mono','Monaco','Inconsolata','Fira Code',monospace;
+    }
+    .blog-sidebar.collapsed { transform: translateX(-100%); width: 0; min-width: 0; padding: 40px 0; border-right: none; overflow: hidden; }
+    .blog-sidebar-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 10px; letter-spacing: 0.02em; }
+    .blog-sidebar-subtitle { font-size: 12px; color: #888; margin-bottom: 22px; line-height: 1.5; }
+    .blog-toc { list-style: none; padding: 0; margin: 0; }
+    .blog-toc-item { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
+    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding:4px 0; transition: color 0.2s; }
+    .blog-toc-item a:hover { color:#222; }
+    .blog-toc-item.active > a { color: var(--accent); font-weight: 600; }
+    .blog-main { flex: 1; min-width: 0; }
+
+    .sidebar-toggle {
+      position: fixed; left: 280px; top: 18px; width: 28px; height: 28px; background: #fff;
+      border: 1px solid #e5e5e5; border-left: none; border-radius: 0 7px 7px 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; z-index: 101;
+      transition: left 0.25s ease, box-shadow 0.2s ease; box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+    .sidebar-toggle:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.14); }
+    .blog-sidebar.collapsed ~ .sidebar-toggle { left: 0; }
+    .sidebar-toggle-icon { width: 9px; height: 9px; border-right: 1.8px solid #666; border-bottom: 1.8px solid #666; transform: rotate(135deg); transition: transform 0.25s ease; }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform: rotate(-45deg); }
+
+    @media (max-width:900px) {
+      .blog-shell { flex-direction: column; }
+      .blog-sidebar {
+        width: 100%; height: auto; position: relative; border-right: none;
+        border-bottom: 1px solid #e5e5e5; padding: 20px 24px;
+      }
+      .blog-sidebar.collapsed { display: none; }
+      .sidebar-toggle { display: none; }
+    }
+    @media (max-width:600px) { .blog-title { font-size:1.8rem; } }
+
+    .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; font-size:1rem; }
+    .num-table { width:100%; border-collapse:collapse; margin:1.5rem 0; font-size:.95rem; }
+    .num-table th, .num-table td { padding:8px 12px; text-align:left; border-bottom:1px solid #eee; }
+    .num-table th { color:#666; font-weight:600; font-size:.85rem; text-transform:uppercase; letter-spacing:.04em; }
+    .num-table td.num { font-family:'SF Mono','Monaco','Inconsolata','Fira Code',monospace; text-align:right; }
+
+    .figure-block { margin:2.5rem 0; }
+    .figure-block img { width:100%; height:auto; display:block; border:1px solid #e5e5e5; border-radius:8px; background:#fff; }
+    .figure-block figcaption { font-size:.88rem; color:#666; text-align:center; margin-top:.7rem; line-height:1.55; font-family:'Georgia','Times New Roman',serif; font-style:italic; }
+    .figure-block figcaption strong { font-style:normal; color:#444; }
+
+    .tip { border-bottom:1px dotted #b3a48a; cursor:help; position:relative; }
+    .tip:hover { color:var(--accent); }
+    .tip:hover::after {
+      content: attr(data-tip);
+      position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%);
+      background:#222; color:#fff; padding:8px 12px; border-radius:6px;
+      font-size:.85rem; line-height:1.45; font-weight:400; font-style:normal;
+      width:max-content; max-width:320px; white-space:normal; z-index:50;
+      box-shadow:0 4px 14px rgba(0,0,0,.18); pointer-events:none;
+    }
+    .tip:hover::before {
+      content:""; position:absolute; left:50%; bottom:calc(100% + 2px); transform:translateX(-50%);
+      border:6px solid transparent; border-top-color:#222; z-index:50; pointer-events:none;
+    }
+    @media (max-width:600px) {
+      .tip:hover::after { left:0; transform:none; max-width:240px; }
+      .tip:hover::before { left:18px; transform:none; }
+    }
+  </style>
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+<div class="blog-shell">
+  <aside class="blog-sidebar" id="sidebar" aria-label="table of contents">
+    <div class="blog-sidebar-title">HYPERBOLIC STYLE</div>
+    <div class="blog-sidebar-subtitle">A local-vs-global trade-off<br/>Summer 2026</div>
+    <nav><ul class="blog-toc" id="blog-toc"></ul></nav>
+  </aside>
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar"><div class="sidebar-toggle-icon"></div></button>
+
+  <main class="blog-main">
+    <div class="wrap">
+      <section class="main" aria-label="content">
+        <div class="blog-content">
+          <div class="blog-breadcrumb">
+            <a href="/index.html">&larr; pflo.org</a> &middot; <a href="/writing.html">writing</a>
+          </div>
+          <div class="blog-meta-bar" id="word-count">WORDS</div>
+
+          <header>
+            <h1 class="blog-title">Where Hyperbolic Geometry Helps (and Where It Doesn&rsquo;t)</h1>
+            <p class="blog-subtitle">
+              A write-up of our prototype-embedding study on WikiArt. Hyperbolic geometry adds something a Euclidean prototype doesn&rsquo;t, but only on one of the three things you might want it to do.
+            </p>
+            <p class="blog-meta">
+              <span>Peter Flo &amp; Luca Grossmann</span>
+              <span>Summer 2026</span>
+              <span><a href="https://github.com/pgrindehollevik-harvard/hyperbolic" target="_blank" rel="noopener">code &amp; sweeps</a></span>
+              <span><a href="https://github.com/pgrindehollevik-harvard/hyperbolic/blob/main/docs/main.pdf" target="_blank" rel="noopener">pdf</a></span>
+            </p>
+          </header>
+
+          <div class="aside-personal">
+            <p><strong>TL;DR.</strong> Hyperbolic <span class="tip" data-tip="A classifier where each class is represented by one learnable point in embedding space. Predictions use distance to the nearest prototype rather than a softmax over a linear layer.">prototype</span> classifiers improve on a strong CLIP baseline at one specific thing: preserving the <em>local</em> part of a style hierarchy, meaning the structure of the nearest-neighbor graph. They lose on classification. They tie on global tree fidelity, in a way that flips sign depending on which reference tree you anchor against. Across 150 runs and three reference trees, that local advantage is the only claim that survives every robustness check. So the answer isn&rsquo;t &ldquo;hyperbolic wins.&rdquo; It&rsquo;s &ldquo;hyperbolic helps locally, and only locally.&rdquo;</p>
+            <p><strong>Paper &amp; code:</strong> <a href="https://github.com/pgrindehollevik-harvard/hyperbolic" target="_blank" rel="noopener">github.com/pgrindehollevik-harvard/hyperbolic</a></p>
+          </div>
+
+          <section id="why-this-question">
+            <h2>Why this question</h2>
+            <p>The hyperbolic-image literature (Khrulkov et al.&nbsp;2020; Ganea, B&eacute;cigneul &amp; Hofmann 2018) keeps circling the same intuition, and it&rsquo;s a good one. Real-world category structure tends to look like a tree, and a tree&rsquo;s leaf count grows exponentially with depth. The Euclidean ball doesn&rsquo;t do that. Its volume grows polynomially in $r$. The Poincar&eacute; ball does. Its volume grows exponentially in $r$. So if you have to embed a tree, hyperbolic geometry gives you more room exactly where you need it, near the leaves.</p>
+            <p>That argument is mathematically tight, but in practice it leaves a lot of room. A lot of positive results in this area sweep one or two hyperparameters at one or two depths and report a single representative number. I wanted to see whether the advantage was load-bearing, or whether it was an artifact of which tree you happened to evaluate against. So we built a sweep that varies dimension, curvature, and a tree-aware regularizer, then re-ran the whole thing against three different reference trees.</p>
+            <p>WikiArt is a useful testbed precisely because the hierarchy is contested. Art historians actually disagree about lineage, which means there&rsquo;s no canonical &ldquo;right answer&rdquo; to evaluate against. That makes the question sharper. Is there a geometric improvement that&rsquo;s robust to <em>which</em> reasonable hierarchy you pick?</p>
+
+            <figure class="figure-block">
+              <img src="/figures/hyperbolic/poincare_disk_d2.png" alt="Trained 2D prototype layouts. The Euclidean panel shows points clumped near the origin. The hyperbolic panel shows prototypes pushed out to the boundary of the Poincar&eacute; disk." />
+              <figcaption><strong>Same encoder, same data, different geometry.</strong> Trained $d{=}2$ prototype layouts for both models. The Euclidean prototypes (left) cluster around the origin. The hyperbolic ones (right) get pushed to the boundary of the Poincar&eacute; disk, which is exactly where the geometry has the most room to fit a tree.</figcaption>
+            </figure>
+          </section>
+
+          <section id="setup">
+            <h2>The setup</h2>
+            <p>We use <strong>WikiArt Refined</strong>, around 81k paintings labeled with one of 27 styles, with a comically lopsided distribution (Impressionism has 13,060 paintings, Analytical Cubism has 77). Features come from a frozen <span class="tip" data-tip="OpenAI&rsquo;s vision-language model. ViT-B/16 is the base-size Vision Transformer with 16-by-16 image patches. &lsquo;Frozen&rsquo; means we don&rsquo;t update its weights during training.">CLIP ViT-B/16</span> encoder. A two-layer MLP maps those features into a $d$-dimensional embedding. A prototype classifier (one learnable point per style) turns the embedding into 27-way logits via $-d(z, p_k)$.</p>
+            <p>Switching from Euclidean to hyperbolic changes exactly two things:</p>
+            <ul>
+              <li>the head&rsquo;s final transform: identity in the Euclidean case, the <span class="tip" data-tip="The Riemannian-geometry operation that lifts a vector in the tangent space at a point onto the manifold itself. Here it&rsquo;s what maps an unconstrained MLP output into the Poincar&eacute; ball.">exponential map</span> at the origin in the hyperbolic case, $\exp_0^c(u) = \tanh(\sqrt{c}\,\|u\|)\,u/(\sqrt{c}\,\|u\|)$;</li>
+              <li>the metric used by the classifier: $\ell_2$ in the Euclidean case, the Poincar&eacute; distance in the hyperbolic case,
+              <div class="eq-block">
+                $$d^c(x, y) = \tfrac{1}{\sqrt{c}}\,\operatorname{arcosh}\!\Bigl(1 + \tfrac{2c\,\|x-y\|^2}{(1-c\|x\|^2)(1-c\|y\|^2)}\Bigr).$$
+              </div></li>
+            </ul>
+            <p>Everything else is shared: backbone, MLP width, dropout, batch size, optimizer, schedule. The hyperbolic prototypes live on the manifold and get optimized with <span class="tip" data-tip="A variant of Adam that keeps each gradient step on the manifold rather than letting it drift into ambient Euclidean space. Updates are projected back onto the Poincar&eacute; ball after each step.">Riemannian Adam</span> via <a href="https://geoopt.readthedocs.io/" target="_blank" rel="noopener"><span class="tip" data-tip="Open-source PyTorch library for optimization on Riemannian manifolds. Provides the Poincar&eacute;-ball parameterization and Riemannian-Adam optimizer we use.">geoopt</span></a>. The Euclidean prototypes use plain Adam. Caching CLIP features as fp16 tensors keeps each run under ten seconds, so the whole sweep finishes in about half an hour on a single Apple-silicon GPU. The fact that the experiment is this cheap is part of why we were willing to be patient with it.</p>
+            <p>We sweep three axes:</p>
+            <ul>
+              <li><strong>Dimension:</strong> $d \in \{2, 4, 8, 16, 32, 64\}$.</li>
+              <li><strong>Curvature:</strong> $c \in \{0.1, 0.3, 1, 3\}$.</li>
+              <li><strong>Tree regularizer strength:</strong> $\lambda \in \{0, 0.1, 0.3, 1, 3\}$.</li>
+            </ul>
+            <p>Every headline configuration is replicated across three seeds. 150 runs total.</p>
+          </section>
+
+          <section id="regularizer">
+            <h2>One design choice that mattered: a hierarchy-aware loss</h2>
+            <p>Cross-entropy on prototypes only asks the prototypes to be class-separable. It does <em>not</em> ask them to be arranged in any particular geometric pattern. That&rsquo;s a real problem if you want to evaluate against a hand-built tree, because failure becomes ambiguous. Was the geometry insufficient, or did the loss never ask for the tree structure in the first place? We didn&rsquo;t want to spend the paper guessing.</p>
+            <p>So we add a regularizer that pushes the prototype distance matrix toward the tree distance matrix:</p>
+            <div class="eq-block">
+              $$\mathcal{L} = \mathcal{L}_{CE} + \lambda \cdot \tfrac{1}{|\mathcal{P}|}\sum_{(i,j) \in \mathcal{P}}\Bigl(\tfrac{d(p_i, p_j)}{\bar d} - \tfrac{T_{ij}}{\bar T}\Bigr)^{\!2}.$$
+            </div>
+            <p>The trick that mattered was the mean normalization. Tree distances are small integers. Sibling pairs are 2 apart, the deepest pairs are 13 apart on the default tree. Prototype distances, on the other hand, want to be large in whatever units classification cares about, since well-separated prototypes are easier to classify. Without normalization, the loss would force prototype distances to match tree distances in absolute units, which fights classification directly. Dividing each pair vector by its own mean before the squared difference constrains only the <em>shape</em> of the prototype distance matrix, not its scale. The geometry is free to pick whatever scale classification likes best. With $\lambda = 0$ we recover the standard CE-only setup. With $\lambda &gt; 0$ we&rsquo;re explicitly asking the prototypes to lay themselves out like the tree.</p>
+            <p>It runs over the $\binom{27}{2} = 351$ off-diagonal style pairs once per gradient step. The cost is essentially nothing.</p>
+
+            <figure class="figure-block">
+              <img src="/figures/hyperbolic/phase2_lambda.png" alt="Four-panel plot sweeping the regularizer weight lambda. Top-1 accuracy falls for both geometries as lambda increases. Spearman correlation, tree distortion, and sibling recall all improve. Hyperbolic stays above Euclidean on sibling recall across all lambda values." />
+              <figcaption><strong>Sweeping the regularizer.</strong> As $\lambda$ grows, both geometries trade classification for tree fidelity. The interesting panel is the one on the right: hyperbolic sits above Euclidean on sibling recall<span class="tip" data-tip="Of the 5 nearest neighbors in embedding space, how many share a parent node with the query in the reference tree."> (recall@5)</span> across the entire $\lambda$ range, including $\lambda{=}0$. That tells us the local advantage is a property of the geometry, not of the loss.</figcaption>
+            </figure>
+          </section>
+
+          <section id="local-finding">
+            <h2>Local hierarchy preservation</h2>
+            <p>The metric that ended up mattering most was <strong>sibling recall@5</strong>: out of the five nearest neighbors of a validation embedding, how many share a parent with the query in the reference tree? It&rsquo;s a local question. It doesn&rsquo;t ask whether the embedding got the whole global structure right. It just asks whether the immediate neighborhood looks tree-like.</p>
+            <p>Here&rsquo;s the result at $d = 8$ against the default hand-built tree:</p>
+            <table class="num-table">
+              <thead>
+                <tr><th>Model</th><th>Sibling recall@5</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>$k$-NN on raw CLIP features</td><td class="num">0.160</td></tr>
+                <tr><td>Euclidean prototype</td><td class="num">0.149</td></tr>
+                <tr><td>Hyperbolic prototype</td><td class="num"><strong>0.195</strong></td></tr>
+              </tbody>
+            </table>
+            <p>Two things stood out. First, the Euclidean prototype is essentially tied with the encoder&rsquo;s own nearest-neighbor structure. Training a Euclidean head doesn&rsquo;t add local hierarchy on top of what CLIP already gave us. Second, the hyperbolic prototype beats $k$-NN-on-CLIP by 3.5 percentage points. That makes the hyperbolic prototype the only model in our whole suite that meaningfully improves on the encoder at this metric.</p>
+            <p>The obvious worry is that we&rsquo;re measuring against our own tree, so maybe the sibling sets we chose are doing the work. To check, we rebuilt the reference from scratch in two different ways: a CLIP-derived empirical tree (<span class="tip" data-tip="Unweighted Pair Group Method with Arithmetic mean. A classical agglomerative hierarchical clustering algorithm that greedily merges the closest pair of clusters at each step.">UPGMA</span> on feature centroids), and a <span class="tip" data-tip="Meta&rsquo;s self-supervised vision transformer. Trained without labels by matching different views of the same image, so it gives an independent take on visual similarity.">DINOv2</span>-derived empirical tree. The advantage held both times. Against the CLIP-empirical tree at $d{=}8$:</p>
+            <table class="num-table">
+              <thead>
+                <tr><th>Model</th><th>Sibling recall@5 (empirical)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>$k$-NN on raw CLIP features</td><td class="num">0.366</td></tr>
+                <tr><td>Euclidean prototype</td><td class="num">0.356</td></tr>
+                <tr><td>Hyperbolic prototype</td><td class="num"><strong>0.416</strong></td></tr>
+              </tbody>
+            </table>
+            <p>Aggregated over the 18 paired (dim, seed) comparisons in the main sweep, picking curvature per pair, hyperbolic beats Euclidean by <strong>+8.7 pp on sibling recall</strong> and <strong>+15.2 pp on cousin recall</strong> (paired-$t$ $p &lt; 10^{-4}$, sign-agreement 0.94). This is the strongest claim our experiments support, and the only one that survived every robustness check we threw at it.</p>
+
+            <figure class="figure-block">
+              <img src="/figures/hyperbolic/empirical_recall.png" alt="Two panels of sibling recall and cousin recall against embedding dimension, comparing Euclidean and hyperbolic prototypes against both the default tree and an empirical CLIP-derived tree. Hyperbolic is above Euclidean in every panel and at every dimension." />
+              <figcaption><strong>The local advantage doesn&rsquo;t depend on the tree.</strong> Sibling and cousin recall@5 against the default hand-built tree (dashed) and an empirical CLIP-derived tree (solid), across embedding dimensions $d \in \{2, 4, 8, 16, 32, 64\}$. Hyperbolic (red) sits above Euclidean (blue) in every panel and at every dimension. This is the figure I&rsquo;d show if I had thirty seconds.</figcaption>
+            </figure>
+          </section>
+
+          <section id="why-local">
+            <h2>Why the local advantage is real</h2>
+            <p>The $d{=}2$ Poincar&eacute;-disk figure earlier in the post is the most direct evidence I have. The Euclidean prototypes sit near the origin, with no boundary to push against. The regularizer satisfies its shape constraint, but the metric never gets reshaped around the prototypes. The hyperbolic prototypes get pinned to the boundary, because that&rsquo;s where the regularizer minimum lives in this geometry. The Poincar&eacute; metric then does the rest: distance compresses near the center and stretches near the edge, so the neighborhoods around boundary-pinned prototypes are exactly the kind of tight, sibling-rich sets that sibling recall@5 measures.</p>
+            <p>The Euclidean prototype with the same regularizer can satisfy the same shape constraint. It just doesn&rsquo;t get the local concentration for free. The loss tells it where to put the prototypes. It doesn&rsquo;t reshape the metric around them. So local recall stays at the encoder&rsquo;s baseline. Hyperbolic doesn&rsquo;t just place the prototypes well. The metric carries the structure outward into the neighborhood, and that&rsquo;s what we were measuring.</p>
+          </section>
+
+          <section id="classification">
+            <h2>Where it doesn&rsquo;t help: classification</h2>
+            <p>The classification story is real, but it doesn&rsquo;t tell you much about the geometry. Top-1 accuracy:</p>
+            <table class="num-table">
+              <thead>
+                <tr><th>Model</th><th>Top-1</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Logistic regression on raw CLIP features</td><td class="num">64.1%</td></tr>
+                <tr><td>Euclidean prototype</td><td class="num">64.3%</td></tr>
+                <tr><td>Hyperbolic prototype (best curvature)</td><td class="num">59.8%</td></tr>
+              </tbody>
+            </table>
+            <p>The 4 to 6 pp Euclidean-vs-hyperbolic gap is robust across configurations and weighting schemes. But the Euclidean prototype isn&rsquo;t doing classification work that a linear head on the same input couldn&rsquo;t do. We resisted calling Euclidean the &ldquo;winner&rdquo; here. The right framing is that Euclidean prototype distances don&rsquo;t distort classification beyond what the encoder already supports, while hyperbolic prototype distances do.</p>
+            <p>This makes sense if you think about what the geometry is for. The Poincar&eacute; metric concentrates distance near the boundary. That&rsquo;s exactly what makes it good at separating fine-grained sibling structure. It&rsquo;s also exactly what makes it badly suited to the kind of broad, mostly-linear separability that CLIP&rsquo;s feature space already gives you.</p>
+          </section>
+
+          <section id="global">
+            <h2>Where the story gets unstable: global tree fidelity</h2>
+            <p>If hyperbolic geometry helps locally and hurts classification, the next obvious question is whether it helps <em>globally</em>. Does the whole prototype layout look more tree-like? This is the section of the paper where we make the smallest claim, and not by accident.</p>
+            <p>Mean <span class="tip" data-tip="How much pairwise distances in the embedding stretch or shrink relative to distances in the reference tree. Lower is better.">tree distortion</span> is significantly lower for Euclidean prototypes against the default tree ($p &lt; 10^{-4}$). The prototype-to-tree <span class="tip" data-tip="Rank-based correlation coefficient. Measures how monotonically two variables move together, without assuming linearity.">Spearman correlation</span>, on the other hand, isn&rsquo;t significantly different from zero across the full sweep ($p = 0.68$). And the small gap that does appear flips sign depending on which encoder we use to build the empirical reference tree. CLIP-empirical favors hyperbolic. DINOv2-empirical favors Euclidean. The two empirical trees correlate at 0.50 on pairwise distances, so the encoders broadly agree on similarity structure. But the global-Spearman gap between geometries doesn&rsquo;t survive the encoder swap.</p>
+            <blockquote>
+              <p>Global tree fidelity is a coin flip on this dataset. Local hierarchy isn&rsquo;t.</p>
+            </blockquote>
+            <p>The lesson I took from this was more about reference trees than about geometry. When you build the reference tree out of an encoder&rsquo;s features and then evaluate an embedding trained on the same encoder&rsquo;s features, you have a real circularity problem. The empirical-tree robustness check is mostly an exercise in seeing how much that circularity matters. For global metrics, the answer turned out to be &ldquo;enough to flip the sign,&rdquo; which is sobering.</p>
+
+            <figure class="figure-block">
+              <img src="/figures/hyperbolic/phase5_dinov2.png" alt="Three panels. Left: prototype-tree Spearman across dimensions, with several reference trees. The hyperbolic-vs-Euclidean ranking depends heavily on which tree is used. Middle: sibling recall by reference tree, where hyperbolic stays above Euclidean across all trees. Right: a bar chart of Spearman agreement between trees, with CLIP-empirical vs DINOv2-empirical at 0.50." />
+              <figcaption><strong>The global story flips. The local story doesn&rsquo;t.</strong> Cross-encoder check using DINOv2 as a second feature backbone for building the empirical reference tree. Global Spearman (left) reorders the geometries depending on the tree; sibling recall (middle) keeps hyperbolic on top no matter which tree we use. The right panel shows the empirical trees themselves agree on similarity structure at 0.50, so this isn&rsquo;t two unrelated trees disagreeing.</figcaption>
+            </figure>
+          </section>
+
+          <section id="cant-conclude">
+            <h2>What we can&rsquo;t conclude</h2>
+            <p>A few honest limits, since they kept nagging me:</p>
+            <ul>
+              <li>The whole study lives on a 27-leaf, Western-canon-heavy taxonomy. WikiArt&rsquo;s hierarchy is shallow. The literature suggests hyperbolic helps most where the hierarchy is <em>wide</em>, which is a regime we didn&rsquo;t get to test.</li>
+              <li>The encoder is frozen. We don&rsquo;t know whether the local advantage survives fine-tuning, or whether a properly hyperbolic MLP head (<span class="tip" data-tip="Hyperbolic analog of linear layers, originally proposed by Ganea, B&eacute;cigneul &amp; Hofmann (2018). They let the manifold shape intermediate representations, not just the decision boundary.">M&ouml;bius layers</span> and all) would close the classification gap.</li>
+              <li>The empirical reference trees are themselves built in Euclidean space (UPGMA on Euclidean distances). Building one in hyperbolic space would close the remaining circularity, and we didn&rsquo;t get there.</li>
+            </ul>
+            <p>Three natural extensions, in rough order of cost-to-payoff: a fully hyperbolic head, a hyperbolic empirical-tree construction, and replication on a deeper hierarchy like <span class="tip" data-tip="A large natural-images dataset paired with the WordNet semantic hierarchy. A standard testbed for deeply hierarchical recognition, much deeper than WikiArt&rsquo;s 27 leaves.">iNaturalist + WordNet</span>.</p>
+          </section>
+
+          <section id="broader">
+            <h2>What this could amplify</h2>
+            <p>Hyperbolic geometry tightens local neighborhoods. That&rsquo;s the headline result, and I&rsquo;m genuinely happy about it. But &ldquo;tighter neighborhoods&rdquo; cuts both ways when the underlying data is itself biased. WikiArt has 27 styles, and exactly one (Ukiyo-e) sits outside the European-and-American canon. East Asian ink-painting traditions that span centuries collapse into that single label. A retrieval system trained on this data will under-rank non-Western works for ambiguous queries, and a hyperbolic embedding will make those tight, confident, under-ranking neighborhoods <em>even tighter</em>.</p>
+            <p>That&rsquo;s worth saying out loud, separate from the technical claim. The geometry is doing what it&rsquo;s supposed to do. What it&rsquo;s amplifying is the data.</p>
+          </section>
+
+          <section id="takeaway">
+            <h2>What I took away</h2>
+            <p>Before doing this project, I treated the hyperbolic-vs-Euclidean question as a yes/no question. After 150 runs, three reference trees, and a regularizer that closes the loss-ambiguity gap, I think the right framing is scale-dependent. Hyperbolic geometry doesn&rsquo;t globally rearrange a representation in a way that matches a tree. It locally restructures the neighborhood of each class in a way that <em>respects</em> a tree. Those are different claims, and a lot of the prior empirical disagreement in this area, I now suspect, comes from conflating them.</p>
+            <p>The thirty-second version: hyperbolic prototype geometry adds local-retrieval value over a strong encoder when a Euclidean prototype doesn&rsquo;t, and that local advantage is robust to which of three reasonable reference trees you evaluate against. Everything else (classification, global Spearman, mean distortion) either goes the other way or doesn&rsquo;t replicate across reasonable variations of the question.</p>
+            <p>That&rsquo;s a smaller claim than I went in hoping for. But it&rsquo;s the one I trust.</p>
+
+            <figure class="figure-block">
+              <img src="/figures/hyperbolic/pareto.png" alt="Scatter plot of all 150 runs. The x-axis is top-1 accuracy, the y-axis is sibling recall@5. Euclidean runs cluster at high accuracy but low recall. Hyperbolic runs trade accuracy for higher recall." />
+              <figcaption><strong>The trade-off in one chart.</strong> Every configuration in the sweep. Euclidean prototypes (blue) cluster at the encoder&rsquo;s own accuracy but stay near its recall baseline. Hyperbolic prototypes (red) climb noticeably higher on sibling recall, paying some accuracy for it. The $k$-NN-on-CLIP baseline (black star) sits right where the Euclidean cluster does. This picture is the whole post in one figure.</figcaption>
+            </figure>
+
+            <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">Thanks for reading.</p>
+            <p style="font-size:.85rem; color:#888; text-align:center;">&copy; <span id="copyright-year"></span> Peter Flo</p>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebar-toggle');
+    if (!sidebar || !toggle) return;
+    const saved = localStorage.getItem('hyperbolic-style-sidebar-collapsed');
+    if (saved === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      localStorage.setItem('hyperbolic-style-sidebar-collapsed', sidebar.classList.contains('collapsed'));
+    });
+  })();
+
+  (function() {
+    const c = document.querySelector('.blog-content');
+    if (!c) return;
+    const wc = (c.innerText || c.textContent).trim().split(/\s+/).length;
+    const el = document.getElementById('word-count');
+    if (el) el.textContent = wc.toLocaleString() + ' WORDS | PETER FLO';
+  })();
+  document.getElementById('copyright-year').textContent = new Date().getFullYear();
+
+  (function() {
+    const toc = document.getElementById('blog-toc');
+    const content = document.querySelector('.blog-content');
+    if (!toc || !content) return;
+    const secs = Array.from(content.querySelectorAll('section[id]')).filter(s => s.querySelector('h2'));
+    function slugify(s) { return s.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-'); }
+    const tocItems = [];
+    secs.forEach(sec => {
+      const h2 = sec.querySelector('h2');
+      if (!h2) return;
+      if (!sec.id) sec.id = slugify(h2.textContent);
+      const li = document.createElement('li');
+      li.className = 'blog-toc-item';
+      const a = document.createElement('a');
+      a.href = `#${sec.id}`;
+      a.textContent = h2.textContent;
+      li.appendChild(a);
+      toc.appendChild(li);
+      tocItems.push(li);
+    });
+    toc.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href') || '';
+        if (!href.startsWith('#')) return;
+        const target = document.querySelector(href);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', href);
+      });
+    });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        tocItems.forEach(item => item.classList.remove('active'));
+        const activeLink = toc.querySelector(`a[href="#${CSS.escape(id)}"]`);
+        activeLink?.closest('.blog-toc-item')?.classList.add('active');
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+    secs.forEach(s => observer.observe(s));
+  })();
+</script>
+</body>
+</html>
