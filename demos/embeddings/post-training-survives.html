@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>What Survives Post-Training Inside a Language Model? — Peter Flo</title>
+  <title>What Survives Post-Training Inside a Language Model? · Peter Flo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="https://pflo.org/demos/embeddings/post-training-survives.html" />
   <meta name="description" content="A mechanistic walkthrough of Du et al. (COLM 2025) on how post-training reshapes knowledge, truthfulness, refusal, and confidence in LLMs." />
@@ -195,13 +195,13 @@
       </p>
       <p>
         We have lots of work evaluating these models as black boxes. But if you care about
-        <span class="term" data-tooltip="The study of how neural networks compute internally — their features, circuits, and algorithms — with the goal of predicting, controlling, and trusting their behavior.">mechanistic interpretability</span>, there&rsquo;s a sharper question:
+        <span class="term" data-tooltip="The study of how neural networks compute internally (their features, circuits, and algorithms) with the goal of predicting, controlling, and trusting their behavior.">mechanistic interpretability</span>, there&rsquo;s a sharper question:
       </p>
       <blockquote>
         <p>When we post-train an LLM, do we rewrite the model&rsquo;s internal machinery&hellip; or do we mostly add a thin control layer on top of what pre-training already built?</p>
       </blockquote>
       <p>
-        Du et al. tackle this directly by comparing base models against their post-trained variants from four angles&mdash;knowledge, truthfulness, refusal, and confidence&mdash;using standard mechanistic toolbox techniques like
+        Du et al. tackle this directly by comparing base models against their post-trained variants from four angles (knowledge, truthfulness, refusal, and confidence) using standard mechanistic toolbox techniques like
         <span class="term" data-tooltip="Replacing activations at a specific layer/position in one forward pass with activations from another run, to test causal impact of that location.">activation patching</span>
         and
         <span class="term" data-tooltip="Directions in the space of hidden states that correspond to concepts (e.g. truth vs false). Often computed as the difference between mean activations for two classes.">linear directions in representation space</span>.
@@ -226,7 +226,7 @@
           <span class="term" data-tooltip="A direction in activation space that can be used to steer or probe a behavior (e.g. add it to increase truthfulness). 'Handle' suggests you can grab and turn it.">linear handle</span>.</strong> The truthfulness direction in
           <span class="term" data-tooltip="The high-dimensional space of neural network hidden states. Each point is a vector; directions in this space can correspond to semantic concepts like truth or refusal.">activation space</span>
           is highly similar between base and post-trained models, and transfers well for interventions.</li>
-          <li><strong>Refusal is also linear&mdash;but it changes.</strong> The refusal direction differs sharply between base and post-trained models, and does not transfer forward (base &rarr; instruct) very well.</li>
+          <li><strong>Refusal is also linear, but it changes.</strong> The refusal direction differs sharply between base and post-trained models, and does not transfer forward (base &rarr; instruct) very well.</li>
           <li><strong>Confidence differences aren&rsquo;t explained by entropy neurons.</strong> The entropy-neuron sets overlap heavily across base and post-training, so whatever changes confidence is subtler than &ldquo;these 10 neurons moved.&rdquo;</li>
         </ol>
         <p style="margin-top:1rem;">
@@ -251,7 +251,7 @@
           <li><strong>INSTRUCT:</strong> a &ldquo;fully post-trained&rdquo; model (the end product of the post-training pipeline).</li>
         </ul>
         <p>
-          They run analyses across major open model families&mdash;especially Llama-3.1-8B and Mistral-7B-v0.3, plus additional models for specific refusal/confidence experiments (e.g., Qwen, Gemma, Llama-2 variants).
+          They run analyses across major open model families, especially Llama-3.1-8B and Mistral-7B-v0.3, plus additional models for specific refusal/confidence experiments (e.g., Qwen, Gemma, Llama-2 variants).
         </p>
         <p>
           And they use three kinds of datasets:
@@ -292,7 +292,7 @@
           <li>and the last token (which is always important because it pools context for the final decision).</li>
         </ul>
         <p>
-          Critically: BASE and INSTRUCT look nearly identical in these knowledge-location maps. In the Llama-3.1 family, correlations between BASE and INSTRUCT knowledge maps are extremely high (often ~0.98&ndash;0.99+ across datasets), with small maximum differences at knowledge-relevant positions.
+          Critically: BASE and INSTRUCT look nearly identical in these knowledge-location maps. In the Llama-3.1 family, correlations between BASE and INSTRUCT knowledge maps are extremely high (often ~0.98 to 0.99+ across datasets), with small maximum differences at knowledge-relevant positions.
         </p>
         <p>
           <strong>Interpretation:</strong> post-training doesn&rsquo;t &ldquo;move&rdquo; factual knowledge into new layers. Whatever pre-training built as a knowledge-retrieval pathway largely remains the pathway.
@@ -322,7 +322,7 @@
           <strong>Interpretation:</strong> post-training tends to adapt the base representational scheme (so base activations still &ldquo;make sense&rdquo; inside instruct), while also developing additional representations that the base model doesn&rsquo;t understand.
         </p>
         <p>
-          This is a nice middle ground between two extremes: &ldquo;post-training rewrites everything&rdquo; (nope) and &ldquo;post-training is just superficial prompting polish&rdquo; (also nope). Instead: the base model&rsquo;s internal knowledge interface mostly survives&mdash;but post-training extends it.
+          This is a nice middle ground between two extremes: &ldquo;post-training rewrites everything&rdquo; (nope) and &ldquo;post-training is just superficial prompting polish&rdquo; (also nope). Instead: the base model&rsquo;s internal knowledge interface mostly survives; post-training extends it.
         </p>
       </section>
 
@@ -409,7 +409,7 @@
         <h2>5. Confidence: entropy neurons aren&rsquo;t the explanation</h2>
         <p>
           Finally, they look at confidence through the lens of
-          <span class="term" data-tooltip="Neurons in the final MLP layer that modulate uncertainty by affecting logit scale more than token preference. Identified by large output weight norms and low variance in direct logit attribution.">entropy neurons</span>&mdash;neurons in the final
+          <span class="term" data-tooltip="Neurons in the final MLP layer that modulate uncertainty by affecting logit scale more than token preference. Identified by large output weight norms and low variance in direct logit attribution.">entropy neurons</span>, neurons in the final
         <span class="term" data-tooltip="Multi-Layer Perceptron: the feedforward sublayer in each transformer block that processes each token position independently. Often where 'concept neurons' or feature detectors live.">MLP</span>
         layer that modulate uncertainty by affecting logit scale more than token preference.
         </p>
@@ -430,7 +430,7 @@
 
         <h3>Result: big overlap, tiny differences</h3>
         <p>
-          They find substantial overlap in which neurons qualify as &ldquo;entropy neurons&rdquo; between base and post-trained models (often 8&ndash;10 out of 10 overlap), with very small ratio differences for overlapping neurons.
+          They find substantial overlap in which neurons qualify as &ldquo;entropy neurons&rdquo; between base and post-trained models (often 8 to 10 out of 10 overlap), with very small ratio differences for overlapping neurons.
         </p>
         <p>
           <strong>Interpretation:</strong> post-training may change confidence, but it&rsquo;s not as simple as &ldquo;entropy neurons got swapped out.&rdquo; Whatever shifts
@@ -447,7 +447,7 @@
           If I had to compress the paper into one mental model:
         </p>
         <blockquote>
-          <p>Pre-training builds the world model. Post-training mostly learns how to talk about it&mdash;except for safety, where it learns a genuinely new control axis.</p>
+          <p>Pre-training builds the world model. Post-training mostly learns how to talk about it, except for safety, where it learns a genuinely new control axis.</p>
         </blockquote>
         <p>
           More concretely:
@@ -508,7 +508,7 @@
       </section>
 
       <p>
-        The most interesting part of this paper isn&rsquo;t any single plot&mdash;it&rsquo;s the emerging taxonomy: some
+        The most interesting part of this paper isn&rsquo;t any single plot: it&rsquo;s the emerging taxonomy. Some
         <span class="term" data-tooltip="Directions or features in activation space that can be used for classification or steering. Often computed as difference-in-means between two classes.">linear features</span>
         are &ldquo;pre-training-native&rdquo; and persist through alignment; some are &ldquo;post-training-native&rdquo; and don&rsquo;t survive transfer in the same way. If you care about interpretability as an engineering discipline, this is exactly the kind of map you want: it tells you where you can reuse tools, where you should expect breakage, and where post-training is genuinely doing new internal work.
       </p>

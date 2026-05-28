@@ -5,10 +5,10 @@
   <title>What a Semester of Graduate Game Theory Taught Me (and What It Didn't)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="https://pflo.org/demos/embeddings/game-theory-semester.html" />
-  <meta name="description" content="A personal walkthrough of Harvard's Econ 2048 — from Nash equilibrium to monotone comparative statics, with connections to AI alignment." />
+  <meta name="description" content="A personal walkthrough of Harvard's Econ 2048: from Nash equilibrium to monotone comparative statics, with connections to AI alignment." />
   <meta property="og:type" content="article" />
   <meta property="og:title" content="What a Semester of Graduate Game Theory Taught Me" />
-  <meta property="og:description" content="A personal walkthrough of Harvard's Econ 2048 — Nash equilibrium, refinements, supermodular games, and what it all means for alignment." />
+  <meta property="og:description" content="A personal walkthrough of Harvard's Econ 2048: Nash equilibrium, refinements, supermodular games, and what it all means for alignment." />
   <meta property="og:image" content="https://pflo.org/cover.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/png" href="/favicon.png" />
@@ -154,7 +154,7 @@
       <header>
         <h1 class="blog-title">What a Semester of Graduate Game Theory Taught Me (and What It Didn't)</h1>
         <p class="blog-subtitle">
-          A walkthrough of Harvard's Econ 2048 — from strategies as complete contingent plans
+          A walkthrough of Harvard's Econ 2048: from strategies as complete contingent plans
           to the machinery that actually lets you prove things about how decisions change.
           With equations where they help and hand-waving where it's honest.
         </p>
@@ -166,7 +166,7 @@
       </header>
 
       <div class="aside-personal" style="margin-bottom:2rem;">
-        <p><strong>TL;DR.</strong> Nash equilibrium exists but is hard to compute; correlated equilibrium is tractable and often a better model of learned behavior. Refinements (perfect, proper, sequential) narrow down which equilibria are plausible. The most useful machinery: monotone comparative statics (Topkis) and supermodular games — they let you predict how decisions change without solving for equilibria. Ends with connections to AI alignment.</p>
+        <p><strong>TL;DR.</strong> Nash equilibrium exists but is hard to compute; correlated equilibrium is tractable and often a better model of learned behavior. Refinements (perfect, proper, sequential) narrow down which equilibria are plausible. The most useful machinery: monotone comparative statics (Topkis) and supermodular games, which let you predict how decisions change without solving for equilibria. Ends with connections to AI alignment.</p>
       </div>
 
       <!-- ===== INTRO ===== -->
@@ -176,15 +176,15 @@
         <p>
           I took Econ 2048 expecting to learn "how to find Nash equilibria." I left
           with something different: a sense for when equilibrium concepts are the right
-          question, and when they're covering up the wrong one. The course moved fast —
+          question, and when they're covering up the wrong one. The course moved fast:
           normal form games, Bayesian games, extensive form, refinements, monotone
-          comparative statics, supermodular games, potential games — all in one
+          comparative statics, supermodular games, potential games, all in one
           semester, taught by Shengwu Li with the kind of precision that makes you realize
           how much hand-waving you've been doing your whole life.
         </p>
         <p>
           What follows is my attempt to reconstruct the intellectual arc. Not a
-          textbook summary — more like "here's what actually stuck, and why."
+          textbook summary. More like "here's what actually stuck, and why."
         </p>
       </section>
 
@@ -196,7 +196,7 @@
           The course opens with a quote from Von Neumann and Morgenstern that reframes
           what a "strategy" is. In everyday language, a strategy is a vague plan. In game
           theory, a
-          <span class="term" data-tooltip="A complete contingent plan that specifies what action to take in every possible situation a player might face. You commit to the entire plan before the game starts — not because you lack flexibility, but because the analysis requires it.">strategy</span>
+          <span class="term" data-tooltip="A complete contingent plan that specifies what action to take in every possible situation a player might face. You commit to the entire plan before the game starts, not because you lack flexibility, but because the analysis requires it.">strategy</span>
           is a <em>complete contingent plan</em>: a function that specifies what you'll do in
           every possible situation you might encounter, given every possible piece of
           information you might have.
@@ -204,23 +204,23 @@
         <p>
           This is an extreme definition, and the course is upfront about that. Savage's
           famous critique is right there in the notes: requiring someone to "envisage every
-          conceivable policy for the government of his whole life" is "utterly ridiculous" —
+          conceivable policy for the government of his whole life" is "utterly ridiculous,"
           not because you might regret it later, but because the <em>computational task</em>
           is beyond human possibility. You can't even plan a picnic this way.
         </p>
         <p>
           But the power of the
-          <span class="term" data-tooltip="A game represented by its players, their strategy sets, and their payoff functions — abstracting away all sequential structure. Any game can be reduced to normal form by listing all complete contingent plans as strategies.">normal form</span>
+          <span class="term" data-tooltip="A game represented by its players, their strategy sets, and their payoff functions, abstracting away all sequential structure. Any game can be reduced to normal form by listing all complete contingent plans as strategies.">normal form</span>
           is exactly this abstraction. A game $(N, S, u)$ consists of players $N$,
           strategy sets $S_n$ for each player, and utility functions $u_n : S \to \mathbb{R}$.
           That's it. Every sequential game, every dynamic interaction, every elaborate
-          mechanism — all reduce to choosing from a set of complete plans and getting a payoff.
+          mechanism. All reduce to choosing from a set of complete plans and getting a payoff.
         </p>
 
         <blockquote>
           <p>"The idea that this mathematically simple normal form is a general model for all
           games was the key simplifying insight that allowed the first great advances of
-          modern game theory." — Myerson (2004)</p>
+          modern game theory." (Myerson, 2004)</p>
         </blockquote>
       </section>
 
@@ -239,18 +239,18 @@
           But the real insight comes from iterating. If I know you're rational, I know you
           won't play dominated strategies. So I can eliminate those from <em>your</em>
           strategy set. But now, with your strategy set trimmed, some of <em>my</em> strategies
-          might become dominated. We can keep going — this is
-          <span class="term" data-tooltip="Repeatedly removing strictly dominated strategies for all players. After each round of deletion, new strategies may become dominated. The process converges to the 'rationalizable' set — the strategies that survive all rounds.">iterated deletion of strictly dominated strategies</span>.
+          might become dominated. We can keep going. This is
+          <span class="term" data-tooltip="Repeatedly removing strictly dominated strategies for all players. After each round of deletion, new strategies may become dominated. The process converges to the 'rationalizable' set: the strategies that survive all rounds.">iterated deletion of strictly dominated strategies</span>.
         </p>
         <p>
           What survives is the
-          <span class="term" data-tooltip="The set of strategies that can't be eliminated by iterated deletion of strictly dominated strategies. Equivalently, the largest set that is 'closed under rational behavior' (CURB) — where every strategy in the set is a best response to some belief over the set.">rationalizable set</span>.
+          <span class="term" data-tooltip="The set of strategies that can't be eliminated by iterated deletion of strictly dominated strategies. Equivalently, the largest set that is 'closed under rational behavior' (CURB), where every strategy in the set is a best response to some belief over the set.">rationalizable set</span>.
           A beautiful theorem connects the two ideas: a strategy is not strictly
           dominated if and only if it's a
           <span class="term" data-tooltip="Strategy sₙ is a best response to belief β if it maximizes expected payoff given that belief. Every undominated strategy is a best response to some belief, and vice versa.">best response</span>
           to some belief about opponents. The proof uses the
-          <span class="term" data-tooltip="If two convex sets in ℝⁿ are disjoint, there exists a hyperplane that separates them. Used here to construct a belief that makes any undominated strategy a best response.">separating hyperplane theorem</span>
-          — you show that the set of achievable payoff vectors and the set of payoffs that
+          <span class="term" data-tooltip="If two convex sets in ℝⁿ are disjoint, there exists a hyperplane that separates them. Used here to construct a belief that makes any undominated strategy a best response.">separating hyperplane theorem</span>:
+          you show that the set of achievable payoff vectors and the set of payoffs that
           would strictly dominate your strategy are two disjoint convex sets, and the
           separating hyperplane gives you the belief.
         </p>
@@ -261,7 +261,7 @@
 
         <p>
           This is the first of many moments in the course where a seemingly semantic
-          distinction — "not dominated" vs. "best response to something" — turns out to be
+          distinction ("not dominated" vs. "best response to something") turns out to be
           a real mathematical equivalence with a nontrivial proof.
         </p>
       </section>
@@ -282,7 +282,7 @@
           <span class="term" data-tooltip="If X is nonempty, compact, and convex, and F: X ⇒ X is a correspondence with nonempty convex values and is upper hemi-continuous, then F has a fixed point: some x* ∈ F(x*). Generalizes Brouwer's fixed point theorem to correspondences.">Kakutani's fixed point theorem</span>.
           Define the best-response correspondence $B : \Sigma \rightrightarrows \Sigma$,
           where $B_n(\sigma) = \arg\max_{\sigma'_n} u_n(\sigma'_n, \sigma_{-n})$. A Nash
-          equilibrium is exactly a fixed point of $B$ — a profile that maps to itself under
+          equilibrium is exactly a fixed point of $B$, a profile that maps to itself under
           best-responding. Kakutani guarantees this fixed point exists because the strategy
           simplex is compact and convex, best-response sets are nonempty and convex, and the
           correspondence is upper hemi-continuous.
@@ -290,7 +290,7 @@
         <p>
           But here's the uncomfortable fact the course doesn't shy away from: <strong>finding a
           Nash equilibrium is computationally hard</strong>. It's
-          <span class="term" data-tooltip="A complexity class for problems where solutions can be verified in polynomial time and are guaranteed to exist (by a parity argument). 'PPAD-complete' means the problem is as hard as any problem in this class. Unlike NP-complete problems, PPAD problems always have solutions — you just can't find them efficiently.">PPAD-complete</span>
+          <span class="term" data-tooltip="A complexity class for problems where solutions can be verified in polynomial time and are guaranteed to exist (by a parity argument). 'PPAD-complete' means the problem is as hard as any problem in this class. Unlike NP-complete problems, PPAD problems always have solutions; you just can't find them efficiently.">PPAD-complete</span>
           (Daskalakis et al., 2009). You might hope that the extra structure of games makes
           it easier than generic fixed-point problems. It doesn't.
         </p>
@@ -312,15 +312,15 @@
         </p>
         <p>
           The idea behind
-          <span class="term" data-tooltip="An equilibrium that is robust to small 'trembles' — mistakes where players accidentally play the wrong action with small probability. Formally: the limit of ε-perfect equilibria (fully mixed profiles where worse actions get ≤ ε probability) as ε → 0.">perfect equilibrium</span>
-          (Selten, 1975) is: what if players occasionally tremble — accidentally play the
+          <span class="term" data-tooltip="An equilibrium that is robust to small 'trembles', mistakes where players accidentally play the wrong action with small probability. Formally: the limit of ε-perfect equilibria (fully mixed profiles where worse actions get ≤ ε probability) as ε → 0.">perfect equilibrium</span>
+          (Selten, 1975) is: what if players occasionally tremble, accidentally playing the
           wrong action with tiny probability? A perfect equilibrium survives this test. It's
           the limit of
           <span class="term" data-tooltip="A fully mixed strategy profile where any action yielding lower payoff than another gets at most ε probability. As ε → 0, these profiles converge to a perfect equilibrium.">$\varepsilon$-perfect equilibria</span>
           as trembles vanish.
         </p>
         <p>
-          <span class="term" data-tooltip="A refinement of perfect equilibrium. Requires that 'worse mistakes are less likely than better mistakes' — if action a gives lower payoff than a', then the probability of trembling to a must be at most ε times the probability of trembling to a'. Strictly stronger than perfect equilibrium.">Proper equilibrium</span>
+          <span class="term" data-tooltip="A refinement of perfect equilibrium. Requires that 'worse mistakes are less likely than better mistakes': if action a gives lower payoff than a', then the probability of trembling to a must be at most ε times the probability of trembling to a'. Strictly stronger than perfect equilibrium.">Proper equilibrium</span>
           (Myerson, 1978) goes further: not just that you rarely tremble, but that
           <em>worse</em> mistakes are <em>less</em> likely than better ones. If action $a$
           gives lower payoff than $a'$, then $\sigma_n(a) \le \varepsilon \cdot \sigma_n(a')$.
@@ -353,8 +353,8 @@
 
         <p>
           The course presents a game that illustrates the difference cleanly. Three Nash
-          equilibria — but only two are perfect, and only one is proper. The proper
-          equilibrium is the one where players' trembles are "ordered by rationality" — a
+          equilibria, but only two are perfect, and only one is proper. The proper
+          equilibrium is the one where players' trembles are "ordered by rationality," a
           genuinely elegant constraint.
         </p>
 
@@ -402,7 +402,7 @@
 
         <section class="interactive">
           <h3>Chicken: Nash vs. correlated</h3>
-          <p>In the game of Chicken, the best Nash equilibrium gives expected social welfare of $28/3 \approx 9.33$. But a correlated equilibrium — playing (Drive, Chicken), (Chicken, Drive), and (Chicken, Chicken) each with probability $1/3$ — achieves welfare of $10$.</p>
+          <p>In the game of Chicken, the best Nash equilibrium gives expected social welfare of $28/3 \approx 9.33$. But a correlated equilibrium (playing (Drive, Chicken), (Chicken, Drive), and (Chicken, Chicken) each with probability $1/3$) achieves welfare of $10$.</p>
           <div class="matrix-grid" style="grid-template-columns:1fr 1fr 1fr;">
             <div></div>
             <div class="matrix-label">Drive</div>
@@ -415,7 +415,7 @@
             <div class="matrix-cell">6, 6</div>
           </div>
           <p style="margin-top:12px; font-size:.9rem; color:#374151;">
-            The correlated equilibrium avoids (Drive, Drive) entirely — the crash — while
+            The correlated equilibrium avoids (Drive, Drive) entirely (the crash), while
             Nash can't, because independent randomization inevitably puts some probability on
             both players driving. This is the power of correlation: a shared signal coordinates
             players away from bad outcomes.
@@ -424,15 +424,15 @@
 
         <p>
           The kicker: unlike Nash equilibria, correlated equilibria can be computed in
-          <span class="term" data-tooltip="An algorithm whose runtime grows at most polynomially with the input size. 'Polynomial time' is the standard benchmark for computational tractability — problems solvable in poly time are considered 'easy.'">polynomial time</span>.
+          <span class="term" data-tooltip="An algorithm whose runtime grows at most polynomially with the input size. 'Polynomial time' is the standard benchmark for computational tractability: problems solvable in poly time are considered 'easy.'">polynomial time</span>.
           The CE constraints are linear in the probabilities, so you can find one via linear
           programming. Nash constraints become nonlinear the moment you require the joint
-          distribution to be a product of independent marginals — that's what makes Nash hard.
+          distribution to be a product of independent marginals. That's what makes Nash hard.
         </p>
         <p>
           Three interpretations of CE that the course highlights: (1) explicit coordination by
-          a trusted mediator, (2) informational robustness — a CE captures what you can predict
-          about play without assuming independence, and (3) learning — players who meet
+          a trusted mediator, (2) informational robustness (a CE captures what you can predict
+          about play without assuming independence), and (3) learning: players who meet
           repeatedly and play myopic best-responses to
           <span class="term" data-tooltip="A forecast is calibrated if, among all times it predicted rain with probability p, it actually rained about p fraction of the time. Foster and Vohra (1997) showed that players using calibrated forecasts converge to correlated equilibrium.">calibrated forecasts</span>
           converge to CE.
@@ -446,7 +446,7 @@
         <p>
           The normal form collapses all sequential structure. The
           <span class="term" data-tooltip="A game represented as a tree, with nodes for decisions and branches for actions. Captures the sequential structure of who moves when, what they know, and what they've observed. More detailed than the normal form.">extensive form</span>
-          brings it back — who moves when, what they know at the time, what they've observed.
+          brings it back: who moves when, what they know at the time, what they've observed.
           The notation is heavier (histories, information sets, active player functions,
           behavioral strategies) but the payoff is that we can talk about <em>dynamic
           rationality</em>: not just "is this a good plan?" but "would you actually follow
@@ -454,8 +454,8 @@
         </p>
         <p>
           A key result:
-          <span class="term" data-tooltip="In a game of perfect recall, every mixed strategy has an equivalent behavioral strategy and vice versa. This means we can analyze extensive-form games using behavioral strategies (choices at each information set) without loss of generality.">Kuhn's theorem</span>
-          — under
+          <span class="term" data-tooltip="In a game of perfect recall, every mixed strategy has an equivalent behavioral strategy and vice versa. This means we can analyze extensive-form games using behavioral strategies (choices at each information set) without loss of generality.">Kuhn's theorem</span>:
+          under
           <span class="term" data-tooltip="A player has perfect recall if they always remember their own past moves and everything they've observed. Formally: at any information set, all histories in that set share the same sequence of the player's past information sets and actions.">perfect recall</span>,
           mixed strategies and
           <span class="term" data-tooltip="A strategy that specifies, at each information set, a probability distribution over available actions. Unlike mixed strategies (which randomize over complete plans), behavioral strategies randomize at each decision point independently.">behavioral strategies</span>
@@ -466,7 +466,7 @@
           (SPE) is the natural first refinement: require Nash equilibrium in every subgame.
           Computable via
           <span class="term" data-tooltip="Solving the game from the end backward: at each final decision node, choose the best action; then at the second-to-last, choose the best action given what will happen next; and so on. Works in games of perfect information.">backward induction</span>.
-          But SPE is fragile — "seemingly-irrelevant transformations of the game tree can
+          But SPE is fragile: "seemingly-irrelevant transformations of the game tree can
           eliminate subgames," and with them all the rationality requirements that SPE imposed.
         </p>
 
@@ -516,19 +516,19 @@
         <p>
           The course spends significant time on the problem of off-path beliefs. In extensive
           games, some information sets are never reached in equilibrium. But players still need
-          beliefs about what's happening there — and those beliefs can be arbitrary, sometimes
+          beliefs about what's happening there, and those beliefs can be arbitrary, sometimes
           supporting unreasonable equilibria.
         </p>
         <p>
-          <span class="term" data-tooltip="Weak Perfect Bayesian Equilibrium: requires (1) sequential rationality — players best-respond at every information set given their beliefs, and (2) beliefs are formed by Bayes' rule wherever possible (on the equilibrium path). Does NOT restrict off-path beliefs.">Weak Perfect Bayesian Equilibrium</span>
+          <span class="term" data-tooltip="Weak Perfect Bayesian Equilibrium: requires (1) sequential rationality, players best-respond at every information set given their beliefs, and (2) beliefs are formed by Bayes' rule wherever possible (on the equilibrium path). Does NOT restrict off-path beliefs.">Weak Perfect Bayesian Equilibrium</span>
           (WPBE) requires
           <span class="term" data-tooltip="Each player's strategy is a best response at every information set, given their beliefs about where they are in the game tree. A strengthening of Nash equilibrium for extensive games.">sequential rationality</span>
           and Bayesian updating on the path of play. But it doesn't restrict off-path beliefs,
           which leads to three bugs the course illustrates with examples:
         </p>
         <ol>
-          <li>Players can "signal what they don't know" — off-path beliefs let them convey information they shouldn't have.</li>
-          <li>Players can make "different inferences from the same information" — two players who've seen identical histories can hold contradictory beliefs.</li>
+          <li>Players can "signal what they don't know": off-path beliefs let them convey information they shouldn't have.</li>
+          <li>Players can make "different inferences from the same information": two players who've seen identical histories can hold contradictory beliefs.</li>
           <li>WPBE doesn't even imply SPE in some games.</li>
         </ol>
         <p>
@@ -537,7 +537,7 @@
           the notes: "This was a mess."
         </p>
         <p>
-          <span class="term" data-tooltip="An equilibrium where (1) players best-respond at every information set given beliefs, and (2) beliefs are 'consistent' — they're the limit of beliefs that would be derived from Bayes' rule if players used fully mixed (trembling) strategies. Due to Kreps and Wilson (1982).">Sequential equilibrium</span>
+          <span class="term" data-tooltip="An equilibrium where (1) players best-respond at every information set given beliefs, and (2) beliefs are 'consistent': they're the limit of beliefs that would be derived from Bayes' rule if players used fully mixed (trembling) strategies. Due to Kreps and Wilson (1982).">Sequential equilibrium</span>
           (Kreps & Wilson, 1982) cleans this up with a single elegant idea:
           <span class="term" data-tooltip="An assessment (strategy profile + belief system) is consistent if it's the limit of fully mixed assessments where beliefs are derived from Bayes' rule. This pins down off-path beliefs by asking: 'what would you believe if players occasionally trembled to every action?'">consistency</span>.
           Beliefs are the limit of what Bayes' rule would give under fully mixed strategies
@@ -552,8 +552,8 @@
           <summary>Proof sketch (agent normal form)</summary>
           <p style="margin-top:8px;">
             The proof goes through the
-            <span class="term" data-tooltip="A reformulation of an extensive game where each information set is treated as a separate 'agent.' A player who has three information sets becomes three separate agents who share the same payoff function. Simplifies the analysis of trembling-hand perfection.">agent normal form</span>
-            — treat each information set as a separate agent, perturb so every action gets
+            <span class="term" data-tooltip="A reformulation of an extensive game where each information set is treated as a separate 'agent.' A player who has three information sets becomes three separate agents who share the same payoff function. Simplifies the analysis of trembling-hand perfection.">agent normal form</span>:
+            treat each information set as a separate agent, perturb so every action gets
             positive probability, apply Kakutani, take limits.
           </p>
         </details>
@@ -566,7 +566,7 @@
         <div class="aside-personal">
           <p>
             This is where the course shifts gears entirely. We go from "what happens in
-            equilibrium?" to "how do decisions change when parameters change?" — and the
+            equilibrium?" to "how do decisions change when parameters change?" The
             tools are completely different. If I had to pick one topic from the course that
             changed how I think, it's this one.
           </p>
@@ -574,14 +574,14 @@
 
         <p>
           A concrete example: a firm chooses output level $x$. When the price of its product
-          (parameter $t$) rises, producing one more unit becomes more attractive — so optimal
+          (parameter $t$) rises, producing one more unit becomes more attractive, so optimal
           output $x^*$ goes up. The question is: what's the <em>minimal</em> structure needed
           to make that conclusion rigorous?
         </p>
 
         <section class="interactive">
           <h3>Price → output: comparative statics</h3>
-          <p>Profit $\pi(x,t) = tx - x^2$. Optimal output $x^*(t) = t/2$. Drag the price slider — as $t$ rises, the peak of the profit curve shifts right.</p>
+          <p>Profit $\pi(x,t) = tx - x^2$. Optimal output $x^*(t) = t/2$. Drag the price slider: as $t$ rises, the peak of the profit curve shifts right.</p>
           <div class="slider-wrap">
             <label>Price $t$: <span class="slider-value" id="mcs-t-val">2</span></label>
             <input type="range" id="mcs-t" min="0.5" max="4" step="0.1" value="2" />
@@ -612,7 +612,7 @@
 
         <p>
           If the cross-partial $b_{xt} > 0$, $c$ is convex, and $b$ is concave in $x$, then
-          $x^*$ is increasing in $t$. This works — but the course immediately shows it's
+          $x^*$ is increasing in $t$. This works, but the course immediately shows it's
           <em>overkill</em>. The conclusion holds even if $b$ and $c$ aren't differentiable,
           $c$ isn't convex, $b$ isn't concave, and $x$ isn't even real-valued. The
           differentiability was only a servant to the method.
@@ -621,7 +621,7 @@
           The intuitive idea: if doing more of $x$ becomes more attractive when the parameter
           $t$ is higher, then optimal $x$ goes up. The modern approach strips this down to
           what actually matters:
-          <span class="term" data-tooltip="A partially ordered set where every pair of elements has a greatest lower bound (meet ∧) and least upper bound (join ∨). Think of ℝⁿ with the product order — you take component-wise min and max.">lattice</span>
+          <span class="term" data-tooltip="A partially ordered set where every pair of elements has a greatest lower bound (meet ∧) and least upper bound (join ∨). Think of ℝⁿ with the product order: you take component-wise min and max.">lattice</span>
           structure and
           <span class="term" data-tooltip="A function f(x,t) has increasing differences if raising x is 'more valuable' when t is higher. Formally: for x' ≥ x and t' ≥ t, f(x',t') − f(x,t') ≥ f(x',t) − f(x,t). In the differentiable case, this is ∂²f/∂x∂t ≥ 0.">increasing differences</span>.
         </p>
@@ -629,7 +629,7 @@
         <h3>Topkis's monotonicity theorem</h3>
         <p>
           The centerpiece result. If $f(x, t)$ is
-          <span class="term" data-tooltip="A function on a lattice satisfying f(x ∨ y) + f(x ∧ y) ≥ f(x) + f(y). Captures 'complementarity' — the components of x are worth more together than apart. On ℝ, every function is supermodular; the concept only bites in higher dimensions.">supermodular</span>
+          <span class="term" data-tooltip="A function on a lattice satisfying f(x ∨ y) + f(x ∧ y) ≥ f(x) + f(y). Captures 'complementarity': the components of x are worth more together than apart. On ℝ, every function is supermodular; the concept only bites in higher dimensions.">supermodular</span>
           in $x$ and has increasing differences in $(x, t)$, and the feasible set $S(t)$ is
           increasing in the
           <span class="term" data-tooltip="Set A is greater than set B in the strong set order if, for all a ∈ A and b ∈ B, the join a ∨ b is in A and the meet a ∧ b is in B. A generalization of 'bigger' for sets in a lattice. Ensures that as the constraint set grows, it grows 'upward.'">strong set order</span>,
@@ -662,7 +662,7 @@
           The beauty is that in many applications, some conditions are trivially satisfied.
           If $X \subseteq \mathbb{R}$, it's automatically a lattice and every function is
           supermodular in $x$. If constraints don't vary with $t$, condition 4 is free. You
-          only need to check increasing differences — which often reduces to checking a
+          only need to check increasing differences, which often reduces to checking a
           cross-partial is nonneg.
         </p>
 
@@ -686,7 +686,7 @@
             logs: $\ln w(b, \theta) + \ln F(b)$. If $\ln w$ has increasing differences in
             $(b, \theta)$, optimal bids are increasing in value. In particular, if $w(b,
             \theta) = v(\theta - b)$ for concave $v$, this holds. The concavity of $v$ is
-            doing double duty — capturing risk aversion and guaranteeing increasing
+            doing double duty: capturing risk aversion and guaranteeing increasing
             differences.
           </p>
         </details>
@@ -699,21 +699,21 @@
         <p>
           Topkis's theorem is about single-agent optimization. Supermodular games extend it
           to strategic settings. A
-          <span class="term" data-tooltip="A game where each player's strategy set is a lattice, payoffs are supermodular in own action, and have increasing differences with other players' actions. Captures 'strategic complements' — when one player does more, others want to do more too.">supermodular game</span>
+          <span class="term" data-tooltip="A game where each player's strategy set is a lattice, payoffs are supermodular in own action, and have increasing differences with other players' actions. Captures 'strategic complements': when one player does more, others want to do more too.">supermodular game</span>
           (Milgrom & Roberts, 1990) is one where players' strategies are
           <span class="term" data-tooltip="When one player increases their action, other players want to increase theirs too. The economic intuition: actions reinforce each other. Contrast with strategic substitutes, where one player increasing makes others want to decrease.">strategic complements</span>:
           when one player increases their action, others want to increase theirs.
         </p>
         <p>
           <em>Example:</em> Two firms competing on quality. When Firm A raises quality, Firm B's
-          best response is also to raise quality — consumers compare them, so matching high
+          best response is also to raise quality, because consumers compare them and matching high
           quality becomes more valuable when the rival is better. That's strategic
           complementarity. The payoff: there's a "low-quality" equilibrium and a "high-quality"
           equilibrium, and every rational outcome lies between them.
         </p>
         <p>
           The headline result: supermodular games have <strong>extremal pure-strategy Nash
-          equilibria</strong> — a smallest and a largest. And these bound the entire
+          equilibria</strong>: a smallest and a largest. And these bound the entire
           rationalizable set: every rationalizable strategy is between the smallest and
           largest equilibrium.
         </p>
@@ -768,25 +768,25 @@
 
         <p>
           This immediately gives existence of pure-strategy NE (just maximize $F$) and the
-          <span class="term" data-tooltip="Start at any strategy profile. If some player can improve their payoff by deviating, let them. The potential F strictly increases at each step. In a finite game, this must terminate — at a Nash equilibrium. No cycles are possible.">finite improvement property</span>:
+          <span class="term" data-tooltip="Start at any strategy profile. If some player can improve their payoff by deviating, let them. The potential F strictly increases at each step. In a finite game, this must terminate at a Nash equilibrium. No cycles are possible.">finite improvement property</span>:
           start anywhere, let players make beneficial deviations one at a time, and you must
           reach an equilibrium because $F$ strictly increases at each step. No cycles possible.
         </p>
         <p>
           The canonical example is
           <span class="term" data-tooltip="A game where players choose routes through a network (roads, internet), and the cost of each route depends on how many others are using it. Every congestion game is a potential game, so pure-strategy equilibria always exist.">congestion games</span>
-          — think traffic routing. Each player picks a set of roads; each road has a cost
+          (think traffic routing). Each player picks a set of roads; each road has a cost
           that increases with congestion. The potential function sums up "accumulated costs":
           $F(a) = -\sum_{x} d_x(n_x(a))$ where $d_x(m) = c_x(1) + c_x(2) + \cdots + c_x(m)$.
         </p>
         <p>
           A beautiful application: <strong>VCG auctions with endogenous investment</strong>.
           Players can invest to change their values before a
-          <span class="term" data-tooltip="Vickrey-Clarke-Groves mechanism: an auction where each player's transfer equals the externality they impose on others. Truthful reporting is a dominant strategy. Here used with endogenous investment — players choose how much to invest in their own values.">VCG mechanism</span>
+          <span class="term" data-tooltip="Vickrey-Clarke-Groves mechanism: an auction where each player's transfer equals the externality they impose on others. Truthful reporting is a dominant strategy. Here used with endogenous investment, where players choose how much to invest in their own values.">VCG mechanism</span>
           runs. The investment game turns out to be a potential game with potential function
           equal to social welfare. So at any pure-strategy Nash equilibrium, no single player
           can improve social welfare by changing their investment. The mechanism aligns
-          individual incentives with collective good — at least locally.
+          individual incentives with collective good, at least locally.
         </p>
       </section>
 
@@ -798,8 +798,8 @@
           Every course makes choices, and the omissions are as revealing as the inclusions.
         </p>
         <p>
-          <strong>No repeated games.</strong> The folk theorem — that almost anything can be
-          sustained as an equilibrium in infinitely repeated games — is one of the most
+          <strong>No repeated games.</strong> The folk theorem (that almost anything can be
+          sustained as an equilibrium in infinitely repeated games) is one of the most
           important (and unsettling) results in game theory. The course skipped it entirely.
           I think this is defensible: the folk theorem is about what's <em>possible</em> in
           equilibrium, not what's <em>likely</em>, and the course prioritized tools that make
@@ -807,7 +807,7 @@
         </p>
         <p>
           <strong>No mechanism design.</strong> How to design rules of a game to achieve a
-          desired outcome — auctions, voting systems, matching markets. The VCG example at the
+          desired outcome: auctions, voting systems, matching markets. The VCG example at the
           end was a taste, but full mechanism design is a separate course (and one I want to
           take). This is where game theory becomes <em>engineering</em> rather than
           <em>analysis</em>.
@@ -815,13 +815,13 @@
         <p>
           <strong>No evolutionary game theory.</strong> What happens when "players" don't
           optimize but instead follow simple rules, and selection pressure does the work? This
-          connects to learning dynamics, replicator equations, and — I suspect — to how neural
+          connects to learning dynamics, replicator equations, and (I suspect) to how neural
           networks learn strategic behavior during training.
         </p>
         <p>
           <strong>Limited learning and dynamics.</strong> The CE-as-learning-outcome result
           (Foster & Vohra) was mentioned but not developed. How players actually converge to
-          equilibria — or fail to — is arguably more important than the equilibria themselves.
+          equilibria (or fail to) is arguably more important than the equilibria themselves.
         </p>
       </section>
 
@@ -840,34 +840,34 @@
         <p>
           <strong>Principal-agent as the core framing.</strong> The alignment problem is, at its
           root, a game between a principal (humans) and an agent (AI) with misaligned
-          information and possibly misaligned objectives. The extensive-form game structure —
-          sequential moves, imperfect information, beliefs about opponent types — maps
+          information and possibly misaligned objectives. The extensive-form game structure
+          (sequential moves, imperfect information, beliefs about opponent types) maps
           directly. What makes alignment hard is that we're playing a Bayesian game where we
           don't know the agent's type (its learned objectives) and can only partially observe
           its actions (its internal reasoning).
         </p>
         <p>
           <strong>Refinements as a theory of "what kind of rationality to assume."</strong>
-          The refinement ladder — from rationalizability to Nash to perfect to proper to
-          sequential — is really about how much intelligence to attribute to the players.
+          The refinement ladder (from rationalizability to Nash to perfect to proper to
+          sequential) is really about how much intelligence to attribute to the players.
           For AI alignment, this is directly relevant: how capable is the model at strategic
           reasoning? A model that only avoids dominated strategies behaves very differently
           from one that plays sequential equilibria. As models become more capable, we may need
-          to assume stronger rationality concepts — and design our oversight mechanisms accordingly.
+          to assume stronger rationality concepts, and design our oversight mechanisms accordingly.
         </p>
         <p>
           <strong>Correlated equilibrium and the mediator problem.</strong> In alignment, we
-          <em>want</em> to be the mediator — the entity that coordinates the game by sending
+          <em>want</em> to be the mediator: the entity that coordinates the game by sending
           private recommendations that players voluntarily follow. Constitutional AI, RLHF, and
           system prompts are all attempts at mediation. The CE framework suggests a precise
           question: under what conditions will the AI voluntarily follow the mediator's
           recommendation? The answer depends on whether the AI's incentive constraints are
-          satisfied — which requires knowing its utility function. And that's exactly what
+          satisfied, which requires knowing its utility function. And that's exactly what
           mechanistic interpretability is trying to figure out.
         </p>
         <p>
           <strong>Supermodular games and capability cascades.</strong> If AI capabilities are
-          strategic complements — one lab advancing makes other labs want to advance faster —
+          strategic complements (one lab advancing makes other labs want to advance faster),
           then the AI development landscape is a supermodular game. The extremal equilibrium
           result says the rationalizable strategies are bounded by the extremal equilibria. In
           a race with strategic complements, this means the "rational" range of behavior is
@@ -881,8 +881,8 @@
           social welfare, then individual incentive-compatible behavior would automatically
           promote collective good. The VCG-with-investment result is a prototype: mechanism
           design can align local incentives with global welfare, at least at equilibrium.
-          Whether this extends to the AI setting — where "players" are learned systems with
-          opaque objectives — is a research question I'm very interested in.
+          Whether this extends to the AI setting (where "players" are learned systems with
+          opaque objectives) is a research question I'm very interested in.
         </p>
         <p>
           <strong>Where the analogy breaks down.</strong> Classical game theory assumes players
@@ -890,8 +890,8 @@
           responses. AI systems violate all three: they learn the "rules" from data, their
           "utility functions" are emergent properties of training, and their "best responses"
           are approximated by gradient descent over billions of parameters. The gap between the
-          theory and the application is large. But I think the structural analogies — the
-          information asymmetries, the strategic complementarities, the monitoring problems —
+          theory and the application is large. But I think the structural analogies (the
+          information asymmetries, the strategic complementarities, the monitoring problems)
           are real, and the formalism gives us a language to make them precise.
         </p>
       </section>
@@ -932,8 +932,8 @@
     const info = {
       'r1c1': '<strong>(r₁, c₁): payoff (1, 1).</strong> Nash ✓ · Perfect ✓ · Proper ✓. Both players\' best response when the other\'s tremble makes costly mistakes (−9) even less likely than moderate ones (0). The unique proper equilibrium.',
       'r2c2': '<strong>(r₂, c₂): payoff (0, 0).</strong> Nash ✓ · Perfect ✓ · Proper ✗. Both get 0 regardless of trembles to c₂/r₂. Survives trembling, but a "proper" trembling player would put more weight on the better mistake (r₁) than the worse one (r₃), which destabilizes this.',
-      'r3c3': '<strong>(r₃, c₃): payoff (−7, −7).</strong> Nash ✓ · Perfect ✗ · Proper ✗. A terrible equilibrium sustained only because each player expects the other to play c₃/r₃. Any trembling destroys it — a small probability on c₁ makes r₁ strictly better than r₃.',
-      'off': 'This cell is not a Nash equilibrium. Click a diagonal cell — (r₁,c₁), (r₂,c₂), or (r₃,c₃) — to see which refinements it survives.'
+      'r3c3': '<strong>(r₃, c₃): payoff (−7, −7).</strong> Nash ✓ · Perfect ✗ · Proper ✗. A terrible equilibrium sustained only because each player expects the other to play c₃/r₃. Any trembling destroys it: a small probability on c₁ makes r₁ strictly better than r₃.',
+      'off': 'This cell is not a Nash equilibrium. Click a diagonal cell, (r₁,c₁), (r₂,c₂), or (r₃,c₃), to see which refinements it survives.'
     };
     cells.forEach(cell => cell.addEventListener('click', () => {
       cells.forEach(c => c.classList.remove('active'));
@@ -945,10 +945,10 @@
   // Supermodular game tabs
   (function() {
     const data = [
-      '<p><strong>Search game.</strong> Agents choose search intensity $a_i \\in [0,1]$. Payoff: $u_i(a) = \\gamma a_i \\sum_{j \\neq i} a_j - c(a_i)$. The more others search, the more valuable your own searching becomes (more potential matches). Cross-partial in $(a_i, a_j)$ is $\\gamma > 0$ — pure strategic complements.</p>',
-      '<p><strong>Network externalities.</strong> Agents on a network choose $L$ or $R$. Payoff increases with the number of neighbors choosing the same action. Classic coordination game — everyone wants to be on the same "platform." The binary action set is a lattice, and payoffs have increasing differences because coordinating with more neighbors is better.</p>',
-      '<p><strong>Logit Bertrand competition.</strong> Firms choose prices $p_i$. Market shares follow a logit model: $\\frac{k_i e^{-\\lambda p_i}}{\\sum_j k_j e^{-\\lambda p_j}}$. Take logs of payoff and check the cross-partial — it\'s ≥ 0. Prices are strategic complements: if competitors raise prices, you want to raise yours too. Note: $\\lambda = \\infty$ recovers classical Bertrand (pure price competition).</p>',
-      '<p><strong>Cournot duopoly.</strong> Firms choose quantities $q_i$. Payoff: $q_i(1 - q_i - q_j) - c_i(q_i)$. This is a game of strategic <em>substitutes</em> — if the other firm produces more, you want to produce less. But here\'s the trick: <strong>reverse the order</strong> on one firm\'s action space, and you get a supermodular game. The theory handles both complements and substitutes.</p>'
+      '<p><strong>Search game.</strong> Agents choose search intensity $a_i \\in [0,1]$. Payoff: $u_i(a) = \\gamma a_i \\sum_{j \\neq i} a_j - c(a_i)$. The more others search, the more valuable your own searching becomes (more potential matches). Cross-partial in $(a_i, a_j)$ is $\\gamma > 0$: pure strategic complements.</p>',
+      '<p><strong>Network externalities.</strong> Agents on a network choose $L$ or $R$. Payoff increases with the number of neighbors choosing the same action. Classic coordination game: everyone wants to be on the same "platform." The binary action set is a lattice, and payoffs have increasing differences because coordinating with more neighbors is better.</p>',
+      '<p><strong>Logit Bertrand competition.</strong> Firms choose prices $p_i$. Market shares follow a logit model: $\\frac{k_i e^{-\\lambda p_i}}{\\sum_j k_j e^{-\\lambda p_j}}$. Take logs of payoff and check the cross-partial: it\'s ≥ 0. Prices are strategic complements: if competitors raise prices, you want to raise yours too. Note: $\\lambda = \\infty$ recovers classical Bertrand (pure price competition).</p>',
+      '<p><strong>Cournot duopoly.</strong> Firms choose quantities $q_i$. Payoff: $q_i(1 - q_i - q_j) - c_i(q_i)$. This is a game of strategic <em>substitutes</em>: if the other firm produces more, you want to produce less. But here\'s the trick: <strong>reverse the order</strong> on one firm\'s action space, and you get a supermodular game. The theory handles both complements and substitutes.</p>'
     ];
     const tabs = document.getElementById('super-tabs');
     const body = document.getElementById('super-body');

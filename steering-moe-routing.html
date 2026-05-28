@@ -110,7 +110,7 @@
           <div class="blog-breadcrumb">
             <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
           </div>
-          <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
+          <div class="blog-meta-bar" id="word-count">... WORDS ...</div>
 
           <header>
             <h1 class="blog-title">Steering Mixture-of-Experts Models by Choosing the Route</h1>
@@ -149,7 +149,7 @@
 
           <section id="how-steering-works">
             <h2>How the steering actually works</h2>
-            <p>The slogan&mdash;bias the router toward certain experts&mdash;sounds high level, but the implementation is clean: first you <em>measure</em> which experts correlate with a behavior, then you <em>shift</em> the router&rsquo;s scores to promote or suppress them.</p>
+            <p>The slogan, "bias the router toward certain experts," sounds high level, but the implementation is clean: first you <em>measure</em> which experts correlate with a behavior, then you <em>shift</em> the router&rsquo;s scores to promote or suppress them.</p>
 
             <h3>Step 1: Find behavior-linked experts</h3>
             <p>Start with paired prompts \((x^{(1)}, x^{(2)})\) that differ only in the behavior you care about. Typical contrasts:</p>
@@ -180,7 +180,7 @@
             <div class="eq-block">
               $$p_i = \frac{e^{s_i}}{\sum_j e^{s_j}}.$$
             </div>
-            <p>No weight updates, no hard mask that forces a single expert to run everywhere&mdash;just a tilted distribution over experts, then business as usual for the rest of the layer.</p>
+            <p>No weight updates, no hard mask that forces a single expert to run everywhere. Just a tilted distribution over experts, then business as usual for the rest of the layer.</p>
 
             <h3>Why this feels different from activation steering</h3>
             <p>Three consequences matter for how I think about it:</p>
@@ -189,7 +189,7 @@
               <li>You are not forcing one expert to take over the full depth of the model.</li>
               <li>You only change the <em>probabilities</em> over which experts get a say at this routing step.</li>
             </ul>
-            <p>Classic activation steering is a geometric move on a hidden state: \(h \leftarrow h + \alpha v\). Here the primitive is distributional: routing is \(\mathrm{route} \sim \mathrm{softmax}(z)\), and you implement steering as \(\mathrm{softmax}(z) \to \mathrm{softmax}(z + \delta)\) after the structured update to \(s\). Same broad recipe&mdash;small intervention, global behavioral effect&mdash;but applied one level up, at who computes, not only at what vector they see.</p>
+            <p>Classic activation steering is a geometric move on a hidden state: \(h \leftarrow h + \alpha v\). Here the primitive is distributional: routing is \(\mathrm{route} \sim \mathrm{softmax}(z)\), and you implement steering as \(\mathrm{softmax}(z) \to \mathrm{softmax}(z + \delta)\) after the structured update to \(s\). Same broad recipe, small intervention and global behavioral effect, but applied one level up, at who computes, not only at what vector they see.</p>
 
             <h3>A useful intuition</h3>
             <p>If a dense model is like one circuit you can poke, an MoE is closer to a committee: each token is handled by a sparse mixture, schematically</p>

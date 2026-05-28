@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Geospatial Embeddings for Pollution Prediction (NO₂) — Interactive Summary</title>
+  <title>Geospatial Embeddings for Pollution Prediction (NO₂) · Interactive Summary</title>
   <meta name="description" content="An interactive summary of an honors thesis: using geospatial embeddings from satellite imagery to predict block-level NO₂ across the Bay Area." />
   <link rel="canonical" href="https://pflo.org/geospatial-embeddings-no2.html" />
   <link rel="icon" type="image/png" href="/favicon.png" />
@@ -161,7 +161,7 @@
       <header>
         <h1 class="blog-title">Geospatial Embeddings for Pollution Prediction</h1>
         <p class="blog-subtitle">
-          How satellite-derived feature vectors and machine learning can predict block-level nitrogen dioxide concentrations across the Bay Area&mdash;and what breaks when you try it somewhere new.
+          How satellite-derived feature vectors and machine learning can predict block-level nitrogen dioxide concentrations across the Bay Area, and what breaks when you try it somewhere new.
         </p>
         <p class="blog-meta">
           <span>By Peter Flo</span>
@@ -228,10 +228,10 @@
       <!-- ==================== INTRO ==================== -->
       <section id="intro">
         <p>
-          During my last year at UC Berkeley, I spent most of my time on a question that felt almost too simple: can you predict how polluted a city block is just by looking at it from space? Not with expensive ground sensors or complex atmospheric models, but with the kind of satellite imagery that's freely available to anyone&mdash;compressed into numerical feature vectors and fed to off-the-shelf ML models.
+          During my last year at UC Berkeley, I spent most of my time on a question that felt almost too simple: can you predict how polluted a city block is just by looking at it from space? Not with expensive ground sensors or complex atmospheric models, but with the kind of satellite imagery that's freely available to anyone, compressed into numerical feature vectors and fed to off-the-shelf ML models.
         </p>
         <p>
-          The result was my honors thesis, which won the Melis Medal in 2024. I'm writing it up here partly as an exercise in making research accessible, and partly as a bit of ML archaeology. The models I used&mdash;Ridge regression, SVR, Random Forests&mdash;were the right tools for the setting: tabular features, a few thousand training samples, and no GPU budget. They worked remarkably well in-distribution.
+          The result was my honors thesis, which won the Melis Medal in 2024. I'm writing it up here partly as an exercise in making research accessible, and partly as a bit of ML archaeology. The models I used (Ridge regression, SVR, Random Forests) were the right tools for the setting: tabular features, a few thousand training samples, and no GPU budget. They worked remarkably well in-distribution.
         </p>
         <p>
           Today, of course, you'd approach this differently. Foundation models like <a href="https://github.com/Clay-foundation/model" target="_blank" rel="noopener">Clay</a>, <a href="https://huggingface.co/ibm-nasa-geospatial" target="_blank" rel="noopener">Prithvi</a>, or Google's geospatial embeddings can produce richer, pretrained representations of any patch on Earth. You'd fine-tune a vision transformer on Sentinel-2 tiles directly, or use retrieval-augmented embeddings with temporal context. The underlying question, though, stays the same: how much can you learn about a place from how it looks from above?
@@ -245,13 +245,13 @@
       <section id="why-no2">
         <h2>Why nitrogen dioxide?</h2>
         <p>
-          If you've ever stood at a busy intersection and felt your lungs tighten, you've breathed in nitrogen dioxide. NO₂ is produced wherever fuel combusts&mdash;car engines, power plants, industrial furnaces&mdash;and it's one of six "criteria pollutants" that the EPA regulates because of its direct link to respiratory disease, cardiovascular problems, and premature death.
+          If you've ever stood at a busy intersection and felt your lungs tighten, you've breathed in nitrogen dioxide. NO₂ is produced wherever fuel combusts: car engines, power plants, industrial furnaces. It's one of six "criteria pollutants" that the EPA regulates because of its direct link to respiratory disease, cardiovascular problems, and premature death.
         </p>
         <p>
-          What makes NO₂ especially interesting as a modeling target is how <em>locally</em> it varies. Particulate matter drifts and disperses; NO₂ tends to spike right at the source and fall off sharply with distance. A census block adjacent to a freeway on-ramp can have concentrations several times higher than a block two streets over. That spatial sharpness means fine-grained predictions are both feasible and useful&mdash;you can actually tell a policymaker <em>which blocks</em> are worst, not just which zip codes.
+          What makes NO₂ especially interesting as a modeling target is how <em>locally</em> it varies. Particulate matter drifts and disperses; NO₂ tends to spike right at the source and fall off sharply with distance. A census block adjacent to a freeway on-ramp can have concentrations several times higher than a block two streets over. That spatial sharpness means fine-grained predictions are both feasible and useful: you can actually tell a policymaker <em>which blocks</em> are worst, not just which zip codes.
         </p>
         <p>
-          The Bay Area turned out to be the perfect laboratory for this. It has steep pollution gradients driven by traffic (the 101, 880, and 280 corridors), a patchwork of dense urban cores, quiet residential streets, industrial zones, and parkland&mdash;and, crucially, a one-of-a-kind hyperlocal pollution dataset. Between 2015 and 2017, researchers at UC Berkeley equipped Google Street View cars with air quality sensors and drove them through San Francisco, Oakland, and Berkeley, measuring NO₂ at the block level. That gave me something almost no one else had: a ground-truth target variable at the spatial resolution I actually cared about.
+          The Bay Area turned out to be the perfect laboratory for this. It has steep pollution gradients driven by traffic (the 101, 880, and 280 corridors), a patchwork of dense urban cores, quiet residential streets, industrial zones, and parkland. Crucially, it also has a one-of-a-kind hyperlocal pollution dataset. Between 2015 and 2017, researchers at UC Berkeley equipped Google Street View cars with air quality sensors and drove them through San Francisco, Oakland, and Berkeley, measuring NO₂ at the block level. That gave me something almost no one else had: a ground-truth target variable at the spatial resolution I actually cared about.
         </p>
       </section>
 
@@ -262,24 +262,24 @@
           Before we get to maps and models, it's worth pausing on the core idea that makes this whole project work: <strong>embeddings</strong>.
         </p>
         <p>
-          An embedding is a way of representing something complex&mdash;an image, a sentence, a location on Earth&mdash;as a fixed-length list of numbers (a "vector"). The magic is in <em>how</em> those numbers are chosen. A good embedding arranges things so that objects which are similar in the real world end up close together in vector space, and dissimilar objects end up far apart. The vector doesn't label anything explicitly; the structure emerges from the data.
+          An embedding is a way of representing something complex (an image, a sentence, a location on Earth) as a fixed-length list of numbers (a "vector"). The magic is in <em>how</em> those numbers are chosen. A good embedding arranges things so that objects which are similar in the real world end up close together in vector space, and dissimilar objects end up far apart. The vector doesn't label anything explicitly; the structure emerges from the data.
         </p>
         <p>
-          The most familiar example is probably word embeddings. In models like Word2Vec or GloVe, each word in a language is mapped to a vector of, say, 300 numbers. The training procedure&mdash;predicting a word from its neighbors in a large corpus&mdash;causes semantically related words to land near each other. "King" ends up close to "queen" and far from "banana," and the directions in the space encode relationships: <em>king &minus; man + woman &asymp; queen</em>. Nobody told the model about royalty; it just fell out of the co-occurrence statistics.
+          The most familiar example is probably word embeddings. In models like Word2Vec or GloVe, each word in a language is mapped to a vector of, say, 300 numbers. The training procedure (predicting a word from its neighbors in a large corpus) causes semantically related words to land near each other. "King" ends up close to "queen" and far from "banana," and the directions in the space encode relationships: <em>king &minus; man + woman &asymp; queen</em>. Nobody told the model about royalty; it just fell out of the co-occurrence statistics.
         </p>
 
         <h3>From words to places</h3>
         <p>
-          The same principle can be applied to images of the Earth's surface. Take a satellite image of a 1&nbsp;km &times; 1&nbsp;km tile, pass it through a feature extraction process, and out comes a vector of numbers that encodes what that tile "looks like"&mdash;its vegetation density, road patterns, building footprints, water features, soil type, and textures that don't even have obvious human names but that correlate with things we care about.
+          The same principle can be applied to images of the Earth's surface. Take a satellite image of a 1&nbsp;km &times; 1&nbsp;km tile, pass it through a feature extraction process, and out comes a vector of numbers that encodes what that tile "looks like": its vegetation density, road patterns, building footprints, water features, soil type, and textures that don't even have obvious human names but that correlate with things we care about.
         </p>
         <p>
-          There are different ways to build these extractors. Some use deep neural networks pretrained on millions of labeled images (this is how modern foundation models like Clay or Prithvi work). Others use simpler, more scalable approaches. The thesis uses the latter&mdash;partly because in 2023, the foundation model ecosystem for geospatial data was still nascent, and partly because the simpler methods already worked well enough to be interesting.
+          There are different ways to build these extractors. Some use deep neural networks pretrained on millions of labeled images (this is how modern foundation models like Clay or Prithvi work). Others use simpler, more scalable approaches. The thesis uses the latter, partly because in 2023 the foundation model ecosystem for geospatial data was still nascent, and partly because the simpler methods already worked well enough to be interesting.
         </p>
 
         <section class="interactive" id="emb-interactive">
           <h3>Embedding space: San Francisco vs. Oakland</h3>
           <p>
-            When you reduce 390-dimensional Earth Index embeddings to 2-D using t-SNE, census blocks from the same city tend to cluster together&mdash;but with significant overlap, because many neighborhoods share similar built environments across city boundaries. Hover over the interactive version below to explore.
+            When you reduce 390-dimensional Earth Index embeddings to 2-D using t-SNE, census blocks from the same city tend to cluster together, but with significant overlap, because many neighborhoods share similar built environments across city boundaries. Hover over the interactive version below to explore.
           </p>
           <div class="emb-canvas-wrap">
             <canvas id="emb-canvas" width="500" height="300"></canvas>
@@ -292,7 +292,7 @@
           <details>
             <summary>Why this matters for pollution prediction</summary>
             <p style="margin-top:8px;">
-              The partial separability tells us the embeddings carry city-level signal&mdash;different urban fabrics, vegetation, building density. But the overlap means many blocks look similar <em>across</em> cities. If locations with similar embeddings tend to have similar NO₂ levels, then a model trained on measured locations can generalize to unmeasured ones whose embeddings look similar. The embedding acts as a proxy for the local environment without the model needing explicit knowledge of roads, parks, or traffic.
+              The partial separability tells us the embeddings carry city-level signal: different urban fabrics, vegetation, building density. But the overlap means many blocks look similar <em>across</em> cities. If locations with similar embeddings tend to have similar NO₂ levels, then a model trained on measured locations can generalize to unmeasured ones whose embeddings look similar. The embedding acts as a proxy for the local environment without the model needing explicit knowledge of roads, parks, or traffic.
             </p>
           </details>
         </section>
@@ -303,10 +303,10 @@
           The thesis uses two embedding sources, each built with a fundamentally different philosophy:
         </p>
         <p>
-          <strong>Earth Index (EI)</strong> takes a domain-expert approach. The non-profit Earth Genome processed Sentinel-1 (radar) and Sentinel-2 (multispectral) satellite imagery across 12 spectral bands&mdash;near-infrared for vegetation health, shortwave infrared for soil moisture, visible bands for built surfaces, and so on. They then computed temporal and spatial summary statistics for each 100&nbsp;m &times; 100&nbsp;m block: means, medians, standard deviations across time. The result is a 390-dimensional vector per location where each dimension has a known physical interpretation (e.g., "mean NDVI in summer" or "radar backscatter variability"). It's the hand-crafted approach: you know what each feature measures.
+          <strong>Earth Index (EI)</strong> takes a domain-expert approach. The non-profit Earth Genome processed Sentinel-1 (radar) and Sentinel-2 (multispectral) satellite imagery across 12 spectral bands: near-infrared for vegetation health, shortwave infrared for soil moisture, visible bands for built surfaces, and so on. They then computed temporal and spatial summary statistics for each 100&nbsp;m &times; 100&nbsp;m block: means, medians, standard deviations across time. The result is a 390-dimensional vector per location where each dimension has a known physical interpretation (e.g., "mean NDVI in summer" or "radar backscatter variability"). It's the hand-crafted approach: you know what each feature measures.
         </p>
         <p>
-          <strong>MOSAIKS</strong> takes the opposite philosophy. Following the Rolf et al. (2021) framework, it starts with a set of <em>K</em> small, randomly initialized image patches (think 3&times;3 or 5&times;5 pixel grids of random values). Each patch is convolved across the entire satellite tile&mdash;like running a filter across a photograph&mdash;and the activation at each position is pooled into a single number. With <em>K</em> = 4,000 random patches, you get a 4,000-dimensional vector. The remarkable insight behind MOSAIKS is that these random features, despite having no domain knowledge baked in, collectively capture enough spatial texture to be useful for dozens of downstream prediction tasks&mdash;from forest cover to housing prices to, as it turns out, NO₂.
+          <strong>MOSAIKS</strong> takes the opposite philosophy. Following the Rolf et al. (2021) framework, it starts with a set of <em>K</em> small, randomly initialized image patches (think 3&times;3 or 5&times;5 pixel grids of random values). Each patch is convolved across the entire satellite tile (like running a filter across a photograph), and the activation at each position is pooled into a single number. With <em>K</em> = 4,000 random patches, you get a 4,000-dimensional vector. The remarkable insight behind MOSAIKS is that these random features, despite having no domain knowledge baked in, collectively capture enough spatial texture to be useful for dozens of downstream prediction tasks: from forest cover to housing prices to, as it turns out, NO₂.
         </p>
 
         <!-- MOSAIKS process diagram -->
@@ -430,7 +430,7 @@
         </svg>
 
         <p>
-          One subtlety worth explaining: the target variable is log-transformed. Raw NO₂ concentrations are right-skewed&mdash;most blocks have moderate levels, but a few near highways are much higher. Predicting \(\log(Y)\) rather than \(Y\) directly means the model optimizes for <em>multiplicative</em> accuracy ("within 10%") rather than additive accuracy ("within 3 ppb"), which is more meaningful when concentrations span an order of magnitude.
+          One subtlety worth explaining: the target variable is log-transformed. Raw NO₂ concentrations are right-skewed. Most blocks have moderate levels, but a few near highways are much higher. Predicting \(\log(Y)\) rather than \(Y\) directly means the model optimizes for <em>multiplicative</em> accuracy ("within 10%") rather than additive accuracy ("within 3 ppb"), which is more meaningful when concentrations span an order of magnitude.
         </p>
         <p>
           $$\log(Y) = f(\mathbf{X}) + \epsilon$$
@@ -450,10 +450,10 @@
           Three datasets had to come together for this to work, and wrangling their spatial alignment was honestly one of the more time-consuming parts of the project.
         </p>
         <p>
-          The <strong>target variable</strong> comes from the Google Street View car campaign run by Apte et al. at UC Berkeley. Over 32 months (May 2015 &ndash; December 2017), cars fitted with reference-grade NO₂ sensors drove through San Francisco, Oakland, and Berkeley, accumulating enough repeat passes to compute a reliable <em>median</em> NO₂ concentration for 4,137 individual census blocks. This is far finer than anything you'd get from the EPA's sparse network of stationary monitors.
+          The <strong>target variable</strong> comes from the Google Street View car campaign run by Apte et al. at UC Berkeley. Over 32 months (May 2015 to December 2017), cars fitted with reference-grade NO₂ sensors drove through San Francisco, Oakland, and Berkeley, accumulating enough repeat passes to compute a reliable <em>median</em> NO₂ concentration for 4,137 individual census blocks. This is far finer than anything you'd get from the EPA's sparse network of stationary monitors.
         </p>
         <p>
-          The <strong>features</strong> come from the two embedding sources described above. The Earth Index data arrived as large GeoJSON files that I converted to shapefiles and manipulated with GeoPandas. The MOSAIKS data was easier&mdash;clean CSVs downloaded from the project website. Both datasets were spatially inner-joined to the NO₂ targets, matching each census block to its overlapping embedding tile. Depending on the experiment, the resulting training matrix had 390, 4,000, or 4,390 columns.
+          The <strong>features</strong> come from the two embedding sources described above. The Earth Index data arrived as large GeoJSON files that I converted to shapefiles and manipulated with GeoPandas. The MOSAIKS data was easier: clean CSVs downloaded from the project website. Both datasets were spatially inner-joined to the NO₂ targets, matching each census block to its overlapping embedding tile. Depending on the experiment, the resulting training matrix had 390, 4,000, or 4,390 columns.
         </p>
 
         <figure style="margin:32px 0;text-align:center;">
@@ -471,7 +471,7 @@
           I tested six model families, chosen deliberately to span a range of inductive biases. The idea wasn't to find the single best model but to understand <em>which kinds of assumptions</em> pay off for this data.
         </p>
         <p>
-          <strong>OLS (unregularized linear regression)</strong> served as the deliberate baseline&mdash;a model with no protection against overfitting. On the 390-dimensional Earth Index data it works tolerably; on the 4,000-dimensional MOSAIKS data it blows up spectacularly, as we'll see.
+          <strong>OLS (unregularized linear regression)</strong> served as the deliberate baseline: a model with no protection against overfitting. On the 390-dimensional Earth Index data it works tolerably; on the 4,000-dimensional MOSAIKS data it blows up spectacularly, as we'll see.
         </p>
         <p>
           <strong>Ridge and Lasso</strong> add regularization. Ridge shrinks all coefficients toward zero (useful when many features contribute small amounts of signal); Lasso drives some to exactly zero (useful for feature selection). In a high-dimensional setting like MOSAIKS, these simple controls are the difference between a working model and numerical catastrophe.
@@ -480,10 +480,10 @@
           <strong>Random Forest</strong> takes a completely different approach: it builds hundreds of decision trees, each trained on a random subset of the data and features, then averages their predictions. This lets the model capture nonlinear relationships and feature interactions without any explicit feature engineering. When the combined 4,390-feature set is available, the Random Forest can discover interactions <em>between</em> Earth Index and MOSAIKS features that no linear model could exploit.
         </p>
         <p>
-          <strong>SVR (Support Vector Regression)</strong> uses the kernel trick to implicitly map features into a higher-dimensional space where linear separation becomes possible. With an RBF kernel, it's particularly good at finding smooth nonlinear boundaries&mdash;which turns out to matter for the moderate-dimensional Earth Index features.
+          <strong>SVR (Support Vector Regression)</strong> uses the kernel trick to implicitly map features into a higher-dimensional space where linear separation becomes possible. With an RBF kernel, it's particularly good at finding smooth nonlinear boundaries, which turns out to matter for the moderate-dimensional Earth Index features.
         </p>
         <p>
-          <strong>MLP (Multi-Layer Perceptron)</strong> is a small neural network. I explored architectures with one or two hidden layers of 50&ndash;100 neurons. It's the most flexible model in the lineup, but also the hardest to tune well with only ~3,300 training samples.
+          <strong>MLP (Multi-Layer Perceptron)</strong> is a small neural network. I explored architectures with one or two hidden layers of 50 to 100 neurons. It's the most flexible model in the lineup, but also the hardest to tune well with only ~3,300 training samples.
         </p>
         <p>
           All tuned models used <code>RandomizedSearchCV</code> with 5-fold cross-validation on the 80/20 training split. No separate validation set; the cross-validation folds served that purpose.
@@ -492,7 +492,7 @@
           <summary>Hyperparameter search spaces</summary>
           <ul style="margin-top:8px;">
             <li><strong>Ridge / Lasso</strong>: \(\alpha \sim \text{LogUniform}(10^{-4}, 1)\)</li>
-            <li><strong>Random Forest</strong>: 100&ndash;500 trees, depth 3&ndash;10, min samples leaf 1&ndash;5, features &isin; {auto, sqrt, log2}</li>
+            <li><strong>Random Forest</strong>: 100-500 trees, depth 3-10, min samples leaf 1-5, features &isin; {auto, sqrt, log2}</li>
             <li><strong>SVR</strong>: \(C \sim \text{LogUniform}(10^{-2}, 10^{2})\), kernel &isin; {linear, rbf}, \(\gamma \sim \text{LogUniform}(10^{-4}, 10^{-1})\)</li>
             <li><strong>MLP</strong>: hidden layers &isin; {(50,), (100,), (50,50), (100,50)}, activation &isin; {tanh, relu}, solver &isin; {sgd, adam}</li>
           </ul>
@@ -503,7 +503,7 @@
       <section id="results">
         <h2>Results</h2>
         <p>
-          Toggle between the three feature sets below to see every model's train and test MSE. The best test-set performer is highlighted. I'll walk through what the numbers mean&mdash;and <em>why</em> the winners won&mdash;underneath.
+          Toggle between the three feature sets below to see every model's train and test MSE. The best test-set performer is highlighted. I'll walk through what the numbers mean, and <em>why</em> the winners won, underneath.
         </p>
 
         <section class="interactive" id="results-switcher">
@@ -520,13 +520,13 @@
 
         <h3>Why these winners?</h3>
         <p>
-          <strong>Earth Index &rarr; SVR.</strong> With only 390 hand-engineered features, the relationship between embeddings and NO₂ is moderately complex but not wildly high-dimensional. SVR with an RBF kernel excels here because the kernel trick lets it find smooth nonlinear decision boundaries without explicitly constructing feature interactions. The tuned hyperparameters (C&nbsp;=&nbsp;13.15, &gamma;&nbsp;=&nbsp;0.0062) suggest a model that's moderately flexible but not overfitting&mdash;the small &gamma; means the kernel is broad, so nearby points in embedding space influence each other, which makes physical sense for spatially correlated pollution.
+          <strong>Earth Index &rarr; SVR.</strong> With only 390 hand-engineered features, the relationship between embeddings and NO₂ is moderately complex but not wildly high-dimensional. SVR with an RBF kernel excels here because the kernel trick lets it find smooth nonlinear decision boundaries without explicitly constructing feature interactions. The tuned hyperparameters (C&nbsp;=&nbsp;13.15, &gamma;&nbsp;=&nbsp;0.0062) suggest a model that's moderately flexible but not overfitting. The small &gamma; means the kernel is broad, so nearby points in embedding space influence each other, which makes physical sense for spatially correlated pollution.
         </p>
         <p>
-          <strong>MOSAIKS &rarr; Ridge.</strong> This is the most instructive result. With 4,000 features and only ~3,300 training observations, we're in a <em>p &gt; n</em> regime where unregularized OLS is mathematically guaranteed to overfit. And it does&mdash;spectacularly. The test MSE explodes to ~10<sup>14</sup>, meaning the model memorized the training set and produced garbage on new data. Ridge regression (&alpha;&nbsp;=&nbsp;0.025) fixes this entirely by shrinking all 4,000 coefficients toward zero, effectively asking: "what's the simplest linear combination of these random features that predicts pollution?" It's a beautiful demonstration that MOSAIKS features are designed for linear models&mdash;the random kitchen sinks theory guarantees that enough random features, combined linearly, can approximate any smooth function.
+          <strong>MOSAIKS &rarr; Ridge.</strong> This is the most instructive result. With 4,000 features and only ~3,300 training observations, we're in a <em>p &gt; n</em> regime where unregularized OLS is mathematically guaranteed to overfit. And it does, spectacularly. The test MSE explodes to ~10<sup>14</sup>, meaning the model memorized the training set and produced garbage on new data. Ridge regression (&alpha;&nbsp;=&nbsp;0.025) fixes this entirely by shrinking all 4,000 coefficients toward zero, effectively asking: "what's the simplest linear combination of these random features that predicts pollution?" It's a beautiful demonstration that MOSAIKS features are designed for linear models: the random kitchen sinks theory guarantees that enough random features, combined linearly, can approximate any smooth function.
         </p>
         <p>
-          <strong>Combined &rarr; Random Forest.</strong> When you stack all 4,390 features together, the Random Forest's ability to discover nonlinear interactions becomes decisive. The forest can learn rules like "if MOSAIKS feature #2,387 is high (indicating a road texture) <em>and</em> Earth Index NDVI is low (no vegetation buffer), then NO₂ is elevated." No linear model can express this kind of conditional logic. The test MSE drops to 8.23&times;10<sup>&minus;5</sup>&mdash;orders of magnitude better than any single-source result&mdash;confirming that the two embedding types carry genuinely complementary information.
+          <strong>Combined &rarr; Random Forest.</strong> When you stack all 4,390 features together, the Random Forest's ability to discover nonlinear interactions becomes decisive. The forest can learn rules like "if MOSAIKS feature #2,387 is high (indicating a road texture) <em>and</em> Earth Index NDVI is low (no vegetation buffer), then NO₂ is elevated." No linear model can express this kind of conditional logic. The test MSE drops to 8.23&times;10<sup>&minus;5</sup>, orders of magnitude better than any single-source result, confirming that the two embedding types carry genuinely complementary information.
         </p>
 
         <div class="callout">
@@ -547,7 +547,7 @@
           $$\text{PE} = \log(Y_{\text{obs}}) - \log(\hat{Y}_{\text{pred}})$$
         </p>
         <p>
-          A PE of 0.001 sounds tiny, and it is&mdash;but a PE of 0.1 sounds tiny too, even though it corresponds to a ~10% error in the real-world concentration. The exponential conversion makes this concrete:
+          A PE of 0.001 sounds tiny, and it is. But a PE of 0.1 sounds tiny too, even though it corresponds to a ~10% error in the real-world concentration. The exponential conversion makes this concrete:
         </p>
         <p>
           $$\text{PE}(\%) = \bigl(e^{\text{PE}} - 1\bigr) \times 100$$
@@ -586,8 +586,8 @@
           </div>
 
           <p style="margin-top:12px; font-size:.9rem; color:#555;">
-            In-sample (SF, Oakland, Berkeley), the thesis maps show error axes of &plusmn;0.001 &mdash; about <strong>&plusmn;0.1%</strong>.
-            Out-of-sample (Palo Alto, Redwood City, Millbrae), the axes widen to &plusmn;0.1 &mdash; about <strong>&plusmn;10%</strong>.
+            In-sample (SF, Oakland, Berkeley), the thesis maps show error axes of &plusmn;0.001, or about <strong>&plusmn;0.1%</strong>.
+            Out-of-sample (Palo Alto, Redwood City, Millbrae), the axes widen to &plusmn;0.1, or about <strong>&plusmn;10%</strong>.
             That's a 100&times; widening on the log scale, translating to a 100&times; widening in percentage terms.
           </p>
         </section>
@@ -597,13 +597,13 @@
       <section id="generalization">
         <h2>Generalization &amp; domain shift</h2>
         <p>
-          Everything I've shown so far is in-distribution: the model was trained on SF, Oakland, and Berkeley, and tested on held-out blocks from those same cities. The real question&mdash;and the one that matters for anyone who wants to actually <em>use</em> this&mdash;is whether the model works somewhere it's never seen.
+          Everything I've shown so far is in-distribution: the model was trained on SF, Oakland, and Berkeley, and tested on held-out blocks from those same cities. The real question (and the one that matters for anyone who wants to actually <em>use</em> this) is whether the model works somewhere it's never seen.
         </p>
         <p>
-          I tested this by applying the best publicly-replicable model (Ridge on MOSAIKS, &alpha;&nbsp;=&nbsp;0.025) to three cities 30&ndash;50&nbsp;km south of the training region: Palo Alto, Redwood City, and Millbrae. These cities have their own Street View car data, so I could compare predictions against ground truth.
+          I tested this by applying the best publicly-replicable model (Ridge on MOSAIKS, &alpha;&nbsp;=&nbsp;0.025) to three cities 30 to 50&nbsp;km south of the training region: Palo Alto, Redwood City, and Millbrae. These cities have their own Street View car data, so I could compare predictions against ground truth.
         </p>
         <p>
-          The out-of-sample MSE was 0.1117&mdash;about 1.6&times; worse than the in-distribution test MSE of 0.0678. That might sound acceptable, but the <em>spatial structure</em> of the errors tells a more nuanced story. In Palo Alto, the eastern side consistently overpredicts by ~10%, while a stripe along Middlefield Road underpredicts by a similar amount. The model seems to have learned that tree-dense residential areas correlate with low pollution&mdash;which is generally true in the training cities&mdash;but Middlefield Road carries more traffic than its leafy satellite signature would suggest. The embeddings encode how a place <em>looks</em>, not how many cars drive through it per hour.
+          The out-of-sample MSE was 0.1117, about 1.6&times; worse than the in-distribution test MSE of 0.0678. That might sound acceptable, but the <em>spatial structure</em> of the errors tells a more nuanced story. In Palo Alto, the eastern side consistently overpredicts by ~10%, while a stripe along Middlefield Road underpredicts by a similar amount. The model seems to have learned that tree-dense residential areas correlate with low pollution (which is generally true in the training cities), but Middlefield Road carries more traffic than its leafy satellite signature would suggest. The embeddings encode how a place <em>looks</em>, not how many cars drive through it per hour.
         </p>
 
         <section class="interactive" id="domain-shift">
@@ -645,7 +645,7 @@
       <section id="policy">
         <h2>Policy implications</h2>
         <p>
-          One of the things I found most compelling about this project was thinking about what a cash-strapped city health department could actually <em>do</em> with predictions like these. Not perfect predictions&mdash;predictions with &plusmn;10% uncertainty and known failure modes.
+          One of the things I found most compelling about this project was thinking about what a cash-strapped city health department could actually <em>do</em> with predictions like these. Not perfect predictions: predictions with &plusmn;10% uncertainty and known failure modes.
         </p>
         <p>
           The thesis frames this as a social planner's problem. Deploying dense sensor networks is expensive. Satellite embeddings are free. If you can bridge the two with a model that's transparent about its error bounds, three things become possible:
@@ -656,7 +656,7 @@
           <li><strong>Augmenting existing tools.</strong> California's CalEnviroScreen already maps environmental justice at the census-tract level. Adding finer-grained, satellite-derived pollution estimates could sharpen that picture by an order of magnitude in spatial resolution.</li>
         </ul>
         <p>
-          The critical caveat&mdash;and one I tried to be honest about in the thesis&mdash;is that out-of-sample predictions require ground-truthing. A cheap strategy: randomly sample a handful of predicted blocks, deploy temporary monitors for a few weeks, and use the results to re-calibrate or reject the model. It's not zero cost, but it's far cheaper than blanketing the region in permanent sensors.
+          The critical caveat (and one I tried to be honest about in the thesis) is that out-of-sample predictions require ground-truthing. A cheap strategy: randomly sample a handful of predicted blocks, deploy temporary monitors for a few weeks, and use the results to re-calibrate or reject the model. It's not zero cost, but it's far cheaper than blanketing the region in permanent sensors.
         </p>
       </section>
 
@@ -664,19 +664,19 @@
       <section id="limits">
         <h2>Limitations &amp; next steps</h2>
         <p>
-          I want to be transparent about where this approach falls short&mdash;partly because the limitations are interesting in themselves, and partly because they point to where the most impactful future work lies.
+          I want to be transparent about where this approach falls short, partly because the limitations are interesting in themselves, and partly because they point to where the most impactful future work lies.
         </p>
         <p>
           <strong>No socioeconomic features.</strong> The model sees only what satellites see. It knows nothing about median income, traffic counts, zoning laws, or demographics. Some of these correlate with pollution for structural reasons (low-income neighborhoods are disproportionately near highways), and adding them could improve both accuracy and policy relevance. California's CalEnviroScreen data would be a natural source.
         </p>
         <p>
-          <strong>No temporal dimension.</strong> The target is a 32-month median&mdash;a single static snapshot. Pollution varies by hour of day, day of week, and season. Future work could pair time-varying embeddings with instruments like TROPOMI (7&times;3.5&nbsp;km, daily revisit) or TEMPO (4.7&times;2.1&nbsp;km, hourly), though both trade spatial resolution for temporal frequency. The dream scenario: mount sensors on autonomous vehicle fleets (Waymo already covers much of the Bay Area) and generate daily block-level ground truth at scale.
+          <strong>No temporal dimension.</strong> The target is a 32-month median: a single static snapshot. Pollution varies by hour of day, day of week, and season. Future work could pair time-varying embeddings with instruments like TROPOMI (7&times;3.5&nbsp;km, daily revisit) or TEMPO (4.7&times;2.1&nbsp;km, hourly), though both trade spatial resolution for temporal frequency. The dream scenario: mount sensors on autonomous vehicle fleets (Waymo already covers much of the Bay Area) and generate daily block-level ground truth at scale.
         </p>
         <p>
-          <strong>Out-of-distribution uncertainty.</strong> The 100&times; widening of error bars outside the training region is the thesis's most sobering finding. The model has no mechanism for saying "I don't know"&mdash;it always produces a point estimate, even when it's extrapolating into unfamiliar territory. Formal uncertainty quantification (conformal prediction, Bayesian ensembles, or simply tracking ensemble disagreement across random forest trees) would be essential before anyone made policy decisions based on these predictions.
+          <strong>Out-of-distribution uncertainty.</strong> The 100&times; widening of error bars outside the training region is the thesis's most sobering finding. The model has no mechanism for saying "I don't know": it always produces a point estimate, even when it's extrapolating into unfamiliar territory. Formal uncertainty quantification (conformal prediction, Bayesian ensembles, or simply tracking ensemble disagreement across random forest trees) would be essential before anyone made policy decisions based on these predictions.
         </p>
         <p>
-          <strong>Spatial independence assumption.</strong> The model treats each census block as an independent observation. But pollution is spatially autocorrelated&mdash;a high-NO₂ block probably has high-NO₂ neighbors. Incorporating spatial structure, whether through graph neural networks, spatial lag features, or stacked ensembles that use neighbors' predictions as inputs, could reduce the local error variability that shows up in the SF prediction maps.
+          <strong>Spatial independence assumption.</strong> The model treats each census block as an independent observation. But pollution is spatially autocorrelated: a high-NO₂ block probably has high-NO₂ neighbors. Incorporating spatial structure, whether through graph neural networks, spatial lag features, or stacked ensembles that use neighbors' predictions as inputs, could reduce the local error variability that shows up in the SF prediction maps.
         </p>
       </section>
 
@@ -798,7 +798,7 @@
       {model:'Linear',train:0.0425,test:0.0519},{model:'Ridge',train:0.0584,test:0.0505},{model:'Lasso',train:0.0626,test:0.0542},
       {model:'Random Forest',train:0.0539,test:0.0506},{model:'SVR',train:0.0438,test:0.0396},{model:'MLP',train:0.0497,test:0.0509}
     ]},
-    mosaiks:{label:'MOSAIKS (4,000 features)',note:'The unregularized Linear model has a test MSE of 1.57×10¹⁴ — catastrophic instability without regularization in a high-dimensional setting.',rows:[
+    mosaiks:{label:'MOSAIKS (4,000 features)',note:'The unregularized Linear model has a test MSE of 1.57×10¹⁴: catastrophic instability without regularization in a high-dimensional setting.',rows:[
       {model:'Linear',train:0.0688,test:1.5679e14},{model:'Ridge',train:0.0802,test:0.0678},{model:'Lasso',train:0.0916,test:0.0733},
       {model:'Random Forest',train:0.0797,test:0.0683},{model:'SVR',train:0.0863,test:0.0704},{model:'MLP',train:0.1123,test:0.0916}
     ]},

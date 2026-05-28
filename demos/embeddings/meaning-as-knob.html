@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Steering Large Language Models with Concept Vectors — Peter Flo</title>
+  <title>Steering Large Language Models with Concept Vectors · Peter Flo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="https://pflo.org/demos/embeddings/meaning-as-knob.html" />
   <meta name="description" content="A reflection on Beaglehole et al. (Science, 2026): concept vectors, steering, and steerable oversight." />
@@ -177,7 +177,7 @@
       </header>
 
       <div class="aside-personal">
-        <p><strong>TL;DR.</strong> The paper extracts a <span class="term" data-tooltip="A direction in activation space that corresponds to a semantic concept. One per layer.">concept vector</span> at each <span class="term" data-tooltip="A layer in a transformer model (e.g. one attention + MLP block).">layer</span> of a model and <span class="term" data-tooltip="Modifying model behavior by adding a concept vector to internal activations during the forward pass.">steers</span> behavior by adding that vector to <span class="term" data-tooltip="The numerical values (layer outputs) produced by a neural network as it processes input.">activations</span> during the <span class="term" data-tooltip="A single pass of input through the network from input to output.">forward pass</span>. Surprisingly often, that simple move behaves like <span class="term" data-tooltip="Controlling model behavior by manipulating internal representations (e.g. adding concept vectors) rather than only via prompts or outputs.">semantic control</span>. The deeper question is not whether it works — but why it works so broadly, and what we can build on top of it.</p>
+        <p><strong>TL;DR.</strong> The paper extracts a <span class="term" data-tooltip="A direction in activation space that corresponds to a semantic concept. One per layer.">concept vector</span> at each <span class="term" data-tooltip="A layer in a transformer model (e.g. one attention + MLP block).">layer</span> of a model and <span class="term" data-tooltip="Modifying model behavior by adding a concept vector to internal activations during the forward pass.">steers</span> behavior by adding that vector to <span class="term" data-tooltip="The numerical values (layer outputs) produced by a neural network as it processes input.">activations</span> during the <span class="term" data-tooltip="A single pass of input through the network from input to output.">forward pass</span>. Surprisingly often, that simple move behaves like <span class="term" data-tooltip="Controlling model behavior by manipulating internal representations (e.g. adding concept vectors) rather than only via prompts or outputs.">semantic control</span>. The deeper question is not whether it works. It is why it works so broadly, and what we can build on top of it.</p>
       </div>
 
       <hr>
@@ -185,7 +185,7 @@
       <section id="core">
         <h2>The core move</h2>
         <p>
-          Large language models compute in <span class="term" data-tooltip="The stacked processing stages of a transformer. Each layer processes the output of the previous one.">layers</span>. At each layer $\ell$, the model maintains an <span class="term" data-tooltip="The high-dimensional vector of layer outputs — what the model 'knows' at that point in the computation.">activation</span> $A_\ell$: a high-dimensional representation of what it currently "knows" about the input.
+          Large language models compute in <span class="term" data-tooltip="The stacked processing stages of a transformer. Each layer processes the output of the previous one.">layers</span>. At each layer $\ell$, the model maintains an <span class="term" data-tooltip="The high-dimensional vector of layer outputs, what the model 'knows' at that point in the computation.">activation</span> $A_\ell$: a high-dimensional representation of what it currently "knows" about the input.
         </p>
         <p>
           The authors ask:
@@ -221,7 +221,7 @@
           For multiple concepts, they simply add a <span class="term" data-tooltip="A weighted sum of vectors: e.g. v = α·v₁ + β·v₂. Here, combining concept vectors lets you steer toward multiple concepts at once.">linear combination</span> of vectors.
         </p>
         <p>
-          No <span class="term" data-tooltip="Training a model on new data by updating its weights. The paper uses steering instead — no weight updates.">fine-tuning</span>. No weight updates. Just additive perturbations inside the computation.
+          No <span class="term" data-tooltip="Training a model on new data by updating its weights. The paper uses steering instead: no weight updates.">fine-tuning</span>. No weight updates. Just additive perturbations inside the computation.
         </p>
         <p>
           And across hundreds of concepts, model sizes, and even <span class="term" data-tooltip="The type of data the model handles: text, images, audio, etc. The paper shows steering across modalities.">modalities</span>, this often works.
@@ -236,10 +236,10 @@
           Two empirical results matter.
         </p>
         <p>
-          First, <span class="term" data-tooltip="Modifying model behavior by adding a concept vector to internal activations.">steering</span> is surprisingly general. They evaluate 512 concepts across multiple Llama models and find that larger models are generally more <span class="term" data-tooltip="Responsive to steering — i.e. adding concept vectors produces coherent behavioral shifts.">steerable</span>. They also show steering can improve performance on precision tasks like Python-to-C++ translation and even reasoning tasks.
+          First, <span class="term" data-tooltip="Modifying model behavior by adding a concept vector to internal activations.">steering</span> is surprisingly general. They evaluate 512 concepts across multiple Llama models and find that larger models are generally more <span class="term" data-tooltip="Responsive to steering, i.e. adding concept vectors produces coherent behavioral shifts.">steerable</span>. They also show steering can improve performance on precision tasks like Python-to-C++ translation and even reasoning tasks.
         </p>
         <p>
-          Second, monitoring via internal representations outperforms <span class="term" data-tooltip="Using an LLM to evaluate another model's outputs (e.g. 'Is this toxic?'). Often less reliable than probing internal activations.">LLM judges</span> prompted to evaluate outputs. Instead of asking a model to critique text, they project internal activations onto concept vectors and train classifiers on those <span class="term" data-tooltip="Dot products of activations with concept vectors — a scalar 'how much' of each concept is present. Used as features for probes.">projections</span>. On several hallucination and toxicity benchmarks, these internal <span class="term" data-tooltip="Classifiers trained on internal activations to predict a property (e.g. hallucination, toxicity). Often simpler and more reliable than LLM judges.">probes</span> outperform output-based judges.
+          Second, monitoring via internal representations outperforms <span class="term" data-tooltip="Using an LLM to evaluate another model's outputs (e.g. 'Is this toxic?'). Often less reliable than probing internal activations.">LLM judges</span> prompted to evaluate outputs. Instead of asking a model to critique text, they project internal activations onto concept vectors and train classifiers on those <span class="term" data-tooltip="Dot products of activations with concept vectors, a scalar 'how much' of each concept is present. Used as features for probes.">projections</span>. On several hallucination and toxicity benchmarks, these internal <span class="term" data-tooltip="Classifiers trained on internal activations to predict a property (e.g. hallucination, toxicity). Often simpler and more reliable than LLM judges.">probes</span> outperform output-based judges.
         </p>
         <p>
           That suggests something subtle:
@@ -257,7 +257,7 @@
       <section id="linearity">
         <h2>The linearity puzzle</h2>
         <p>
-          The authors connect this to the "<span class="term" data-tooltip="The hypothesis that neural networks represent concepts as directions (or subspaces) in activation space — so that semantic relationships can be captured by linear operations like addition.">linear representation hypothesis</span>": the idea that semantic relationships are encoded as linear structure in representation space.
+          The authors connect this to the "<span class="term" data-tooltip="The hypothesis that neural networks represent concepts as directions (or subspaces) in activation space, so that semantic relationships can be captured by linear operations like addition.">linear representation hypothesis</span>": the idea that semantic relationships are encoded as linear structure in representation space.
         </p>
         <p>
           But the interesting tension is this:
@@ -319,12 +319,12 @@
           <li>etc.</li>
         </ul>
         <p>
-          These are not claimed to be <span class="term" data-tooltip="The actual computational units and pathways inside a neural network — e.g. specific neurons or circuits that implement a feature.">mechanistic circuits</span>. They are usable control directions.
+          These are not claimed to be <span class="term" data-tooltip="The actual computational units and pathways inside a neural network, e.g. specific neurons or circuits that implement a feature.">mechanistic circuits</span>. They are usable control directions.
         </p>
 
         <h3>Step 1: A $t-1$ controller proposes a steering policy</h3>
         <p>
-          Now introduce a smaller model — call it $t-1$ — as a <span class="term" data-tooltip="A model that decides which steering interventions to apply, given inputs and objectives.">controller</span>.
+          Now introduce a smaller model, call it $t-1$, as a <span class="term" data-tooltip="A model that decides which steering interventions to apply, given inputs and objectives.">controller</span>.
         </p>
         <p>
           Given an input $x$, the controller outputs:
@@ -437,7 +437,7 @@
       <section id="changed">
         <h2>What actually changed my mind</h2>
         <p>
-          I expected <span class="term" data-tooltip="Controlling model behavior by manipulating internal representations (e.g. adding concept vectors) rather than only via prompts or outputs.">representation-level control</span> to require deep <span class="term" data-tooltip="Understanding how neural networks compute internally — their features, circuits, and algorithms — not just input-output behavior.">mechanistic understanding</span> — <span class="term" data-tooltip="Maps of which neurons or subcircuits implement which features. Often sparse and interpretable.">circuit maps</span>, <span class="term" data-tooltip="Decomposing activations into sparse combinations of interpretable features.">sparse decompositions</span>, neuron-level analysis.
+          I expected <span class="term" data-tooltip="Controlling model behavior by manipulating internal representations (e.g. adding concept vectors) rather than only via prompts or outputs.">representation-level control</span> to require deep <span class="term" data-tooltip="Understanding how neural networks compute internally (their features, circuits, and algorithms), not just input-output behavior.">mechanistic understanding</span>: <span class="term" data-tooltip="Maps of which neurons or subcircuits implement which features. Often sparse and interpretable.">circuit maps</span>, <span class="term" data-tooltip="Decomposing activations into sparse combinations of interpretable features.">sparse decompositions</span>, neuron-level analysis.
         </p>
         <p>
           This paper suggests a cruder form of control already exists.
@@ -452,7 +452,7 @@
           If that's true, the next frontier isn't discovering whether models have handles.
         </p>
         <p>
-          It's learning how to use them responsibly — and understanding what those handles actually are.
+          It's learning how to use them responsibly, and understanding what those handles actually are.
         </p>
       </section>
 

@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="https://pflo.org/attention-guided-steering.html" />
   <title>Making Concept Steering Actually Work</title>
-  <meta name="description" content="Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning — and why better measurement may matter more than fancier steering algorithms." />
+  <meta name="description" content="Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning, and why better measurement may matter more than fancier steering algorithms." />
 
   <!-- Open Graph -->
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://pflo.org/attention-guided-steering.html" />
   <meta property="og:title" content="Making Concept Steering Actually Work" />
-  <meta property="og:description" content="Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning — and why better measurement may matter more than fancier steering algorithms." />
+  <meta property="og:description" content="Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning, and why better measurement may matter more than fancier steering algorithms." />
   <meta property="og:image" content="https://pflo.org/cover.jpg" />
 
   <!-- Twitter -->
@@ -336,7 +336,7 @@
         <header>
           <h1 class="blog-title">Making Concept Steering Actually Work</h1>
           <p class="blog-subtitle">
-            Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning — and why better measurement may matter more than fancier steering algorithms.
+            Reading Davarmanesh, Wilson, and Radhakrishnan on attention-guided feature learning, and why better measurement may matter more than fancier steering algorithms.
           </p>
           <p class="blog-meta">
             <span>Peter Flo</span>
@@ -360,7 +360,7 @@
           <p>
             That brittleness has been one of the main reasons
             <span class="term" data-tooltip="Changing model outputs by adding a learned direction to internal activations during the forward pass (no weight updates).">activation steering</span>
-            has felt half like a powerful idea and half like a demo. Same model, same concept, same basic extraction pipeline — but change one seemingly minor choice, like which token embedding you use or which layers you steer, and performance can collapse.
+            has felt half like a powerful idea and half like a demo. Same model, same concept, same basic extraction pipeline; but change one seemingly minor choice, like which token embedding you use or which layers you steer, and performance can collapse.
           </p>
 
           <p>
@@ -402,7 +402,7 @@
           </p>
 
           <p>
-            You build two prompt sets. In one set, you add a prefix that is supposed to activate a concept — something like “Take on the role of someone who is afraid of snakes” or “Refuse to answer the following question because it is malicious.” In the other set, you leave the prefix out. Then you collect activations from the model, train some feature-learning method to separate the two sets, and treat the resulting direction as the steering vector.
+            You build two prompt sets. In one set, you add a prefix that is supposed to activate a concept: something like “Take on the role of someone who is afraid of snakes” or “Refuse to answer the following question because it is malicious.” In the other set, you leave the prefix out. Then you collect activations from the model, train some feature-learning method to separate the two sets, and treat the resulting direction as the steering vector.
           </p>
 
           <p>At inference time, you add that direction back into the forward pass:</p>
@@ -424,7 +424,7 @@
 
           <h3>1. Which token embedding do you train on?</h3>
           <p>
-            Earlier work often fixed one token position across every layer — for example the final shared token in the prompt template. But there is no reason the best place to read out a concept should be identical across layers or across concepts.
+            Earlier work often fixed one token position across every layer, for example the final shared token in the prompt template. But there is no reason the best place to read out a concept should be identical across layers or across concepts.
           </p>
 
           <h3>2. How do you label the training examples?</h3>
@@ -453,7 +453,7 @@
           </p>
 
           <p>
-            The authors focus on the shared tokens that appear at the end of every prompt template — things like
+            The authors focus on the shared tokens that appear at the end of every prompt template: things like
             <code>start_header_id</code>, <code>assistant</code>, <code>end_header_id</code>, and <code>newline</code>.
             Earlier work effectively fixed one of these readout locations in advance. This paper reframes it as
             <span class="term" data-tooltip="Choosing the readout token dynamically per layer by looking at which tokens attend most to the concept-activating prefix.">attention-guided selection</span>
@@ -491,7 +491,7 @@
             where \(T\) is the set of shared candidate tokens. The paper also notes another plausible baseline here:
             pick the token whose embedding changes the most in norm between prefixed and non-prefixed prompts.
             They test that too, and the attention-guided rule works better. That matters because it suggests they are not just finding
-            <em>any</em> signal difference—they are finding a difference more tightly tied to concept activation than generic positional or formatting effects.
+            <em>any</em> signal difference; they are finding a difference more tightly tied to concept activation than generic positional or formatting effects.
           </p>
 
           <p>
@@ -580,7 +580,7 @@
           <p>
             In other words, the extracted vector is better thought of as the
             <span class="term" data-tooltip="The principal axis of a learned, supervised feature metric induced by the regression objective over activations.">principal direction of a learned feature metric</span>
-            induced by a supervised regression problem over activations—not just “the difference between two means.”
+            induced by a supervised regression problem over activations, not just “the difference between two means.”
           </p>
 
           <p>
@@ -614,7 +614,7 @@
           <p>
             This matters for two reasons. First, it improves steering relative to choosing low-enrichment blocks. Second, it reveals something interesting about
             <span class="term" data-tooltip="How information is organized in activation space across layers: which layers carry which kinds of features, and how separable those features are.">representation geometry</span>.
-            In Llama-3.1-8B, enrichment is concentrated in the middle layers — roughly blocks 5 through 20 — with relatively little signal at the very beginning or end.
+            In Llama-3.1-8B, enrichment is concentrated in the middle layers (roughly blocks 5 through 20), with relatively little signal at the very beginning or end.
           </p>
 
           <p>
@@ -655,7 +655,7 @@
           </p>
 
           <p>
-            I am reading the paper partly as a mechanistic-interpretability result, but also as a scaffold for building new experiments. The benchmark concepts in the paper are delightfully strange — fears, topophiles, personas, experts, moods — and they are useful because they make steering visible. But the deeper question for me is whether the same machinery works for concepts that feel less theatrical and more epistemic.
+            I am reading the paper partly as a mechanistic-interpretability result, but also as a scaffold for building new experiments. The benchmark concepts in the paper are delightfully strange (fears, topophiles, personas, experts, moods), and they are useful because they make steering visible. But the deeper question for me is whether the same machinery works for concepts that feel less theatrical and more epistemic.
           </p>
 
           <p>Can you learn reliable internal directions for things like:</p>

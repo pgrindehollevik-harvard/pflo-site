@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Diffusion for Dummies – An Interactive Walkthrough</title>
+  <title>Diffusion for Dummies · An Interactive Walkthrough</title>
   <meta name="robots" content="noindex" />
   <link rel="stylesheet" href="style.css" />
 
@@ -33,7 +33,7 @@
       <h2>1. Why Diffusion?</h2>
       <p>We make generation easy by breaking it into <em>tiny denoising steps</em>. First, we corrupt an image with Gaussian noise (the <strong>forward process</strong>). Then we learn to reverse those steps (the <strong>reverse process</strong>).</p>
       <div class="viz" id="viz-intro">
-        <canvas id="noiseCanvas" width="768" height="432" aria-label="noise – image mix"></canvas>
+        <canvas id="noiseCanvas" width="768" height="432" aria-label="noise to image mix"></canvas>
         <input type="range" id="noiseSlider" min="0" max="1000" value="0" aria-label="reverse slider (0=noise, 1=image)">
         <div class="small center">Reverse intuition: slide right = remove noise.</div>
       </div>

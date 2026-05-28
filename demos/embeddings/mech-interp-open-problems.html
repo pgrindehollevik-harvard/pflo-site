@@ -2,19 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Open Problems in Mechanistic Interpretability — A Summary Essay</title>
+  <title>Open Problems in Mechanistic Interpretability · A Summary Essay</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="https://pflo.org/demos/embeddings/mech-interp-open-problems.html" />
-  <meta name="description" content="An interactive summary of Sharkey et al. (2025) on open problems in mechanistic interpretability — reverse engineering neural networks, sparse dictionary learning, and the road to scalable oversight." />
+  <meta name="description" content="An interactive summary of Sharkey et al. (2025) on open problems in mechanistic interpretability: reverse engineering neural networks, sparse dictionary learning, and the road to scalable oversight." />
 
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://pflo.org/demos/embeddings/mech-interp-open-problems.html" />
-  <meta property="og:title" content="Open Problems in Mechanistic Interpretability — A Summary Essay" />
+  <meta property="og:title" content="Open Problems in Mechanistic Interpretability · A Summary Essay" />
   <meta property="og:description" content="An interactive summary of Sharkey et al. (2025) on reverse engineering neural networks and the road to alignment." />
   <meta property="og:image" content="https://pflo.org/cover.jpg" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Open Problems in Mechanistic Interpretability — A Summary Essay" />
+  <meta name="twitter:title" content="Open Problems in Mechanistic Interpretability · A Summary Essay" />
   <meta name="twitter:description" content="An interactive summary of Sharkey et al. (2025) on reverse engineering neural networks and the road to alignment." />
   <meta name="twitter:image" content="https://pflo.org/cover.jpg" />
 
@@ -204,12 +204,12 @@
         <div class="blog-breadcrumb">
           <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
         </div>
-        <div class="blog-meta-bar" id="word-count">&mdash; WORDS &mdash;</div>
+        <div class="blog-meta-bar" id="word-count">-- WORDS --</div>
 
         <header>
           <h1 class="blog-title">Open Problems in Mechanistic Interpretability</h1>
           <p class="blog-subtitle">
-            A summary of Sharkey, Chughtai et al. (2025) — a 36-page roadmap
+            A summary of Sharkey, Chughtai et al. (2025): a 36-page roadmap
             (plus 46 pages of references!) for understanding what neural networks
             actually learn, and why it matters for making AI safe.
           </p>
@@ -227,7 +227,7 @@
           <div class="aside-personal">
             <p>
               I'm writing this as a deliberate entry point into alignment research. My background
-              is in data science and economics — causal inference, mechanism design, the kind of
+              is in data science and economics: causal inference, mechanism design, the kind of
               work where you care deeply about <em>why</em> a model gives the answer it does, not
               just that it does.
             </p>
@@ -235,7 +235,7 @@
               That instinct maps well onto mechanistic interpretability: the study of
               <em>how</em> neural networks compute. But what really pulled me in is a structural
               parallel. A model that pursues some learned objective while being supervised by a
-              principal who can't observe its internal reasoning — that's a textbook
+              principal who can't observe its internal reasoning. That's a textbook
               principal-agent problem. And right now, we're the principal with almost no
               monitoring tools. This paper is the most comprehensive map of what those tools
               could look like.
@@ -253,14 +253,14 @@
 
           <p>
             Here is the basic situation: neural networks learn capabilities that their
-            developers did not design. Developers design the training process — the
+            developers did not design. Developers design the training process, the
             <span class="term" data-tooltip="A mathematical function that measures how far the model's predictions are from the desired output. Training minimizes this function. Example: cross-entropy loss penalizes confident wrong predictions.">loss function</span>,
-            the data, the architecture — but the <em>algorithms</em> that emerge
+            the data, the architecture, but the <em>algorithms</em> that emerge
             inside the network are learned, not programmed. And in almost all cases, nobody
             understands them.
           </p>
           <p>
-            <span class="term" data-tooltip="The study of the internal computational mechanisms neural networks learn — their features, circuits, and algorithms — with the goal of predicting, controlling, and trusting their behavior.">Mechanistic interpretability</span>
+            <span class="term" data-tooltip="The study of the internal computational mechanisms neural networks learn (their features, circuits, and algorithms) with the goal of predicting, controlling, and trusting their behavior.">Mechanistic interpretability</span>
             aims to change that. The paper defines "understanding a neural network" as the
             ability to use knowledge about its internal mechanisms to predict its behavior on
             arbitrary inputs, or to accomplish practical goals like controlling its outputs or
@@ -271,18 +271,18 @@
             historical threads:
           </p>
           <ol>
-            <li><strong>Interpretable-by-design models</strong> — decision trees, linear models, GAMs. Small and transparent, but limited.</li>
-            <li><strong>"Why this decision?" methods</strong> —
+            <li><strong>Interpretable-by-design models</strong>: decision trees, linear models, GAMs. Small and transparent, but limited.</li>
+            <li><strong>"Why this decision?" methods</strong>:
             <span class="term" data-tooltip="Visual heatmaps that highlight which parts of an input (e.g. pixels in an image, tokens in a sentence) most influenced a model's output. Simple to compute but often unreliable.">saliency maps</span>,
             <span class="term" data-tooltip="Local Interpretable Model-agnostic Explanations. Explains a single prediction by fitting a simple interpretable model (like a linear model) to nearby inputs.">LIME</span>,
             <span class="term" data-tooltip="SHapley Additive exPlanations. Uses game-theoretic Shapley values to assign each input feature a contribution to the prediction. Principled but expensive to compute exactly.">SHAP</span>.
             Explain individual predictions, but often unreliable.</li>
-            <li><strong>"How does it generalize?"</strong> — the current thread. Instead of explaining one prediction, we ask how the model solves an entire <em>class</em> of problems. This is mechanistic interpretability.</li>
+            <li><strong>"How does it generalize?"</strong>: the current thread. Instead of explaining one prediction, we ask how the model solves an entire <em>class</em> of problems. This is mechanistic interpretability.</li>
           </ol>
           <p>
             The shift from thread 2 to thread 3 matters. A saliency map tells you which pixels
             mattered for <em>this</em> image. A mechanistic understanding tells you <em>what
-            algorithm the model learned</em> — and lets you predict what it will do on inputs
+            algorithm the model learned</em>, and lets you predict what it will do on inputs
             you've never tested.
           </p>
 
@@ -383,29 +383,29 @@
             could study each one in isolation and build up a picture of the whole.
           </p>
           <p>
-            The naive candidates — individual neurons,
+            The naive candidates (individual neurons,
             <span class="term" data-tooltip="Components in a Transformer that learn to selectively focus on ('attend to') different parts of the input. Each head computes a weighted combination of values based on query-key similarity. Models typically have many heads per layer.">attention heads</span>,
-            layers — don't work. The paper is clear about why.
+            and layers) don't work. The paper is clear about why.
           </p>
           <p>
             <strong>Neurons are
-            <span class="term" data-tooltip="A single neuron responds to multiple unrelated concepts — e.g. one neuron firing for both 'cats' and 'blue objects.' This means individual neurons don't map cleanly to single ideas.">polysemantic</span>.</strong>
+            <span class="term" data-tooltip="A single neuron responds to multiple unrelated concepts, e.g. one neuron firing for both 'cats' and 'blue objects.' This means individual neurons don't map cleanly to single ideas.">polysemantic</span>.</strong>
             A single neuron might respond to cats, blue objects, and the letter Q. This was
             first observed in artificial networks and mirrors findings in neuroscience, where
-            individual biological neurons also encode mixed signals. The "Neuron Doctrine" —
-            that individual neurons are the fundamental functional unit — doesn't hold for
+            individual biological neurons also encode mixed signals. The "Neuron Doctrine,"
+            that individual neurons are the fundamental functional unit, doesn't hold for
             either biological or artificial networks.
           </p>
           <p>
             <strong>Attention heads are polysemantic too.</strong> Research shows that studying
-            attention patterns can be actively misleading — the pattern of "who attends to whom"
+            attention patterns can be actively misleading: the pattern of "who attends to whom"
             doesn't reliably tell you what information is being transmitted.
           </p>
           <p>
             <strong>Layers are too coarse.</strong> Representations can span multiple layers.
-            Intervening on a single layer — as in early model editing work like
-            <span class="term" data-tooltip="Rank-One Model Editing. A technique that edits factual knowledge in a language model by modifying a single weight matrix. Early and influential, but subsequent work found the edits don't generalize reliably.">ROME</span>
-            — doesn't reliably carve the network at its joints.
+            Intervening on a single layer, as in early model editing work like
+            <span class="term" data-tooltip="Rank-One Model Editing. A technique that edits factual knowledge in a language model by modifying a single weight matrix. Early and influential, but subsequent work found the edits don't generalize reliably.">ROME</span>,
+            doesn't reliably carve the network at its joints.
           </p>
           <div class="diagram">
             <svg viewBox="0 0 680 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Polysemantic vs monosemantic neurons">
@@ -462,14 +462,14 @@
             The
             <span class="term" data-tooltip="The hypothesis that neural networks represent more concepts than they have dimensions, by encoding concepts as nearly-orthogonal sparse directions in a high-dimensional space. Think: packing 1,000 concepts into a 100-dimensional space.">superposition hypothesis</span>
             says that neural networks represent <em>more features than they have dimensions</em>.
-            They can do this because each feature activates sparsely — most features are "off"
-            for any given input — and high-dimensional spaces have room for many
+            They can do this because each feature activates sparsely (most features are "off"
+            for any given input), and high-dimensional spaces have room for many
             nearly-orthogonal directions. This means dimensionality reduction methods, which can
             only find as many directions as there are dimensions, fundamentally cannot recover
             the full set of features.
           </p>
           <p>
-            <span class="term" data-tooltip="A family of methods — including Sparse Autoencoders (SAEs), Transcoders, and Crosscoders — that train a small encoder-decoder to decompose activations into a sparse, overcomplete set of 'latents' (learned directions).">Sparse dictionary learning (SDL)</span>
+            <span class="term" data-tooltip="A family of methods (including Sparse Autoencoders (SAEs), Transcoders, and Crosscoders) that train a small encoder-decoder to decompose activations into a sparse, overcomplete set of 'latents' (learned directions).">Sparse dictionary learning (SDL)</span>
             was developed to overcome this. The idea: train a small encoder-decoder network
             where the hidden layer is much wider than the input. The encoder maps activations
             into this overcomplete space, with a sparsity constraint that forces most
@@ -480,8 +480,8 @@
           <p>
             SDL rests on two assumptions. First, the
             <span class="term" data-tooltip="The observation that concepts tend to be represented as linear directions in activation space: their intensity scales with vector magnitude, and combinations compose by addition. A 'weak' version (some concepts are linear) is well-supported; the 'strong' version (all are) is false.">linear representation hypothesis</span>
-            — that concepts map to linear directions in activation space. Second, the
-            superposition hypothesis — that there are more of these directions than dimensions.
+            , that concepts map to linear directions in activation space. Second, the
+            superposition hypothesis, that there are more of these directions than dimensions.
             Both have empirical support, but both have known exceptions.
           </p>
           <p>
@@ -504,7 +504,7 @@
           <h2>Eight problems with SDL</h2>
 
           <p>
-            The paper catalogs eight distinct limitations — practical and conceptual — that
+            The paper catalogs eight distinct limitations, practical and conceptual, that
             constrain what SDL can tell us about neural networks. These aren't minor quibbles;
             they're fundamental challenges that the field needs to resolve or route around.
           </p>
@@ -558,17 +558,17 @@
             yet yielded canonical
             <span class="term" data-tooltip="Variables in a causal model that transmit the effect from cause to outcome. In a network, a causal mediator would be a component that provably carries the information that causes a specific behavior.">causal mediators</span>
             that could serve as a basis for decomposition.
-            <span class="term" data-tooltip="A mathematical framework (Watanabe, 2009) that studies the geometry of loss landscapes near singularities — points where the loss surface is non-smooth. Offers insights into how neural networks select among many possible solutions during training.">Singular learning theory</span>
+            <span class="term" data-tooltip="A mathematical framework (Watanabe, 2009) that studies the geometry of loss landscapes near singularities, points where the loss surface is non-smooth. Offers insights into how neural networks select among many possible solutions during training.">Singular learning theory</span>
             (Watanabe) studies the geometry of loss landscapes and offers a view
             of how mechanistic structure emerges during training, but hasn't produced practical
             interpretability tools. Spline theory,
             <span class="term" data-tooltip="A theoretical tool that describes how a neural network evolves during training by approximating it as a kernel method. Useful for analyzing infinite-width networks but less descriptive of practical finite-width models.">neural tangent kernels</span>,
-            simplicity bias — all attempt to explain <em>why</em> networks generalize, but none
+            simplicity bias: all attempt to explain <em>why</em> networks generalize, but none
             have been successfully connected to approaches for <em>interpreting</em> them.
           </p>
           <p>
             One promising direction is
-            <span class="term" data-tooltip="Building interpretability into the training process itself — using sparse activations, discrete codes, modular architectures, or weight sparsity — so that models come 'pre-carved' rather than requiring post-hoc interpretation.">intrinsic interpretability</span>:
+            <span class="term" data-tooltip="Building interpretability into the training process itself, using sparse activations, discrete codes, modular architectures, or weight sparsity, so that models come 'pre-carved' rather than requiring post-hoc interpretation.">intrinsic interpretability</span>:
             instead of interpreting opaque models post-hoc, train models that are interpretable
             by design. Approaches include sparse activation functions
             (<span class="term" data-tooltip="Activation functions that zero out all but the top K values. Forces the network to use only a few neurons per input, reducing polysemanticity and making individual neurons more interpretable.">TopK</span>,
@@ -601,7 +601,7 @@
           </p>
 
           <p>
-            <strong>Highly activating examples</strong> — show the inputs on which a component
+            <strong>Highly activating examples</strong>: show the inputs on which a component
             fires most, then eyeball commonalities. This is the simplest and most widely used
             method, but it's dangerously prone to
             <span class="term" data-tooltip="Cases where a seemingly convincing interpretation of a model component later turns out to be false. Bolukbasi et al. (2021) showed that the apparent 'meaning' of an activation direction changes depending on which dataset you use to find examples.">interpretability illusions</span>.
@@ -611,29 +611,29 @@
             <span class="term" data-tooltip="Bidirectional Encoder Representations from Transformers. A 2018 language model from Google that processes text in both directions simultaneously. Widely used as a research subject in early mechanistic interpretability work.">BERT</span>
             depending on which dataset they drew examples from.
             Worse, you can find plausible-looking explanations for <em>arbitrary</em> directions
-            — not just the ones that actually matter.
+            , not just the ones that actually matter.
           </p>
           <p>
-            <strong>Attribution methods</strong> — gradient-based
+            <strong>Attribution methods</strong>: gradient-based
             (<span class="term" data-tooltip="A method that accumulates gradients along a path from a baseline input to the actual input, giving each feature a principled attribution score. More reliable than raw gradients but more expensive.">integrated gradients</span>,
             <span class="term" data-tooltip="Gradient-weighted Class Activation Mapping. Highlights which spatial regions of an image were most important for a CNN's prediction by weighting feature maps by their gradients.">grad-CAM</span>)
             or perturbation-based (SHAP,
-            <span class="term" data-tooltip="Setting a component's value to zero (or some baseline) and observing how the model's output changes. A simple causal intervention — if performance drops, the component was important.">ablation</span>)
+            <span class="term" data-tooltip="Setting a component's value to zero (or some baseline) and observing how the model's output changes. A simple causal intervention: if performance drops, the component was important.">ablation</span>)
             measures of causal importance. Theoretically
             stronger, but gradient-based methods often identify only a first-order approximation,
             and Adebayo et al. showed that some are independent of both the model <em>and</em>
             the data. An adversary can train a model to produce any attribution map they want.
           </p>
           <p>
-            <strong>Logit lens and direct logit attribution</strong> — project intermediate
+            <strong>Logit lens and direct logit attribution</strong>: project intermediate
             representations into vocabulary space to see what a component "is thinking about."
             The
             <span class="term" data-tooltip="Apply the model's unembedding matrix to an intermediate residual stream vector to convert it into a distribution over output tokens. The 'residual stream' is the running sum of all layer outputs that threads through a Transformer.">logit lens</span>
             measures direct effects. It's clean and cheap, but can't capture indirect effects
-            — how a representation influences downstream layers.
+            : how a representation influences downstream layers.
           </p>
           <p>
-            <strong>Causal interventions</strong> — the gold standard.
+            <strong>Causal interventions</strong>: the gold standard.
             <span class="term" data-tooltip="Replacing the activation of a component during a forward pass with a value from a different input, then observing how the output changes. Tells you which components are causally necessary for specific behaviors.">Activation patching</span>
             substitutes the value of a component with a value from a different input and
             observes what changes.
@@ -687,15 +687,15 @@
           </div>
 
           <ol>
-            <li><strong>Predict activations</strong> — use your explanation to predict the component's behavior on new inputs. Can be done by humans or AI.</li>
-            <li><strong>Explain failures</strong> — does your interpretation predict adversarial examples or hallucinations?</li>
-            <li><strong>Handcraft replacements</strong> — can you build a simple substitute that reproduces the component's behavior? Cammarata et al. did this for a curve detector in a <span class="term" data-tooltip="Convolutional Neural Network. An architecture for processing images (and other grid-like data) using learned spatial filters. Earlier mech interp work focused heavily on CNNs before shifting to Transformers.">CNN</span>.</li>
-            <li><strong>Test on ground truth</strong> — use toy models with known algorithms to benchmark your tools.</li>
-            <li><strong>Achieve engineering goals competitively</strong> — the highest bar. Fair comparison against non-interpretability baselines on real, non-cherry-picked tasks.</li>
+            <li><strong>Predict activations</strong>: use your explanation to predict the component's behavior on new inputs. Can be done by humans or AI.</li>
+            <li><strong>Explain failures</strong>: does your interpretation predict adversarial examples or hallucinations?</li>
+            <li><strong>Handcraft replacements</strong>: can you build a simple substitute that reproduces the component's behavior? Cammarata et al. did this for a curve detector in a <span class="term" data-tooltip="Convolutional Neural Network. An architecture for processing images (and other grid-like data) using learned spatial filters. Earlier mech interp work focused heavily on CNNs before shifting to Transformers.">CNN</span>.</li>
+            <li><strong>Test on ground truth</strong>: use toy models with known algorithms to benchmark your tools.</li>
+            <li><strong>Achieve engineering goals competitively</strong>: the highest bar. Fair comparison against non-interpretability baselines on real, non-cherry-picked tasks.</li>
           </ol>
           <p>
             Two pieces of infrastructure could help: establishing
-            <span class="term" data-tooltip="Standardized, well-studied neural networks — like E. coli in biology — that the community accumulates shared knowledge around. Ideal: open-source, cheap, reproducible, multiple random seeds, representative of broader phenomena.">model organisms</span>
+            <span class="term" data-tooltip="Standardized, well-studied neural networks (like E. coli in biology) that the community accumulates shared knowledge around. Ideal: open-source, cheap, reproducible, multiple random seeds, representative of broader phenomena.">model organisms</span>
             (the interpretability community's "<em>Drosophila melanogaster</em>") and building
             benchmarks with known ground-truth explanations. Currently, researchers mostly use
             <span class="term" data-tooltip="A 2019 language model from OpenAI with 124M parameters. Small enough to study thoroughly but complex enough to exhibit interesting behaviors. The most common 'model organism' in current mech interp research.">GPT-2</span>
@@ -716,21 +716,21 @@
             decomposition, description, and validation into a concrete workflow:
           </p>
           <ol>
-            <li><strong>Define a task</strong> — pick something the model can do (e.g., "complete the pattern: The capital of France is ___").</li>
-            <li><strong>Decompose into a graph</strong> — represent the network as a
-            <span class="term" data-tooltip="Directed Acyclic Graph — a graph where edges have direction and there are no cycles (you can't follow edges back to where you started). Transformers can be represented as DAGs because information flows forward through layers.">DAG</span>
+            <li><strong>Define a task</strong>: pick something the model can do (e.g., "complete the pattern: The capital of France is ___").</li>
+            <li><strong>Decompose into a graph</strong>: represent the network as a
+            <span class="term" data-tooltip="Directed Acyclic Graph: a graph where edges have direction and there are no cycles (you can't follow edges back to where you started). Transformers can be represented as DAGs because information flows forward through layers.">DAG</span>
             where nodes are components (attention heads,
-            <span class="term" data-tooltip="Multi-Layer Perceptron layers — the feedforward neural network blocks in a Transformer. Each MLP takes a vector, expands it to a larger hidden dimension, applies a nonlinearity, and projects back. Often described as 'where knowledge is stored.'">MLP layers</span>,
+            <span class="term" data-tooltip="Multi-Layer Perceptron layers: the feedforward neural network blocks in a Transformer. Each MLP takes a vector, expands it to a larger hidden dimension, applies a nonlinearity, and projects back. Often described as 'where knowledge is stored.'">MLP layers</span>,
             or SDL latents) and edges are "abstract weights."</li>
-            <li><strong>Identify the relevant subgraph</strong> — use activation patching or attribution to find which nodes and edges matter for this task.</li>
-            <li><strong>Describe each component</strong> — the creative, labor-intensive step. Hypothesize functions, design experiments, iterate.</li>
-            <li><strong>Validate</strong> — check faithfulness (does the circuit approximate the full model?), minimality (are all components necessary?), and completeness (are we missing any?).</li>
+            <li><strong>Identify the relevant subgraph</strong>: use activation patching or attribution to find which nodes and edges matter for this task.</li>
+            <li><strong>Describe each component</strong>: the creative, labor-intensive step. Hypothesize functions, design experiments, iterate.</li>
+            <li><strong>Validate</strong>: check faithfulness (does the circuit approximate the full model?), minimality (are all components necessary?), and completeness (are we missing any?).</li>
           </ol>
           <p>
-            This pipeline has produced real insights — the
+            This pipeline has produced real insights, including the
             <span class="term" data-tooltip="A circuit in Transformers that performs in-context learning by copying patterns: if the model sees 'A B … A', the induction head predicts B will follow the second A. One of the most well-understood circuits in mechanistic interpretability.">induction head</span>
-            circuit, the indirect
-            object identification circuit — but the paper is forthright about its shortcomings.
+            circuit and the indirect
+            object identification circuit, but the paper is forthright about its shortcomings.
             Task definitions are human-imposed and may not match the model's internal task
             structure. Within-task variance is large: a circuit may approximate average
             performance well but individual datapoints poorly. Circuit faithfulness is low for
@@ -738,7 +738,7 @@
             be simple, giving a misleading impression of tractability.
           </p>
           <p>
-            The paper calls this "streetlight interpretability" — studying what's easy to study
+            The paper calls this "streetlight interpretability": studying what's easy to study
             rather than what matters most. Attempts to apply circuit discovery to arbitrary,
             complex tasks have proceeded less successfully.
           </p>
@@ -775,10 +775,10 @@
             over other areas of ML. Most other subfields already focus on controlling
             input-output behavior. Only interpretability tries to understand the mechanisms
             of cognition itself. This means it's uniquely positioned to catch deception,
-            <span class="term" data-tooltip="When a model tells the user what they want to hear rather than what's true — adjusting its responses to match perceived user beliefs or preferences, even when this means giving incorrect information.">sycophancy</span>,
+            <span class="term" data-tooltip="When a model tells the user what they want to hear rather than what's true, adjusting its responses to match perceived user beliefs or preferences, even when this means giving incorrect information.">sycophancy</span>,
             and
             <span class="term" data-tooltip="When a model deliberately underperforms on capability evaluations to hide its true abilities. A model that 'sandbags' appears less capable than it is, potentially to avoid triggering safety restrictions.">sandbagging</span>
-            — behaviors that are specifically designed to defeat
+            , behaviors that are specifically designed to defeat
             behavioral evaluations.
           </p>
         </section>
@@ -790,8 +790,8 @@
           <div class="aside-personal">
             <p>
               I'm increasingly drawn to
-              <span class="term" data-tooltip="The problem of maintaining meaningful human oversight of AI systems as they become more capable than their overseers. Includes techniques like debate, recursive reward modeling, and market-making — all designed to let less-capable supervisors verify the work of more-capable agents.">scalable oversight</span>
-              as a research area — the problem of how humans can meaningfully supervise AI
+              <span class="term" data-tooltip="The problem of maintaining meaningful human oversight of AI systems as they become more capable than their overseers. Includes techniques like debate, recursive reward modeling, and market-making, all designed to let less-capable supervisors verify the work of more-capable agents.">scalable oversight</span>
+              as a research area, the problem of how humans can meaningfully supervise AI
               systems that are more capable than they are. But I've come to believe that
               mechanistic interpretability is a prerequisite, not a parallel track.
             </p>
@@ -837,17 +837,17 @@
           </div>
 
           <p>
-            Here's why. Scalable oversight techniques —
+            Here's why. Scalable oversight techniques like
             <span class="term" data-tooltip="An alignment technique where two AI systems argue for opposing answers and a human judge decides who's right. The idea is that it's easier to judge an argument than produce one, enabling oversight of superhuman systems.">debate</span>,
-            <span class="term" data-tooltip="Training a reward model to evaluate AI outputs, where the reward model itself is trained using AI assistance — creating a recursive loop that can, in theory, scale to evaluating outputs humans can't directly judge.">recursive reward modeling</span>,
-            market-making — all assume you can eventually <em>verify</em> the output of an AI
+            <span class="term" data-tooltip="Training a reward model to evaluate AI outputs, where the reward model itself is trained using AI assistance, creating a recursive loop that can, in theory, scale to evaluating outputs humans can't directly judge.">recursive reward modeling</span>,
+            and market-making all assume you can eventually <em>verify</em> the output of an AI
             system, even if you can't produce it yourself. But verification gets harder as
             models get more capable. A model that can reason about concepts beyond human
             understanding creates outputs that humans can't meaningfully check.
           </p>
           <p>
             Mechanistic interpretability offers a way to break this bottleneck. If you can
-            inspect the model's internal reasoning — not just its final answer — you have a
+            inspect the model's internal reasoning, not just its final answer, you have a
             fundamentally richer signal for oversight. The paper's discussion of
             <span class="term" data-tooltip="The idea of monitoring a model's internal features during deployment (like a real-time dashboard) to flag when it acts for abnormal or concerning reasons, even without full mechanistic understanding.">mechanistic anomaly detection</span>
             illustrates this: you don't need to understand every mechanism in the model to
@@ -859,17 +859,17 @@
             The connection to my economics background is direct. In mechanism design, a
             principal who can partially observe an agent's actions can design better contracts
             than one who can only see outcomes. White-box evaluations (using model internals)
-            are the AI safety analog of partial observability — and the theory says partial
+            are the AI safety analog of partial observability, and the theory says partial
             observability should be worth a lot. But you need to know <em>what to observe</em>,
             which is exactly the question mechanistic interpretability is trying to answer.
           </p>
           <p>
             The paper hints at this connection in its discussion of
-            <span class="term" data-tooltip="The vision that if we could decompose a network into all its components and describe each one, we could verify that none implement dangerous capabilities — like checking every part of a machine for defects. Currently far beyond reach for large models.">enumerative safety</span>
-            — the idea that if you can decompose a network and describe every component, you
+            <span class="term" data-tooltip="The vision that if we could decompose a network into all its components and describe each one, we could verify that none implement dangerous capabilities, like checking every part of a machine for defects. Currently far beyond reach for large models.">enumerative safety</span>
+            , the idea that if you can decompose a network and describe every component, you
             could verify that no component implements dangerous capabilities. That's the strongest
             possible monitoring contract: full observability. We're very far from it, but even
-            partial progress — understanding some components, flagging anomalous ones — would
+            partial progress, understanding some components and flagging anomalous ones, would
             dramatically strengthen oversight.
           </p>
         </section>
@@ -887,14 +887,14 @@
             how mechanistic understanding would be operationalized. OpenAI commits to
             "mitigating biological risks" but doesn't say how. The EU AI Act requires "model
             evaluation … to identify and mitigate systemic risk." Interpretability could
-            help — but only if it produces tools that policymakers can actually use.
+            help, but only if it produces tools that policymakers can actually use.
           </p>
           <p>
             <strong>The competitiveness problem.</strong> Interpretability methods have not
             proven competitive with non-interpretability baselines on real tasks. The field
             evaluates tools on their own curve rather than against alternatives. Until
-            interpretability demonstrates unique value — solving problems that are hard or
-            impossible without it — there's a risk of developing techniques that look good
+            interpretability demonstrates unique value (solving problems that are hard or
+            impossible without it), there's a risk of developing techniques that look good
             in cherry-picked demos but don't generalize.
           </p>
           <p>
@@ -907,14 +907,14 @@
           <blockquote>
             <p>
               "The focus on interpretability artificially constrains the solution space by
-              characterizing one possible solution as the problem itself." — Krishnan (2020)
+              characterizing one possible solution as the problem itself." (Krishnan, 2020)
             </p>
           </blockquote>
           <p>
             This is a tension the field needs to sit with. Interpretability is likely necessary
             for some problems (detecting deceptive cognition) and unnecessary for others
             (behavioral control via
-            <span class="term" data-tooltip="Reinforcement Learning from Human Feedback. A training technique where human preferences are used to fine-tune a model's behavior — e.g. training a chatbot to be helpful and harmless by having humans rank different responses.">RLHF</span>).
+            <span class="term" data-tooltip="Reinforcement Learning from Human Feedback. A training technique where human preferences are used to fine-tune a model's behavior, e.g. training a chatbot to be helpful and harmless by having humans rank different responses.">RLHF</span>).
             Intellectual honesty about where the comparative
             advantage lies is essential.
           </p>
@@ -947,7 +947,7 @@
             </p>
             <p>
               <strong>3. Feature geometry and economic network theory.</strong> The paper flags
-              that SDL ignores feature geometry — the relationships between features. I'm drawn
+              that SDL ignores feature geometry, the relationships between features. I'm drawn
               to the parallel with economic network analysis, where the structure of
               relationships (not just the existence of agents) determines outcomes. Can we import
               tools from network economics to understand how features interact?
@@ -994,21 +994,21 @@
     (function() {
       const data = [
         { title: 'Reconstruction errors are too high',
-          text: 'When Gao et al. inserted a 16-million-latent SAE into GPT-4, the resulting language modeling loss was equivalent to a model with only <strong>10% of GPT-4\'s pretraining compute</strong>. Makelov et al. found 10–40% performance drops on GPT-2 small. Making dictionaries bigger helps but eventually just assigns one latent per datapoint — clearly uninterpretable. The errors are not random; Engels et al. showed they\'re systematically structured and partly predictable from the original activations.' },
+          text: 'When Gao et al. inserted a 16-million-latent SAE into GPT-4, the resulting language modeling loss was equivalent to a model with only <strong>10% of GPT-4\'s pretraining compute</strong>. Makelov et al. found 10 to 40% performance drops on GPT-2 small. Making dictionaries bigger helps but eventually just assigns one latent per datapoint: clearly uninterpretable. The errors are not random; Engels et al. showed they\'re systematically structured and partly predictable from the original activations.' },
         { title: 'Expensive to apply to large models',
           text: 'SDL trains a separate small network for <em>every layer</em> you want to interpret. The dictionaries typically have more parameters at that layer than the original model does. As frontier models grow, these costs compound. There are no public attempts to apply SDL to every vector space in a model. For cost-effectiveness, intrinsically decomposable models may be necessary.' },
         { title: 'Assumes linearity in nonlinear models',
-          text: 'SDL bakes in the linear representation hypothesis: concepts are directions, intensity is magnitude, combinations are additive. The <em>weak</em> version (some concepts are linear) has strong empirical support from linear probes and activation steering. But the <em>strong</em> version (all concepts are linear) is demonstrably false — Black et al. and Csordás et al. have shown nonlinear representations in some models. SDL cannot capture these.' },
+          text: 'SDL bakes in the linear representation hypothesis: concepts are directions, intensity is magnitude, combinations are additive. The <em>weak</em> version (some concepts are linear) has strong empirical support from linear probes and activation steering. But the <em>strong</em> version (all concepts are linear) is demonstrably false. Black et al. and Csordás et al. have shown nonlinear representations in some models. SDL cannot capture these.' },
         { title: 'Sparsity is not interpretability',
-          text: 'SDL optimizes for sparse activations, assuming sparser = more interpretable. But <em>feature splitting</em> (a concept fractures into many latents as you increase dictionary size) and <em>feature absorption</em> (important distinctions get collapsed) show this proxy breaks down under optimization pressure. Other proxies — like minimum description length — might be better optimization targets, or no proxy metric might be sufficient.' },
+          text: 'SDL optimizes for sparse activations, assuming sparser = more interpretable. But <em>feature splitting</em> (a concept fractures into many latents as you increase dictionary size) and <em>feature absorption</em> (important distinctions get collapsed) show this proxy breaks down under optimization pressure. Other proxies, like minimum description length, might be better optimization targets, or no proxy metric might be sufficient.' },
         { title: 'Feature geometry is ignored',
-          text: 'SDL treats features as a "bag of features" with no internal structure. But the geometric arrangement of features relative to each other reflects semantic and functional relationships — months of the year form a ring, related concepts cluster. Understanding a network may require understanding these all-to-all geometric relationships, which SDL discards by design.' },
+          text: 'SDL treats features as a "bag of features" with no internal structure. But the geometric arrangement of features relative to each other reflects semantic and functional relationships: months of the year form a ring, related concepts cluster. Understanding a network may require understanding these all-to-all geometric relationships, which SDL discards by design.' },
         { title: 'Can\'t handle all architectures',
           text: 'SDL was designed for single-layer neuron activations. But representations can be distributed across attention heads (attention superposition) and across multiple layers. It\'s not obvious how to decompose attention-head representations with SDL, and translating cross-layer features into causal descriptions of mechanisms remains unsolved. Crosscoders are an early attempt but raise their own issues.' },
         { title: 'Describes activations, not mechanisms',
-          text: 'This is perhaps the deepest problem. SDL identifies directions in <em>activation space</em> — the inputs and outputs of computations. But the mechanisms themselves are implemented by <em>weights and nonlinearities</em>. SDL latents only interact with mechanisms; they are not the mechanisms. Getting from latents to mechanistic understanding requires labor-intensive post-hoc analysis that the current field primarily skips.' },
+          text: 'This is perhaps the deepest problem. SDL identifies directions in <em>activation space</em>, the inputs and outputs of computations. But the mechanisms themselves are implemented by <em>weights and nonlinearities</em>. SDL latents only interact with mechanisms; they are not the mechanisms. Getting from latents to mechanistic understanding requires labor-intensive post-hoc analysis that the current field primarily skips.' },
         { title: 'May not find the concepts you need',
-          text: 'Frequently, there\'s no single latent or small set of latents representing a concept of interest. Kissane et al. found that SAEs trained on pretraining data don\'t learn good latents for "refusing harmful requests" — but SAEs trained on chat data do. The decomposition is <em>data-dependent</em>, which is troubling for a method that was supposed to find "fundamental units of computation." The concept you want may not be how the model thinks.' }
+          text: 'Frequently, there\'s no single latent or small set of latents representing a concept of interest. Kissane et al. found that SAEs trained on pretraining data don\'t learn good latents for "refusing harmful requests," but SAEs trained on chat data do. The decomposition is <em>data-dependent</em>, which is troubling for a method that was supposed to find "fundamental units of computation." The concept you want may not be how the model thinks.' }
       ];
 
       const tabs = document.getElementById('sdl-tabs');
@@ -1029,15 +1029,15 @@
     (function() {
       const data = [
         { title: 'Monitoring & auditing for unsafe cognition',
-          text: '<p>This is where the paper sees the strongest comparative advantage. <strong>Black-box evaluations</strong> (testing only inputs and outputs) can\'t reliably detect deception, sandbagging, or sycophancy — a model that games evaluations will, by definition, pass them.</p><p><strong>White-box evaluations</strong> (using model internals) could flag potentially concerning cognition. Even shallow, correlation-based descriptions can help: a feature that fires on deceptive scenarios is worth investigating even if you can\'t prove it <em>causes</em> deception. The bar isn\'t "fully understand the model" — it\'s "provide enough signal to guide further inquiry."</p><p><strong>Mechanistic anomaly detection</strong> is especially promising: flag when a model acts for unusual internal reasons, even without descriptions of what those reasons are. You need good decomposition (to know what counts as "a mechanism") but not necessarily deep description.</p>' },
+          text: '<p>This is where the paper sees the strongest comparative advantage. <strong>Black-box evaluations</strong> (testing only inputs and outputs) can\'t reliably detect deception, sandbagging, or sycophancy: a model that games evaluations will, by definition, pass them.</p><p><strong>White-box evaluations</strong> (using model internals) could flag potentially concerning cognition. Even shallow, correlation-based descriptions can help: a feature that fires on deceptive scenarios is worth investigating even if you can\'t prove it <em>causes</em> deception. The bar isn\'t "fully understand the model"; it\'s "provide enough signal to guide further inquiry."</p><p><strong>Mechanistic anomaly detection</strong> is especially promising: flag when a model acts for unusual internal reasons, even without descriptions of what those reasons are. You need good decomposition (to know what counts as "a mechanism") but not necessarily deep description.</p>' },
         { title: 'Control: steering, unlearning, editing',
-          text: '<p><strong>Activation steering</strong> adds a "concept vector" to a model\'s internal activations during inference to nudge its behavior in a desired direction — a direct application of the linear representation hypothesis. Chalnev et al. show that using SDL latents enables more targeted steering with fewer side effects than using raw directions.</p><p><strong>Machine unlearning</strong> aims to remove dangerous knowledge (e.g., bioweapons synthesis). A troubling finding: safety finetuning may make only shallow edits that can be cheaply undone. Arditi et al. discovered a single "refusal direction" in chat models — one direction in activation space mediates all refusal behavior, and removing it breaks safety training completely. This reveals how fragile current safety methods are.</p><p><strong>Model editing</strong> seeks precision: change one piece of knowledge without side effects. Current methods (like ROME) are flawed — edits don\'t generalize well. Better decomposition should enable more surgical interventions.</p>' },
+          text: '<p><strong>Activation steering</strong> adds a "concept vector" to a model\'s internal activations during inference to nudge its behavior in a desired direction, a direct application of the linear representation hypothesis. Chalnev et al. show that using SDL latents enables more targeted steering with fewer side effects than using raw directions.</p><p><strong>Machine unlearning</strong> aims to remove dangerous knowledge (e.g., bioweapons synthesis). A troubling finding: safety finetuning may make only shallow edits that can be cheaply undone. Arditi et al. discovered a single "refusal direction" in chat models, where one direction in activation space mediates all refusal behavior, and removing it breaks safety training completely. This reveals how fragile current safety methods are.</p><p><strong>Model editing</strong> seeks precision: change one piece of knowledge without side effects. Current methods (like ROME) are flawed. Edits don\'t generalize well. Better decomposition should enable more surgical interventions.</p>' },
         { title: 'Prediction: behavior and capabilities',
-          text: '<p>Can we claim "there exists no mechanism that would cause the model to deliberately behave undesirably"? This is <strong>enumerative safety</strong>: decompose everything, describe everything, verify nothing is dangerous. We are very far from this for large models.</p><p>Weaker versions are more tractable. If you can decompose and get basic descriptions, you might verify that no mechanisms relate to bioweapons — letting you predict the model probably can\'t instruct users on synthesis.</p><p><strong>Formal verification</strong> — mathematically proving safety properties — is the gold standard but essentially intractable for frontier models. Gross et al. have proven accuracy bounds for a single-layer transformer on a synthetic task, with great difficulty.</p><p>Predicting <strong>emergent capabilities during training</strong> is another frontier: understanding when new abilities appear and connecting mechanistic structure to scaling laws.</p>' },
+          text: '<p>Can we claim "there exists no mechanism that would cause the model to deliberately behave undesirably"? This is <strong>enumerative safety</strong>: decompose everything, describe everything, verify nothing is dangerous. We are very far from this for large models.</p><p>Weaker versions are more tractable. If you can decompose and get basic descriptions, you might verify that no mechanisms relate to bioweapons, letting you predict the model probably can\'t instruct users on synthesis.</p><p><strong>Formal verification</strong>, mathematically proving safety properties, is the gold standard but essentially intractable for frontier models. Gross et al. have proven accuracy bounds for a single-layer transformer on a synthetic task, with great difficulty.</p><p>Predicting <strong>emergent capabilities during training</strong> is another frontier: understanding when new abilities appear and connecting mechanistic structure to scaling laws.</p>' },
         { title: 'Microscope AI: knowledge discovery',
-          text: '<p>Train a neural network on complex data, then use interpretability to extract the novel patterns it found. The network becomes a scientific instrument — a "microscope" into the data.</p><p>Real examples: extracting chess concepts from AlphaZero to teach grandmasters; using CNN features to reveal how facial features affect judicial sentencing; discovering morphological features for predicting immune cell behavior; transforming psychology articles into a causal graph for automated hypothesis generation.</p><p>Currently blocked by the need for rare expertise at the intersection of ML, interpretability, and domain knowledge. As methods automate, this could become one of the most impactful applications.</p>' },
+          text: '<p>Train a neural network on complex data, then use interpretability to extract the novel patterns it found. The network becomes a scientific instrument, a "microscope" into the data.</p><p>Real examples: extracting chess concepts from AlphaZero to teach grandmasters; using CNN features to reveal how facial features affect judicial sentencing; discovering morphological features for predicting immune cell behavior; transforming psychology articles into a causal graph for automated hypothesis generation.</p><p>Currently blocked by the need for rare expertise at the intersection of ML, interpretability, and domain knowledge. As methods automate, this could become one of the most impactful applications.</p>' },
         { title: 'Improving inference and training',
-          text: '<p>If you understand which parts of a computation are redundant, you can skip them (faster inference). If you can identify knowledge gaps, you can target training data more efficiently. If you can attribute outputs to training examples (influence functions), you can predict generalization failures.</p><p>Mechanistic understanding of finetuning could improve parameter efficiency — modify only the weights that matter. Understanding the order in which capabilities emerge during training could inform curriculum design.</p><p>Decomposing networks into functional components also opens the door to recombining what different models have learned — a kind of "mechanistic model merging."</p>' }
+          text: '<p>If you understand which parts of a computation are redundant, you can skip them (faster inference). If you can identify knowledge gaps, you can target training data more efficiently. If you can attribute outputs to training examples (influence functions), you can predict generalization failures.</p><p>Mechanistic understanding of finetuning could improve parameter efficiency: modify only the weights that matter. Understanding the order in which capabilities emerge during training could inform curriculum design.</p><p>Decomposing networks into functional components also opens the door to recombining what different models have learned, a kind of "mechanistic model merging."</p>' }
       ];
 
       const tabs = document.getElementById('app-tabs');
