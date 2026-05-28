@@ -99,7 +99,7 @@
       <div class="section">
         <span class="label">currently</span>
         <div class="content">
-          <p>writing a first AI alignment paper focused on model steering for scalable oversight. sometimes doing demo speedruns like <a href="https://www.mydreamatlas.com" target="_blank" rel="noopener">mydreamatlas.com</a>.</p>
+          <p>co-founder and head of AI @ <a href="https://auduncollection.com/" target="_blank" rel="noopener">Audun</a> (YC26S). my research at Harvard/MIT is AI alignment, more specifically model steering at inference. fun: just had my first paper accepted at SPIGM @ ICML together with Luca Grossman. you can read more in my <a href="/hyperbolic-style.html">latest blog post</a>.</p>
         </div>
       </div>
 
@@ -148,7 +148,7 @@
         <span class="label">ancient</span>
         <div class="content">
           <p><a href="cv.pdf">curriculum vitae</a></p>
-          <p><small>pgrindehollevik [at] g.harvard.edu · <a href="https://github.com/pgrindehollevik-harvard?tab=overview&from=2026-03-01&to=2026-03-20" target="_blank" rel="noopener">github</a></small></p>
+          <p><small>pgrindehollevik [at] g.harvard.edu · <a href="https://github.com/pgrindehollevik-harvard" target="_blank" rel="noopener">github</a><span id="gh-contrib"></span></small></p>
           <p><small>© <span id="year"></span> Peter Flo</small></p>
         </div>
       </div>
@@ -168,6 +168,27 @@
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    (function () {
+      var el = document.getElementById('gh-contrib');
+      if (!el) return;
+      fetch('https://github-contributions-api.jogruber.de/v4/pgrindehollevik-harvard?y=last')
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (d) {
+          var target = d && d.total && d.total.lastYear;
+          if (!target || target < 1) return;
+          var start = null, dur = 900;
+          function tick(t) {
+            if (start === null) start = t;
+            var p = Math.min((t - start) / dur, 1);
+            var n = Math.round((1 - Math.pow(1 - p, 3)) * target);
+            el.textContent = ' (' + n.toLocaleString() + ' contributions past year)';
+            if (p < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        })
+        .catch(function () {});
+    })();
   </script>
 </body>
 </html>
