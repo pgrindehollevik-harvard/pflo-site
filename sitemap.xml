@@ -56,16 +56,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://pflo.org/demos/diffusion-for-dummies/</loc>
-    <lastmod>2026-03-19</lastmod>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pflo.org/demos/noise-scrubber/</loc>
-    <lastmod>2026-03-19</lastmod>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://pflo.org/advice-to-myself.html</loc>
     <lastmod>2026-03-19</lastmod>
     <priority>0.5</priority>
