@@ -1,6 +1,6 @@
 {
-  "name": "us",
-  "short_name": "us",
+  "name": "oss",
+  "short_name": "oss",
   "description": "our private calendar",
   "start_url": "/us.html",
   "scope": "/us.html",

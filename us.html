@@ -11,8 +11,8 @@
   <link rel="manifest" href="/us.webmanifest" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="us" />
-  <title>us</title>
+  <meta name="apple-mobile-web-app-title" content="oss" />
+  <title>oss</title>
   <style>
     :root {
       --bg:#fff; --text:#111; --muted:#666;
@@ -35,9 +35,13 @@
     input{font:inherit}
 
     /* top bar */
-    .topbar{display:flex;justify-content:space-between;align-items:baseline;
+    .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
       border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:14px}
-    .topbar .who{color:var(--muted);font-size:12px}
+    .brand .brand-top{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+    .stat-head{font-size:12px;color:var(--text)}
+    .stat-head .big{color:var(--accent);font-weight:700}
+    .stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
+    .topbar .who{color:var(--muted);font-size:12px;white-space:nowrap;flex:0 0 auto}
     .topbar .who b{color:var(--text);font-weight:700}
     .linkbtn{background:none;border:none;color:var(--link);
       text-decoration:underline;padding:0;font-size:12px}
@@ -172,7 +176,7 @@
     <!-- ===== LOGIN ===== -->
     <section id="login" class="login" style="max-width:300px;margin:18vh auto 0;text-align:center">
       <div style="font-size:22px">&#10084;&#65039;</div>
-      <span class="label" style="margin-top:6px;">us</span>
+      <span class="label" style="margin-top:6px;">oss</span>
       <p class="muted small">our private calendar</p>
       <form id="login-form" autocomplete="off" style="margin-top:18px;display:flex;flex-direction:column;gap:10px">
         <input id="pw" type="password" placeholder="password" autocomplete="current-password"
@@ -186,7 +190,13 @@
     <!-- ===== APP ===== -->
     <section id="app" class="hidden">
       <div class="topbar">
-        <span class="label" style="margin:0;">us</span>
+        <div class="brand">
+          <div class="brand-top">
+            <span class="label" style="margin:0;">oss</span>
+            <span class="stat-head" id="stats-head"></span>
+          </div>
+          <div class="stat-sub" id="stats-sub"></div>
+        </div>
         <span class="who">hi <b id="who-name"></b> &middot; <button id="signout" class="linkbtn">sign out</button></span>
       </div>
 
@@ -196,9 +206,6 @@
         <div class="dist" id="dist"></div>
       </div>
       <div class="callwin" id="callwin" style="margin-top:-8px;margin-bottom:14px"></div>
-
-      <!-- days together -->
-      <div class="stats" id="stats" style="margin-bottom:16px"></div>
 
       <!-- countdown hero -->
       <div id="hero" class="hero empty">
@@ -1023,11 +1030,10 @@
   }
   function renderStats() {
     const together = daysSince(MILESTONES.couple);
-    $('stats').innerHTML =
-      '<span class="big">' + together.toLocaleString() + ' days</span> together ❤️'
-      + '<div class="sub">met ' + prettyDate(MILESTONES.met)
+    $('stats-head').innerHTML = '<span class="big">' + together.toLocaleString() + ' days</span> together ❤️';
+    $('stats-sub').innerHTML = 'met ' + prettyDate(MILESTONES.met)
       + ' · first trip to Paris ' + prettyDate(MILESTONES.paris)
-      + ' · together since ' + prettyDate(MILESTONES.couple) + '</div>';
+      + ' · together since ' + prettyDate(MILESTONES.couple);
   }
 
   /* ---- per-second tick ---- */
@@ -1046,7 +1052,7 @@
   }
   function icsEsc(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
   function downloadICS() {
-    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//us//calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:us'];
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//oss//calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:oss'];
     EVENTS.forEach(function (e) {
       L.push('BEGIN:VEVENT');
       L.push('UID:' + e.id + '@pflo.org');
