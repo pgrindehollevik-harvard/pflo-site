@@ -1,0 +1,30 @@
+name: Event reminders
+
+on:
+  schedule:
+    # 05:00 UTC daily ≈ 07:00 in Oslo (06:00 in winter). Adjust if you like.
+    - cron: '0 5 * * *'
+  workflow_dispatch: {}   # lets you run it on demand from the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reminders
+  cancel-in-progress: false
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Send reminder digest
+        run: node .github/scripts/send-reminders.mjs
+        env:
+          SUPABASE_URL: https://hqkbqztcsxaafmshbyrb.supabase.co
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REMINDER_FROM: ${{ secrets.REMINDER_FROM }}
