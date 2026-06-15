@@ -144,7 +144,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   <body style="margin:0;background:#fff;">
   <div style="max-width:480px;margin:0 auto;padding:24px 18px;
     font:14px/1.5 Arial,Helvetica,sans-serif;color:#111;">
-    <div style="color:#AD7C03;font-weight:700;font-size:17px;border-bottom:1px solid #222;padding-bottom:8px;">us</div>
+    <div style="color:#AD7C03;font-weight:700;font-size:17px;border-bottom:1px solid #222;padding-bottom:8px;">oss</div>
     ${parts.join('')}
     ${footer ? `<div style="margin-top:22px;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#111;">${footer}</div>` : ''}
     <div style="margin-top:20px;font-size:11px;color:#aaa;">
@@ -166,16 +166,16 @@ if (nextReunion) {
   const days = Math.max(0, Math.ceil((new Date(nextReunion.starts_at).getTime() - now.getTime()) / 86400000));
   textParts.push(`${days} ${days === 1 ? 'day' : 'days'} until you are together again: ${nextReunion.title}, ${fmtDate(nextReunion.starts_at)}`);
 }
-const text = 'us\n\n' + textParts.join('\n\n') + '\n\nhttps://pflo.org/us.html';
+const text = 'oss\n\n' + textParts.join('\n\n') + '\n\nhttps://pflo.org/us.html';
 
 /* subject line */
 let subject;
-if (today.length) subject = `us · today: ${today[0].title}${today.length > 1 ? ` (+${today.length - 1})` : ''}`;
-else if (tomorrow.length) subject = `us · tomorrow: ${tomorrow[0].title}${tomorrow.length > 1 ? ` (+${tomorrow.length - 1})` : ''}`;
+if (today.length) subject = `oss · today: ${today[0].title}${today.length > 1 ? ` (+${today.length - 1})` : ''}`;
+else if (tomorrow.length) subject = `oss · tomorrow: ${tomorrow[0].title}${tomorrow.length > 1 ? ` (+${tomorrow.length - 1})` : ''}`;
 else {
   const b = birthdays[0];
   const when = b.daysAway === 0 ? 'today' : (b.daysAway === 1 ? 'tomorrow' : `in ${b.daysAway} days`);
-  subject = `us · ${b.ev.title} ${when}`;
+  subject = `oss · ${b.ev.title} ${when}`;
 }
 
 /* ---- send via Resend ---- */
