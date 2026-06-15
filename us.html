@@ -271,6 +271,20 @@
     Peter: { city: 'Boston', tz: 'America/New_York', lat: 42.3601, lon: -71.0589 },
     Molly: { city: 'Oslo',   tz: 'Europe/Oslo',      lat: 59.9139, lon: 10.7522 }
   };
+  /* timezone -> city + coordinates, so clocks/distance follow wherever each of
+     you actually is (detected from the phone when you open the app). Add any
+     city you travel to here; an unknown zone still shows its name, just no km. */
+  const CITIES = {
+    'Europe/Oslo':         { city: 'Oslo',          lat: 59.9139, lon: 10.7522 },
+    'Europe/Paris':        { city: 'Paris',         lat: 48.8566, lon: 2.3522 },
+    'Europe/London':       { city: 'London',        lat: 51.5074, lon: -0.1278 },
+    'Europe/Berlin':       { city: 'Berlin',        lat: 52.5200, lon: 13.4050 },
+    'Europe/Stockholm':    { city: 'Stockholm',     lat: 59.3293, lon: 18.0686 },
+    'Europe/Copenhagen':   { city: 'Copenhagen',    lat: 55.6761, lon: 12.5683 },
+    'America/New_York':    { city: 'Boston',        lat: 42.3601, lon: -71.0589 },
+    'America/Chicago':     { city: 'Chicago',       lat: 41.8781, lon: -87.6298 },
+    'America/Los_Angeles': { city: 'San Francisco', lat: 37.7749, lon: -122.4194 }
+  };
   const WAKING = { start: 8, end: 23 }; // local hours counted as "awake"
 
   /* your milestones (for the days-together counter) */
@@ -353,6 +367,17 @@
     const s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * toR) * Math.cos(b.lat * toR) * Math.sin(dLon / 2) ** 2;
     return 2 * R * Math.asin(Math.sqrt(s));
   }
+  function myTimeZone() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch (e) { return null; }
+  }
+  /* resolve where someone is: their detected timezone if we have it, else the default */
+  function placeFor(name) {
+    const tz = (PRESENCE[name] && PRESENCE[name].tz) || (PLACES[name] && PLACES[name].tz) || 'UTC';
+    const geo = CITIES[tz];
+    if (geo) return { city: geo.city, tz: tz, lat: geo.lat, lon: geo.lon };
+    const label = tz.indexOf('/') > -1 ? tz.split('/').pop().replace(/_/g, ' ') : tz;
+    return { city: label, tz: tz, lat: null, lon: null };
+  }
 
   /* =========================================================
      auth
@@ -404,6 +429,13 @@
     return sb.from('notes').update({ body: body, updated_at: new Date().toISOString() }).eq('author', MY_NAME)
       .then(function (res) { if (res.error) throw res.error; });
   }
+  function loadPresence() {
+    return sb.from('presence').select('*').then(function (res) { if (res.error) throw res.error; return res.data || []; });
+  }
+  function savePresence(tz) {
+    return sb.from('presence').update({ tz: tz, updated_at: new Date().toISOString() }).eq('name', MY_NAME)
+      .then(function (res) { if (res.error) throw res.error; });
+  }
 
   /* =========================================================
      app
@@ -411,6 +443,8 @@
   let EVENTS = [];
   let NOTES = {};          // author -> {body, updated_at}
   let notesAvailable = true;
+  let PRESENCE = {};        // name -> {tz, updated_at}
+  let presenceAvailable = true;
   let appReady = false;
 
   function initApp() {
@@ -429,15 +463,32 @@
 
     refresh();
     refreshNotes();
+    initPresence();
     setInterval(refresh, 20000);
     setInterval(refreshNotes, 20000);
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) { refresh(); refreshNotes(); } });
-    window.addEventListener('focus', function () { refresh(); refreshNotes(); });
+    setInterval(refreshPresence, 60000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) { refresh(); refreshNotes(); initPresence(); } });
+    window.addEventListener('focus', function () { refresh(); refreshNotes(); initPresence(); });
 
     setInterval(tick, 1000);
     renderStatus();
     renderStats();
     renderAll();
+  }
+
+  /* presence: write where I am (from my phone's timezone), read where we both are */
+  function initPresence() {
+    const tz = myTimeZone();
+    if (!sb || !tz) { refreshPresence(); return; }
+    savePresence(tz).then(refreshPresence).catch(function () { refreshPresence(); });
+  }
+  function refreshPresence() {
+    if (!sb) return;
+    loadPresence().then(function (rows) {
+      presenceAvailable = true; PRESENCE = {};
+      (rows || []).forEach(function (r) { PRESENCE[r.name] = r; });
+      renderStatus();
+    }).catch(function (err) { presenceAvailable = false; console.warn('presence table not ready', err && err.message); });
   }
 
   function syncYearlyUI() {
@@ -648,8 +699,10 @@
 
   /* ---- status strip: clocks + call window + distance ---- */
   function renderStatus() {
-    const me = PLACES[MY_NAME], you = PLACES[partnerName()];
-    if (!me || !you) return;
+    const me = placeFor(MY_NAME), you = placeFor(partnerName());
+    if (!me.tz || !you.tz) return;
+    const sameCity = me.tz === you.tz;
+
     // clocks (your city first, then theirs)
     $('clocks').innerHTML =
       '<span class="c">' + escapeHtml(me.city) + ' <b>' + timeIn(me.tz) + '</b></span>'
@@ -657,27 +710,26 @@
       + '<span class="c">' + escapeHtml(you.city) + ' <b>' + timeIn(you.tz) + '</b></span>';
 
     // call window
-    const both = awake(me.tz) && awake(you.tz);
     const cw = $('callwin');
-    if (both) { cw.textContent = 'you are both awake, good time to call ☎️'; cw.className = 'callwin good'; }
-    else {
-      const asleep = !awake(you.tz) ? you.city : me.city;
-      cw.textContent = asleep + ' is probably asleep 🌙'; cw.className = 'callwin';
-    }
+    if (sameCity) { cw.textContent = 'you are in the same place 🤍'; cw.className = 'callwin good'; }
+    else if (awake(me.tz) && awake(you.tz)) { cw.textContent = 'you are both awake, good time to call ☎️'; cw.className = 'callwin good'; }
+    else { const asleep = !awake(you.tz) ? you.city : me.city; cw.textContent = asleep + ' is probably asleep 🌙'; cw.className = 'callwin'; }
 
-    // distance, or "together" if a reunion is on now
+    // distance, or "together" when in the same city / mid-reunion
     const dist = $('dist');
-    const together = reunionState().mode === 'together';
-    if (together) {
+    if (sameCity || reunionState().mode === 'together') {
       dist.className = 'dist together';
-      dist.innerHTML = 'together right now ❤️';
+      dist.innerHTML = sameCity ? ('together in ' + escapeHtml(me.city) + ' ❤️') : 'together right now ❤️';
     } else {
-      const km = Math.round(haversineKm(me, you) / 10) * 10;
-      dist.className = 'dist';
-      dist.innerHTML = '<span class="city">' + escapeHtml(me.city) + '</span>'
+      let inner = '<span class="city">' + escapeHtml(me.city) + '</span>'
         + '<span class="line"><span class="plane">✈️</span></span>'
-        + '<span class="city">' + escapeHtml(you.city) + '</span>'
-        + '<span class="km" style="margin-left:4px">' + km.toLocaleString() + ' km</span>';
+        + '<span class="city">' + escapeHtml(you.city) + '</span>';
+      if (me.lat != null && you.lat != null) {
+        const km = Math.round(haversineKm(me, you) / 10) * 10;
+        inner += '<span class="km" style="margin-left:4px">' + km.toLocaleString() + ' km</span>';
+      }
+      dist.className = 'dist';
+      dist.innerHTML = inner;
     }
   }
 
@@ -722,7 +774,7 @@
   let lastClockMin = '';
   function tick() {
     tickClock();
-    const stamp = timeIn(PLACES.Peter.tz) + timeIn(PLACES.Molly.tz);
+    const stamp = timeIn(placeFor(MY_NAME).tz) + timeIn(placeFor(partnerName()).tz);
     if (stamp !== lastClockMin) { lastClockMin = stamp; renderStatus(); }
   }
 
