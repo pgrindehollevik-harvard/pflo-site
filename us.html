@@ -98,6 +98,8 @@
     .memories .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease;cursor:pointer}
     .memories .frame img.on{opacity:1}
     .memories .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:5px}
+    .memories .mem-add{font-size:12px;text-align:center;margin-top:6px}
+    .memories .mem-add a{color:var(--link)}
 
     /* event thumbnail + photo button */
     .ev-row .thumb{flex:0 0 auto;width:34px;height:34px;object-fit:cover;border:1px solid var(--soft);cursor:pointer;align-self:center}
@@ -109,6 +111,7 @@
     .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
     .lightbox.on{display:flex}
     .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+    .lightbox .lb-remove{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);border:none;padding:6px 14px;font-size:12px;color:#9a2a2a;cursor:pointer;display:none}
 
     /* add form */
     .add{border:1px solid var(--soft);background:#fff;padding:14px;margin-bottom:22px}
@@ -219,6 +222,7 @@
       <div class="memories" id="memories">
         <div class="frame" id="mem-frame"></div>
         <div class="cap" id="mem-cap"></div>
+        <div class="mem-add"><a href="#" id="add-photos-link">+ add photos</a></div>
       </div>
 
       <!-- add event -->
@@ -271,7 +275,11 @@
       </div>
 
       <input type="file" id="photo-input" accept="image/*" class="hidden" />
-      <div class="lightbox" id="lightbox"><img id="lightbox-img" alt="" /></div>
+      <input type="file" id="gallery-input" accept="image/*" multiple class="hidden" />
+      <div class="lightbox" id="lightbox">
+        <img id="lightbox-img" alt="" />
+        <button id="lb-remove" class="lb-remove" type="button">remove</button>
+      </div>
     </section>
 
   </main>
@@ -492,7 +500,10 @@
     });
   }
   function maybeSignPhotos() {
-    const paths = EVENTS.filter(function (e) { return e.photo_path; }).map(function (e) { return e.photo_path; });
+    const set = {};
+    EVENTS.forEach(function (e) { if (e.photo_path) set[e.photo_path] = 1; });
+    MEMORIES.forEach(function (m) { if (m.path) set[m.path] = 1; });
+    const paths = Object.keys(set);
     if (!paths.length) { PHOTO_URLS = {}; return Promise.resolve(); }
     const need = paths.some(function (p) { return !PHOTO_URLS[p]; }) || (Date.now() - lastSignAt > 3000000);
     if (!need) return Promise.resolve();
@@ -504,6 +515,27 @@
     }).catch(function (err) { console.warn('photo signing failed (bucket set up?)', err && err.message); });
   }
 
+  /* ---- standalone gallery memories ---- */
+  function loadMemories() {
+    return sb.from('memories').select('*').then(function (res) { if (res.error) throw res.error; return res.data || []; });
+  }
+  function uploadGalleryPhoto(file) {
+    return resizeImage(file, 1600).then(function (blob) {
+      const rand = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+      const path = 'gallery/' + rand + '.jpg';
+      return sb.storage.from('photos').upload(path, blob, { upsert: false, contentType: 'image/jpeg' }).then(function (res) {
+        if (res.error) throw res.error;
+        return sb.from('memories').insert({ path: path, created_by: MY_NAME }).then(function (r) { if (r.error) throw r.error; return path; });
+      });
+    });
+  }
+  function deleteMemory(id, path) {
+    return sb.from('memories').delete().eq('id', id).then(function (res) {
+      if (res.error) throw res.error;
+      return sb.storage.from('photos').remove([path]);
+    });
+  }
+
   /* =========================================================
      app
      ========================================================= */
@@ -513,8 +545,10 @@
   let PRESENCE = {};        // name -> {tz, updated_at}
   let presenceAvailable = true;
   let PHOTO_URLS = {};      // storage path -> signed url
+  let MEMORIES = [];        // standalone gallery rows {id, path, caption, taken_on, created_at}
   let lastSignAt = 0;
   let pendingPhotoEvent = null;
+  let currentLightbox = null;
   let memList = [], memIdx = 0, memTimer = null, lastMemKey = '';
   let appReady = false;
 
@@ -529,7 +563,10 @@
     $('note-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') onSaveNote(); });
     $('ics-link').addEventListener('click', function (e) { e.preventDefault(); downloadICS(); });
     $('photo-input').addEventListener('change', onPhotoPicked);
-    $('lightbox').addEventListener('click', closeLightbox);
+    $('gallery-input').addEventListener('change', onGalleryPicked);
+    $('add-photos-link').addEventListener('click', function (e) { e.preventDefault(); const inp = $('gallery-input'); inp.value = ''; inp.click(); });
+    $('lightbox').addEventListener('click', function (e) { if (e.target === this) closeLightbox(); });
+    $('lb-remove').addEventListener('click', onLightboxRemove);
 
     const t = new Date();
     $('ev-date').value = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
@@ -575,6 +612,9 @@
     if (!sb) return;
     loadEvents().then(function (rows) {
       EVENTS = rows || [];
+      return loadMemories().catch(function () { return MEMORIES; });
+    }).then(function (mems) {
+      MEMORIES = mems || [];
       return maybeSignPhotos();
     }).then(function () { renderAll(); renderStatus(); renderMemories(); })
       .catch(function (err) { console.error('load failed', err); });
@@ -772,7 +812,7 @@
     if (url) {
       const thumb = document.createElement('img');
       thumb.className = 'thumb'; thumb.src = url; thumb.alt = e.title;
-      thumb.addEventListener('click', function () { openLightbox(url); });
+      thumb.addEventListener('click', function () { openLightbox({ url: url, type: 'event', id: e.id, path: e.photo_path }); });
       li.appendChild(thumb);
     }
     const pbtn = document.createElement('button');
@@ -808,24 +848,62 @@
         alert('Could not save that photo. Make sure the photos bucket is set up.');
       });
   }
-  function openLightbox(url) { $('lightbox-img').src = url; $('lightbox').classList.add('on'); }
-  function closeLightbox() { $('lightbox').classList.remove('on'); $('lightbox-img').src = ''; }
+  function openLightbox(item) {
+    currentLightbox = item;
+    $('lightbox-img').src = item.url;
+    $('lb-remove').style.display = 'block';
+    $('lightbox').classList.add('on');
+  }
+  function closeLightbox() { $('lightbox').classList.remove('on'); $('lightbox-img').src = ''; currentLightbox = null; }
+  function onLightboxRemove() {
+    const it = currentLightbox; if (!it) return;
+    if (!confirm('Remove this photo?')) return;
+    let p;
+    if (it.type === 'memory') p = deleteMemory(it.id, it.path);
+    else p = sb.from('events').update({ photo_path: null }).eq('id', it.id)
+      .then(function (r) { if (r.error) throw r.error; return sb.storage.from('photos').remove([it.path]); });
+    p.then(function () { closeLightbox(); refresh(); })
+      .catch(function (err) { console.error('remove failed', err); alert('Could not remove that photo.'); });
+  }
 
+  function monthYear(t) { return new Date(t).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }); }
+
+  /* combine event photos + gallery memories into one slideshow */
+  function memoryItems() {
+    const out = [];
+    EVENTS.forEach(function (e) {
+      if (e.photo_path && PHOTO_URLS[e.photo_path]) {
+        out.push({ key: 'e:' + e.id + ':' + PHOTO_URLS[e.photo_path], url: PHOTO_URLS[e.photo_path], caption: e.title + ' · ' + monthYear(occStart(e)), sort: occStart(e), type: 'event', id: e.id, path: e.photo_path });
+      }
+    });
+    MEMORIES.forEach(function (m) {
+      if (PHOTO_URLS[m.path]) {
+        const t = m.taken_on ? new Date(m.taken_on + 'T00:00:00').getTime() : (m.created_at ? new Date(m.created_at).getTime() : Date.now());
+        out.push({ key: 'm:' + m.id + ':' + PHOTO_URLS[m.path], url: PHOTO_URLS[m.path], caption: m.caption || monthYear(t), sort: t, type: 'memory', id: m.id, path: m.path });
+      }
+    });
+    out.sort(function (a, b) { return b.sort - a.sort; });
+    return out;
+  }
   function renderMemories() {
-    memList = EVENTS.filter(function (e) { return e.photo_path && PHOTO_URLS[e.photo_path]; })
-      .sort(function (a, b) { return occStart(b) - occStart(a); });
-    const wrap = $('memories'), frame = $('mem-frame');
-    if (!memList.length) { wrap.style.display = 'none'; if (memTimer) { clearInterval(memTimer); memTimer = null; } frame.innerHTML = ''; lastMemKey = ''; return; }
-    wrap.style.display = 'block';
-    const key = memList.map(function (e) { return e.id + ':' + PHOTO_URLS[e.photo_path]; }).join('|');
+    const wrap = $('memories'), frame = $('mem-frame'), cap = $('mem-cap');
+    wrap.style.display = 'block'; // keep the "+ add photos" link visible
+    memList = memoryItems();
+    if (!memList.length) {
+      frame.style.display = 'none'; cap.style.display = 'none';
+      if (memTimer) { clearInterval(memTimer); memTimer = null; }
+      frame.innerHTML = ''; lastMemKey = ''; return;
+    }
+    frame.style.display = 'block'; cap.style.display = 'block';
+    const key = memList.map(function (m) { return m.key; }).join('|');
     if (key === lastMemKey) return; // unchanged, let rotation continue
     lastMemKey = key;
     frame.innerHTML = '';
-    memList.forEach(function (e, i) {
+    memList.forEach(function (m, i) {
       const img = document.createElement('img');
-      img.src = PHOTO_URLS[e.photo_path]; img.alt = e.title;
+      img.src = m.url; img.alt = m.caption;
       if (i === 0) img.classList.add('on');
-      img.addEventListener('click', function () { openLightbox(PHOTO_URLS[e.photo_path]); });
+      img.addEventListener('click', function () { openLightbox(m); });
       frame.appendChild(img);
     });
     memIdx = 0; showMem(0);
@@ -835,10 +913,32 @@
   function showMem(i) {
     const imgs = $('mem-frame').querySelectorAll('img');
     imgs.forEach(function (im, j) { im.classList.toggle('on', j === i); });
-    const e = memList[i];
-    $('mem-cap').textContent = e ? (e.title + ' · ' + new Date(occStart(e)).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })) : '';
+    $('mem-cap').textContent = memList[i] ? memList[i].caption : '';
   }
   function nextMem() { if (!memList.length) return; memIdx = (memIdx + 1) % memList.length; showMem(memIdx); }
+
+  /* batch upload to the gallery */
+  function onGalleryPicked() {
+    const inp = $('gallery-input');
+    const files = Array.prototype.slice.call(inp.files || []);
+    if (!files.length) return;
+    const link = $('add-photos-link');
+    let done = 0;
+    link.textContent = 'uploading 0/' + files.length + '…';
+    files.reduce(function (chain, f) {
+      return chain.then(function () {
+        return uploadGalleryPhoto(f).catch(function (err) { console.error('one photo failed', err); });
+      }).then(function () { done++; link.textContent = 'uploading ' + done + '/' + files.length + '…'; });
+    }, Promise.resolve()).then(function () {
+      inp.value = '';
+      link.textContent = '+ add photos';
+      refresh();
+    }).catch(function (err) {
+      console.error('gallery upload failed', err);
+      link.textContent = '+ add photos';
+      alert('Some photos could not be uploaded. Is the photos bucket set up?');
+    });
+  }
 
   /* ---- status strip: clocks + call window + distance ---- */
   function renderStatus() {
