@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>us</title>
+  <style>
+    :root {
+      --bg:#fff; --text:#111; --muted:#666;
+      --accent:#AD7C03; --rule:#222; --link:#1a2d5f; --visited:#1a2d5f;
+      --soft:#e6e0d2; --softbg:#faf7f0; --heart:#c0392b;
+      --maxw:620px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);
+      font:13px/1.45 Arial, Helvetica, sans-serif;
+      -webkit-text-size-adjust:100%;}
+    a{color:var(--link);text-decoration:underline}
+    a:visited{color:var(--visited)}
+    a:hover{color:#000;text-decoration:none}
+    .wrap{max-width:var(--maxw);margin:40px auto;padding:0 16px}
+    .label{color:var(--accent);font-weight:700;font-size:16.8px;display:block;margin:6px 0}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    button{font:inherit;cursor:pointer}
+    input{font:inherit}
+
+    /* top bar */
+    .topbar{display:flex;justify-content:space-between;align-items:baseline;
+      border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:18px}
+    .topbar .who{color:var(--muted);font-size:12px}
+    .topbar .who b{color:var(--text);font-weight:700}
+    .linkbtn{background:none;border:none;color:var(--link);
+      text-decoration:underline;padding:0;font-size:12px}
+    .linkbtn:hover{color:#000;text-decoration:none}
+
+    /* login */
+    .login{max-width:300px;margin:18vh auto 0;text-align:center}
+    .login .heart{font-size:22px}
+    .login form{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+    .login input{padding:9px 10px;border:1px solid var(--rule);border-radius:0;
+      background:#fff;color:var(--text);text-align:center}
+    .login input:focus{outline:none;border-color:var(--accent)}
+    .login .go{padding:9px 10px;border:1px solid var(--rule);background:var(--text);
+      color:#fff;border-radius:0}
+    .login .go:hover{background:#000}
+    .login .go:disabled{opacity:.6;cursor:default}
+    .login .err{color:#9a2a2a;font-size:12px;min-height:14px;margin-top:2px}
+
+    /* countdown hero */
+    .hero{border:1px solid var(--rule);background:var(--softbg);
+      padding:18px 16px;text-align:center;margin-bottom:20px}
+    .hero .cap{color:var(--accent);font-weight:700;font-size:13px;
+      letter-spacing:.04em;text-transform:lowercase}
+    .clock{display:flex;justify-content:center;gap:14px;margin:12px 0 8px}
+    .clock .unit{min-width:48px}
+    .clock .num{font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+    .clock .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+    .hero .ev{font-size:13px;margin-top:2px}
+    .hero .ev b{font-weight:700}
+    .hero.empty .clock{display:none}
+    .hero .together{font-size:20px;font-weight:700;margin:6px 0 4px;color:var(--heart)}
+
+    /* add form */
+    .add{border:1px solid var(--soft);background:#fff;padding:14px;margin-bottom:22px}
+    .add .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+    .add .fieldlbl{font-size:11px;color:var(--muted);margin:2px 0 -2px}
+    .add input[type=text]{flex:1 1 100%;padding:8px 9px;border:1px solid var(--soft)}
+    .add input[type=date],.add input[type=time]{flex:1 1 0;min-width:120px;padding:8px 9px;border:1px solid var(--soft)}
+    .add input:focus{outline:none;border-color:var(--accent)}
+    .add input:disabled{background:#f3f1ec;color:#aaa}
+    .add .opts{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:4px}
+    .add label.chk{display:flex;align-items:center;gap:6px;color:var(--text);cursor:pointer;user-select:none}
+    .add .submit{margin-left:auto;padding:8px 18px;border:1px solid var(--rule);background:var(--text);color:#fff}
+    .add .submit:hover{background:#000}
+    .add .submit:disabled{opacity:.5;cursor:default}
+    .add .err{color:#9a2a2a;font-size:12px;min-height:0;margin-top:6px}
+
+    /* event list */
+    .grouphd{color:var(--accent);font-weight:700;font-size:13px;margin:18px 0 6px;
+      text-transform:lowercase;letter-spacing:.03em}
+    .ev-list{list-style:none;margin:0;padding:0}
+    .ev-row{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid #eee}
+    .ev-row .date{flex:0 0 84px;color:var(--accent);font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+    .ev-row .body{flex:1 1 auto;min-width:0}
+    .ev-row .title{font-size:13px}
+    .ev-row .meta{font-size:11px;color:var(--muted);margin-top:1px}
+    .ev-row.past{opacity:.55}
+    .ev-row.now .date{color:var(--heart)}
+    .ev-row .del{flex:0 0 auto;background:none;border:none;color:var(--muted);
+      font-size:15px;line-height:1;padding:2px 4px}
+    .ev-row .del:hover{color:#9a2a2a}
+    .nowtag{color:var(--heart);font-weight:700;font-size:11px}
+    .empty-note{color:var(--muted);font-size:12px;padding:10px 0}
+
+    .hidden{display:none !important}
+
+    @media (max-width:520px){
+      .wrap{margin:22px auto}
+      .clock .num{font-size:26px}
+      .clock{gap:10px}
+      .ev-row .date{flex-basis:74px}
+      .add .submit{margin-left:0}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+
+    <!-- ===== LOGIN ===== -->
+    <section id="login" class="login">
+      <div class="heart">&#10084;&#65039;</div>
+      <span class="label" style="margin-top:6px;">us</span>
+      <p class="muted small">our private calendar</p>
+      <form id="login-form" autocomplete="off">
+        <input id="pw" type="password" placeholder="password" autocomplete="current-password" />
+        <button class="go" type="submit" id="login-btn">enter</button>
+        <div id="login-err" class="err"></div>
+      </form>
+    </section>
+
+    <!-- ===== APP ===== -->
+    <section id="app" class="hidden">
+      <div class="topbar">
+        <span class="label" style="margin:0;">us</span>
+        <span class="who">hi <b id="who-name"></b> &middot; <button id="signout" class="linkbtn">sign out</button></span>
+      </div>
+
+      <!-- countdown hero -->
+      <div id="hero" class="hero empty">
+        <div class="cap" id="hero-cap">until we are together again</div>
+        <div class="clock" id="clock">
+          <div class="unit"><div class="num" id="c-days">0</div><div class="lbl">days</div></div>
+          <div class="unit"><div class="num" id="c-hrs">0</div><div class="lbl">hours</div></div>
+          <div class="unit"><div class="num" id="c-min">0</div><div class="lbl">min</div></div>
+          <div class="unit"><div class="num" id="c-sec">0</div><div class="lbl">sec</div></div>
+        </div>
+        <div class="ev" id="hero-ev"></div>
+      </div>
+
+      <!-- add event -->
+      <form id="add" class="add" autocomplete="off">
+        <div class="row">
+          <input id="ev-title" type="text" placeholder="what is happening? (e.g. Molly flies to Boston)" maxlength="120" required />
+        </div>
+        <div class="fieldlbl">starts</div>
+        <div class="row">
+          <input id="ev-date" type="date" required />
+          <input id="ev-time" type="time" />
+        </div>
+        <div class="fieldlbl" id="ends-lbl">ends (optional)</div>
+        <div class="row" id="ends-row">
+          <input id="ev-end-date" type="date" />
+          <input id="ev-end-time" type="time" />
+        </div>
+        <div class="opts">
+          <label class="chk"><input id="ev-reunion" type="checkbox" /> &#10084;&#65039; we are together</label>
+          <label class="chk"><input id="ev-yearly" type="checkbox" /> &#127874; repeats every year</label>
+          <button class="submit" type="submit" id="add-btn">add</button>
+        </div>
+        <div id="add-err" class="err"></div>
+      </form>
+
+      <!-- lists -->
+      <div id="lists">
+        <div class="grouphd">coming up</div>
+        <ul id="upcoming" class="ev-list"></ul>
+        <div id="up-empty" class="empty-note hidden">Nothing on the calendar yet. Add the next time you will see each other.</div>
+
+        <div id="bday-wrap" class="hidden">
+          <div class="grouphd" style="margin-top:22px;">birthdays</div>
+          <ul id="birthdays" class="ev-list"></ul>
+        </div>
+
+        <div id="past-wrap" class="hidden">
+          <div class="grouphd" style="margin-top:22px;">already happened</div>
+          <ul id="past" class="ev-list"></ul>
+        </div>
+      </div>
+
+      <p class="small muted" style="margin-top:24px;border-top:1px solid #eee;padding-top:10px;">
+        <a href="/index.html">&larr; pflo.org</a>
+      </p>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  /* =========================================================
+     CONFIG
+     ========================================================= */
+  const SUPABASE_URL = 'https://hqkbqztcsxaafmshbyrb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_HnWbY1qtRubl6n9XxPIC5g_CfthkNtw';
+
+  /* Each person signs in to a real Supabase Auth account.
+     The typed password IS the account password (set these in
+     Supabase: Authentication > Users > Add user, auto-confirmed):
+       molly@pflo.org  password: jegelskerpeter
+       peter@pflo.org  password: jegelskermolly
+     We look up the email from a hash of the typed password so the
+     login stays a single box. The real check happens on the server,
+     and Row Level Security blocks the data until you are signed in.
+  */
+  const ACCOUNTS = {
+    // sha256('jegelskerpeter')
+    '6a7d7c51b5d808623a5e0390281f63a5d9a7be087401635fbc7169f5140809ce':
+      { name: 'Molly', email: 'molly@pflo.org' },
+    // sha256('jegelskermolly')
+    '64bfdaeed537348374acbc05fb79830f47d5cda09eb8c994fcb7a9c43d259364':
+      { name: 'Peter', email: 'peter@pflo.org' }
+  };
+  const EMAIL_NAME = { 'molly@pflo.org': 'Molly', 'peter@pflo.org': 'Peter' };
+
+  /* =========================================================
+     helpers
+     ========================================================= */
+  const $ = function (id) { return document.getElementById(id); };
+
+  let sb = null;
+  try {
+    if (window.supabase && window.supabase.createClient) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch (e) { sb = null; }
+
+  function sha256Hex(str) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
+      .then(function (buf) {
+        return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+          return b.toString(16).padStart(2, '0');
+        }).join('');
+      });
+  }
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function toISO(dateStr, timeStr) {
+    const t = timeStr && timeStr.length ? timeStr : '12:00';
+    return new Date(dateStr + 'T' + t).toISOString();
+  }
+
+  function startOfToday() {
+    const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime();
+  }
+  function endOfDay(d) {
+    const x = new Date(d); x.setHours(23, 59, 59, 999); return x;
+  }
+
+  function fmtDate(iso, allDay) {
+    const d = new Date(iso);
+    const day = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    if (allDay) return day;
+    const tm = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return day + ', ' + tm;
+  }
+  function shortDate(t) {
+    return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  /* occurrence model (handles ranges + yearly recurrence) */
+  function nextYearly(iso) {
+    const ref = new Date(iso);
+    const m = ref.getUTCMonth(), day = ref.getUTCDate();
+    const now = new Date();
+    let occ = new Date(now.getFullYear(), m, day, 12, 0, 0, 0);
+    if (occ.getTime() < startOfToday()) occ = new Date(now.getFullYear() + 1, m, day, 12, 0, 0, 0);
+    return occ;
+  }
+  function occStart(e) {
+    if (e.recurrence === 'yearly') return nextYearly(e.starts_at).getTime();
+    return new Date(e.starts_at).getTime();
+  }
+  function occEnd(e) {
+    if (e.recurrence === 'yearly') return endOfDay(nextYearly(e.starts_at)).getTime();
+    if (e.ends_at) return new Date(e.ends_at).getTime();
+    if (e.all_day) return endOfDay(new Date(e.starts_at)).getTime();
+    return new Date(e.starts_at).getTime();
+  }
+  function isYearly(e) { return e.recurrence === 'yearly'; }
+
+  function eventWhen(e) {
+    if (isYearly(e)) {
+      return fmtDate(nextYearly(e.starts_at).toISOString(), true) + ' · every year';
+    }
+    let s = fmtDate(e.starts_at, e.all_day);
+    if (e.ends_at) s += ' to ' + fmtDate(e.ends_at, e.all_day);
+    if (e.created_by && e.created_by !== 'seed') s += '  ·  added by ' + e.created_by;
+    return s;
+  }
+
+  /* =========================================================
+     auth
+     ========================================================= */
+  function showApp(name) {
+    $('login').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    $('who-name').textContent = name;
+    initApp();
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const pw = $('pw').value.trim();
+    if (!pw) return;
+    if (!sb) { $('login-err').textContent = 'could not reach the server, check your connection'; return; }
+    $('login-btn').disabled = true;
+    $('login-err').textContent = '';
+    sha256Hex(pw).then(function (hash) {
+      const acct = ACCOUNTS[hash];
+      if (!acct) {
+        $('login-err').textContent = 'that is not it, try again';
+        $('pw').value = '';
+        $('login-btn').disabled = false;
+        return;
+      }
+      sb.auth.signInWithPassword({ email: acct.email, password: pw }).then(function (res) {
+        $('login-btn').disabled = false;
+        if (res.error) {
+          $('login-err').textContent = 'hmm, that did not work';
+          return;
+        }
+        $('pw').value = '';
+        showApp(acct.name);
+      });
+    });
+  }
+
+  function signOut() {
+    if (sb) sb.auth.signOut().then(function () { location.reload(); });
+    else location.reload();
+  }
+
+  /* =========================================================
+     data
+     ========================================================= */
+  function loadEvents() {
+    return sb.from('events').select('*').then(function (res) {
+      if (res.error) throw res.error;
+      return res.data || [];
+    });
+  }
+  function addEvent(row) {
+    return sb.from('events').insert(row).select().then(function (res) {
+      if (res.error) throw res.error;
+      return res.data || [];
+    });
+  }
+  function deleteEvent(id) {
+    return sb.from('events').delete().eq('id', id).then(function (res) {
+      if (res.error) throw res.error;
+    });
+  }
+
+  /* =========================================================
+     app
+     ========================================================= */
+  let EVENTS = [];
+  let appReady = false;
+
+  function initApp() {
+    if (appReady) return;
+    appReady = true;
+
+    $('add').addEventListener('submit', onAdd);
+    $('signout').addEventListener('click', signOut);
+    $('ev-yearly').addEventListener('change', syncYearlyUI);
+
+    const t = new Date();
+    $('ev-date').value = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+
+    refresh();
+    setInterval(refresh, 20000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
+    window.addEventListener('focus', refresh);
+    setInterval(tickClock, 1000);
+    renderAll();
+  }
+
+  function syncYearlyUI() {
+    const on = $('ev-yearly').checked;
+    ['ev-time', 'ev-end-date', 'ev-end-time'].forEach(function (id) {
+      $(id).disabled = on;
+      if (on) $(id).value = '';
+    });
+    $('ends-row').classList.toggle('hidden', on);
+    $('ends-lbl').classList.toggle('hidden', on);
+  }
+
+  function refresh() {
+    if (!sb) return;
+    loadEvents().then(function (rows) {
+      EVENTS = rows || [];
+      renderAll();
+    }).catch(function (err) { console.error('load failed', err); });
+  }
+
+  function onAdd(e) {
+    e.preventDefault();
+    $('add-err').textContent = '';
+    const title = $('ev-title').value.trim();
+    const date = $('ev-date').value;
+    if (!title || !date) return;
+
+    const yearly = $('ev-yearly').checked;
+    const time = yearly ? '' : $('ev-time').value;
+    const endDate = yearly ? '' : $('ev-end-date').value;
+    const endTime = yearly ? '' : $('ev-end-time').value;
+
+    const startsAt = toISO(date, time);
+    let endsAt = null;
+    if (endDate) {
+      endsAt = toISO(endDate, endTime || time);
+      if (new Date(endsAt).getTime() < new Date(startsAt).getTime()) {
+        $('add-err').textContent = 'the end is before the start, check the dates';
+        return;
+      }
+    }
+
+    const row = {
+      title: title,
+      starts_at: startsAt,
+      ends_at: endsAt,
+      all_day: yearly ? true : !time,
+      is_reunion: $('ev-reunion').checked,
+      recurrence: yearly ? 'yearly' : 'none',
+      created_by: $('who-name').textContent || 'us'
+    };
+
+    $('add-btn').disabled = true;
+    addEvent(row).then(function (created) {
+      if (created && created.length) EVENTS.push(created[0]);
+      $('ev-title').value = '';
+      $('ev-time').value = '';
+      $('ev-end-date').value = '';
+      $('ev-end-time').value = '';
+      $('ev-reunion').checked = false;
+      $('ev-yearly').checked = false;
+      syncYearlyUI();
+      renderAll();
+      $('ev-title').focus();
+    }).catch(function (err) {
+      console.error('add failed', err);
+      $('add-err').textContent = 'could not save that one, try again';
+    }).then(function () { $('add-btn').disabled = false; });
+  }
+
+  function onDelete(id, title) {
+    if (!confirm('Remove "' + title + '"?')) return;
+    const prev = EVENTS;
+    EVENTS = EVENTS.filter(function (e) { return e.id !== id; });
+    renderAll();
+    deleteEvent(id).catch(function (err) {
+      console.error('delete failed', err);
+      EVENTS = prev; renderAll();
+      alert('Could not remove that event.');
+    });
+  }
+
+  /* ---- rendering ---- */
+  function reunionState() {
+    const now = Date.now();
+    let ongoing = null, upcoming = null;
+    EVENTS.forEach(function (e) {
+      if (!e.is_reunion) return;
+      const s = occStart(e), en = occEnd(e);
+      if (s <= now && now <= en) {
+        if (!ongoing || en < occEnd(ongoing)) ongoing = e;
+      } else if (s > now) {
+        if (!upcoming || s < occStart(upcoming)) upcoming = e;
+      }
+    });
+    if (ongoing) return { mode: 'together', event: ongoing };
+    if (upcoming) return { mode: 'countdown', event: upcoming, target: occStart(upcoming) };
+    return { mode: 'none' };
+  }
+
+  let heroState = { mode: 'none' };
+
+  function renderAll() { renderHero(); renderLists(); }
+
+  function renderHero() {
+    heroState = reunionState();
+    const hero = $('hero');
+    const togetherEl = hero.querySelector('.together');
+
+    if (heroState.mode === 'none') {
+      hero.classList.add('empty');
+      if (togetherEl) togetherEl.remove();
+      $('hero-cap').textContent = 'until we are together again';
+      $('hero-ev').className = 'ev muted';
+      $('hero-ev').innerHTML = EVENTS.some(function (e) { return e.is_reunion; })
+        ? 'No upcoming reunion marked. Tick the heart when you add the next one.'
+        : 'Add the next time you will see each other and tick the heart.';
+      return;
+    }
+
+    hero.classList.remove('empty');
+    const e = heroState.event;
+
+    if (heroState.mode === 'together') {
+      $('clock').classList.add('hidden');
+      $('hero-cap').textContent = 'right now';
+      let tg = togetherEl;
+      if (!tg) { tg = document.createElement('div'); tg.className = 'together'; hero.insertBefore(tg, $('hero-ev')); }
+      tg.innerHTML = 'we are together &#10084;&#65039;';
+      $('hero-ev').className = 'ev';
+      $('hero-ev').innerHTML = '<b>' + escapeHtml(e.title) + '</b>'
+        + (e.ends_at ? '<br><span class="muted small">until ' + fmtDate(e.ends_at, e.all_day) + '</span>' : '');
+      return;
+    }
+
+    // countdown
+    if (togetherEl) togetherEl.remove();
+    $('clock').classList.remove('hidden');
+    $('hero-cap').textContent = 'until we are together again';
+    $('hero-ev').className = 'ev';
+    $('hero-ev').innerHTML = '<b>' + escapeHtml(e.title) + '</b><br><span class="muted small">'
+      + eventWhen(e) + '</span>';
+    tickClock();
+  }
+
+  function tickClock() {
+    if (heroState.mode !== 'countdown') return;
+    let ms = heroState.target - Date.now();
+    if (ms <= 0) { renderHero(); return; }
+    const s = Math.floor(ms / 1000);
+    $('c-days').textContent = Math.floor(s / 86400);
+    $('c-hrs').textContent = pad(Math.floor((s % 86400) / 3600));
+    $('c-min').textContent = pad(Math.floor((s % 3600) / 60));
+    $('c-sec').textContent = pad(s % 60);
+  }
+
+  function renderLists() {
+    const today = startOfToday();
+    const now = Date.now();
+    const upcoming = [], birthdays = [], past = [];
+
+    EVENTS.forEach(function (e) {
+      if (isYearly(e)) birthdays.push(e);
+      else if (occEnd(e) >= today) upcoming.push(e);
+      else past.push(e);
+    });
+
+    upcoming.sort(function (a, b) { return occStart(a) - occStart(b); });
+    birthdays.sort(function (a, b) { return occStart(a) - occStart(b); });
+    past.sort(function (a, b) { return occStart(b) - occStart(a); });
+
+    const upEl = $('upcoming'); upEl.innerHTML = '';
+    upcoming.forEach(function (e) { upEl.appendChild(row(e, false, now)); });
+    $('up-empty').classList.toggle('hidden', upcoming.length > 0);
+
+    const bEl = $('birthdays'); bEl.innerHTML = '';
+    birthdays.forEach(function (e) { bEl.appendChild(row(e, false, now)); });
+    $('bday-wrap').classList.toggle('hidden', birthdays.length === 0);
+
+    const pEl = $('past'); pEl.innerHTML = '';
+    past.forEach(function (e) { pEl.appendChild(row(e, true, now)); });
+    $('past-wrap').classList.toggle('hidden', past.length === 0);
+  }
+
+  function row(e, isPast, now) {
+    const ongoing = !isYearly(e) && occStart(e) <= now && now <= occEnd(e);
+    const li = document.createElement('li');
+    li.className = 'ev-row' + (isPast ? ' past' : '') + (ongoing ? ' now' : '');
+
+    const date = document.createElement('div');
+    date.className = 'date';
+    date.textContent = shortDate(occStart(e));
+
+    const body = document.createElement('div');
+    body.className = 'body';
+    const title = document.createElement('div');
+    title.className = 'title';
+    const icon = (e.is_reunion ? '❤️ ' : '') + (isYearly(e) ? '🎂 ' : '');
+    title.innerHTML = icon + escapeHtml(e.title)
+      + (ongoing ? ' <span class="nowtag">· on now</span>' : '');
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = eventWhen(e);
+    body.appendChild(title);
+    body.appendChild(meta);
+
+    const del = document.createElement('button');
+    del.className = 'del'; del.type = 'button';
+    del.innerHTML = '&times;'; del.title = 'remove';
+    del.addEventListener('click', function () { onDelete(e.id, e.title); });
+
+    li.appendChild(date); li.appendChild(body); li.appendChild(del);
+    return li;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* =========================================================
+     boot
+     ========================================================= */
+  $('login-form').addEventListener('submit', handleLogin);
+  if (sb) {
+    sb.auth.getSession().then(function (res) {
+      const session = res && res.data && res.data.session;
+      if (session && session.user) {
+        showApp(EMAIL_NAME[session.user.email] || 'you');
+      } else {
+        $('pw').focus();
+      }
+    });
+  } else {
+    $('login-err').textContent = 'could not reach the server, check your connection';
+  }
+  </script>
+</body>
+</html>
