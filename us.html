@@ -94,9 +94,11 @@
 
     /* memories slideshow */
     .memories{position:relative;margin-bottom:20px;display:none}
-    .memories .frame{position:relative;width:100%;height:220px;background:#f3f1ec;overflow:hidden;border:1px solid var(--soft)}
-    .memories .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease;cursor:pointer}
-    .memories .frame img.on{opacity:1}
+    .memories .frame{position:relative;width:100%;height:min(64vh,440px);background:#ece7dc;overflow:hidden;border:1px solid var(--soft)}
+    .memories .frame .mem-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease}
+    .memories .frame .mem-slide.on{opacity:1}
+    .memories .frame .mem-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(22px) brightness(.9);transform:scale(1.15)}
+    .memories .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;cursor:pointer}
     .memories .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:5px}
     .memories .mem-add{font-size:12px;text-align:center;margin-top:6px}
     .memories .mem-add a{color:var(--link)}
@@ -195,15 +197,8 @@
       </div>
       <div class="callwin" id="callwin" style="margin-top:-8px;margin-bottom:14px"></div>
 
-      <!-- love note -->
-      <div class="note" id="note">
-        <div class="from" id="note-from"></div>
-        <div class="mine">
-          <input id="note-input" type="text" maxlength="140" placeholder="leave a note..." />
-          <button id="note-save" type="button">save</button>
-        </div>
-        <div class="saved" id="note-saved"></div>
-      </div>
+      <!-- days together -->
+      <div class="stats" id="stats" style="margin-bottom:16px"></div>
 
       <!-- countdown hero -->
       <div id="hero" class="hero empty">
@@ -265,9 +260,18 @@
         </div>
       </div>
 
-      <!-- footer: days together + actions -->
+      <!-- love note -->
+      <div class="note" id="note">
+        <div class="from" id="note-from"></div>
+        <div class="mine">
+          <input id="note-input" type="text" maxlength="140" placeholder="leave a note..." />
+          <button id="note-save" type="button">save</button>
+        </div>
+        <div class="saved" id="note-saved"></div>
+      </div>
+
+      <!-- footer: actions -->
       <div class="footer">
-        <div class="stats" id="stats"></div>
         <div class="acts">
           <a href="#" id="ics-link">add these to your phone calendar</a>
           <a href="/index.html">pflo.org</a>
@@ -900,19 +904,24 @@
     lastMemKey = key;
     frame.innerHTML = '';
     memList.forEach(function (m, i) {
+      const slide = document.createElement('div');
+      slide.className = 'mem-slide' + (i === 0 ? ' on' : '');
+      const bg = document.createElement('div');
+      bg.className = 'mem-bg';
+      bg.style.backgroundImage = 'url("' + m.url + '")';
       const img = document.createElement('img');
       img.src = m.url; img.alt = m.caption;
-      if (i === 0) img.classList.add('on');
       img.addEventListener('click', function () { openLightbox(m); });
-      frame.appendChild(img);
+      slide.appendChild(bg); slide.appendChild(img);
+      frame.appendChild(slide);
     });
     memIdx = 0; showMem(0);
     if (memTimer) clearInterval(memTimer);
     if (memList.length > 1) memTimer = setInterval(nextMem, 5000);
   }
   function showMem(i) {
-    const imgs = $('mem-frame').querySelectorAll('img');
-    imgs.forEach(function (im, j) { im.classList.toggle('on', j === i); });
+    const slides = $('mem-frame').querySelectorAll('.mem-slide');
+    slides.forEach(function (s, j) { s.classList.toggle('on', j === i); });
     $('mem-cap').textContent = memList[i] ? memList[i].caption : '';
   }
   function nextMem() { if (!memList.length) return; memIdx = (memIdx + 1) % memList.length; showMem(memIdx); }
