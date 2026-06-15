@@ -7,6 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#ffffff" />
+  <!-- add to home screen -->
+  <link rel="manifest" href="/us.webmanifest" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="us" />
   <title>us</title>
   <style>
     :root {
@@ -31,28 +36,41 @@
 
     /* top bar */
     .topbar{display:flex;justify-content:space-between;align-items:baseline;
-      border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:18px}
+      border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:14px}
     .topbar .who{color:var(--muted);font-size:12px}
     .topbar .who b{color:var(--text);font-weight:700}
     .linkbtn{background:none;border:none;color:var(--link);
       text-decoration:underline;padding:0;font-size:12px}
     .linkbtn:hover{color:#000;text-decoration:none}
 
-    /* login */
-    .login{max-width:300px;margin:18vh auto 0;text-align:center}
-    .login .heart{font-size:22px}
-    .login form{margin-top:18px;display:flex;flex-direction:column;gap:10px}
-    .login input{padding:9px 10px;border:1px solid var(--rule);border-radius:0;
-      background:#fff;color:var(--text);text-align:center}
-    .login input:focus{outline:none;border-color:var(--accent)}
-    .login .go{padding:9px 10px;border:1px solid var(--rule);background:var(--text);
-      color:#fff;border-radius:0}
-    .login .go:hover{background:#000}
-    .login .go:disabled{opacity:.6;cursor:default}
-    .login .err{color:#9a2a2a;font-size:12px;min-height:14px;margin-top:2px}
+    /* status strip: clocks + distance */
+    .status{display:flex;justify-content:space-between;align-items:center;gap:10px;
+      flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:14px}
+    .clocks{display:flex;align-items:center;gap:8px}
+    .clocks .c b{color:var(--text);font-variant-numeric:tabular-nums}
+    .clocks .sep{opacity:.5}
+    .callwin{font-size:11px}
+    .callwin.good{color:var(--accent);font-weight:700}
+    .dist{display:flex;align-items:center;gap:6px;font-size:11px}
+    .dist .city{color:var(--text)}
+    .dist .line{display:inline-block;width:46px;border-top:1px dashed #bbb;position:relative;height:1px}
+    .dist .plane{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:11px}
+    .dist.together{color:var(--heart);font-weight:700}
+
+    /* love note */
+    .note{border:1px solid var(--soft);background:var(--softbg);padding:10px 12px;margin-bottom:16px;font-size:12px}
+    .note .from{color:var(--text)}
+    .note .from b{color:var(--accent)}
+    .note .empty{color:var(--muted);font-style:italic}
+    .note .mine{display:flex;gap:6px;margin-top:8px}
+    .note .mine input{flex:1 1 auto;padding:6px 8px;border:1px solid var(--soft);background:#fff}
+    .note .mine input:focus{outline:none;border-color:var(--accent)}
+    .note .mine button{padding:6px 12px;border:1px solid var(--rule);background:var(--text);color:#fff}
+    .note .mine button:hover{background:#000}
+    .note .saved{color:var(--accent);font-size:11px;margin-top:4px;min-height:13px}
 
     /* countdown hero */
-    .hero{border:1px solid var(--rule);background:var(--softbg);
+    .hero{position:relative;overflow:hidden;border:1px solid var(--rule);background:var(--softbg);
       padding:18px 16px;text-align:center;margin-bottom:20px}
     .hero .cap{color:var(--accent);font-weight:700;font-size:13px;
       letter-spacing:.04em;text-transform:lowercase}
@@ -64,6 +82,15 @@
     .hero .ev b{font-weight:700}
     .hero.empty .clock{display:none}
     .hero .together{font-size:20px;font-weight:700;margin:6px 0 4px;color:var(--heart)}
+
+    /* floating hearts */
+    .heart-fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .heart-fx span{position:absolute;bottom:-20px;font-size:16px;opacity:0;animation:floatUp linear forwards}
+    @keyframes floatUp{
+      0%{transform:translateY(0) scale(.7);opacity:0}
+      15%{opacity:.9}
+      100%{transform:translateY(-220px) scale(1.1);opacity:0}
+    }
 
     /* add form */
     .add{border:1px solid var(--soft);background:#fff;padding:14px;margin-bottom:22px}
@@ -97,6 +124,13 @@
     .nowtag{color:var(--heart);font-weight:700;font-size:11px}
     .empty-note{color:var(--muted);font-size:12px;padding:10px 0}
 
+    /* footer: days together + actions */
+    .footer{margin-top:24px;border-top:1px solid #eee;padding-top:12px;font-size:12px}
+    .stats{color:var(--text)}
+    .stats .big{color:var(--accent);font-weight:700}
+    .stats .sub{color:var(--muted);font-size:11px;margin-top:2px}
+    .footer .acts{margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+
     .hidden{display:none !important}
 
     @media (max-width:520px){
@@ -105,6 +139,7 @@
       .clock{gap:10px}
       .ev-row .date{flex-basis:74px}
       .add .submit{margin-left:0}
+      .status{font-size:11px}
     }
   </style>
 </head>
@@ -112,14 +147,16 @@
   <main class="wrap">
 
     <!-- ===== LOGIN ===== -->
-    <section id="login" class="login">
-      <div class="heart">&#10084;&#65039;</div>
+    <section id="login" class="login" style="max-width:300px;margin:18vh auto 0;text-align:center">
+      <div style="font-size:22px">&#10084;&#65039;</div>
       <span class="label" style="margin-top:6px;">us</span>
       <p class="muted small">our private calendar</p>
-      <form id="login-form" autocomplete="off">
-        <input id="pw" type="password" placeholder="password" autocomplete="current-password" />
-        <button class="go" type="submit" id="login-btn">enter</button>
-        <div id="login-err" class="err"></div>
+      <form id="login-form" autocomplete="off" style="margin-top:18px;display:flex;flex-direction:column;gap:10px">
+        <input id="pw" type="password" placeholder="password" autocomplete="current-password"
+          style="padding:9px 10px;border:1px solid var(--rule);text-align:center" />
+        <button class="go" type="submit" id="login-btn"
+          style="padding:9px 10px;border:1px solid var(--rule);background:var(--text);color:#fff">enter</button>
+        <div id="login-err" style="color:#9a2a2a;font-size:12px;min-height:14px"></div>
       </form>
     </section>
 
@@ -130,8 +167,26 @@
         <span class="who">hi <b id="who-name"></b> &middot; <button id="signout" class="linkbtn">sign out</button></span>
       </div>
 
+      <!-- clocks + distance -->
+      <div class="status" id="status">
+        <div class="clocks" id="clocks"></div>
+        <div class="dist" id="dist"></div>
+      </div>
+      <div class="callwin" id="callwin" style="margin-top:-8px;margin-bottom:14px"></div>
+
+      <!-- love note -->
+      <div class="note" id="note">
+        <div class="from" id="note-from"></div>
+        <div class="mine">
+          <input id="note-input" type="text" maxlength="140" placeholder="leave a note..." />
+          <button id="note-save" type="button">save</button>
+        </div>
+        <div class="saved" id="note-saved"></div>
+      </div>
+
       <!-- countdown hero -->
       <div id="hero" class="hero empty">
+        <div class="heart-fx" id="heart-fx"></div>
         <div class="cap" id="hero-cap">until we are together again</div>
         <div class="clock" id="clock">
           <div class="unit"><div class="num" id="c-days">0</div><div class="lbl">days</div></div>
@@ -182,9 +237,14 @@
         </div>
       </div>
 
-      <p class="small muted" style="margin-top:24px;border-top:1px solid #eee;padding-top:10px;">
-        <a href="/index.html">&larr; pflo.org</a>
-      </p>
+      <!-- footer: days together + actions -->
+      <div class="footer">
+        <div class="stats" id="stats"></div>
+        <div class="acts">
+          <a href="#" id="ics-link">add these to your phone calendar</a>
+          <a href="/index.html">pflo.org</a>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -197,24 +257,28 @@
   const SUPABASE_URL = 'https://hqkbqztcsxaafmshbyrb.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_HnWbY1qtRubl6n9XxPIC5g_CfthkNtw';
 
-  /* Each person signs in to a real Supabase Auth account.
-     The typed password IS the account password (set these in
-     Supabase: Authentication > Users > Add user, auto-confirmed):
-       molly@pflo.org  password: jegelskerpeter
-       peter@pflo.org  password: jegelskermolly
-     We look up the email from a hash of the typed password so the
-     login stays a single box. The real check happens on the server,
-     and Row Level Security blocks the data until you are signed in.
-  */
   const ACCOUNTS = {
-    // sha256('jegelskerpeter')
     '6a7d7c51b5d808623a5e0390281f63a5d9a7be087401635fbc7169f5140809ce':
       { name: 'Molly', email: 'molly@pflo.org' },
-    // sha256('jegelskermolly')
     '64bfdaeed537348374acbc05fb79830f47d5cda09eb8c994fcb7a9c43d259364':
       { name: 'Peter', email: 'peter@pflo.org' }
   };
   const EMAIL_NAME = { 'molly@pflo.org': 'Molly', 'peter@pflo.org': 'Peter' };
+
+  /* where each of you is (used for clocks, call window, and distance).
+     If you ever swap cities, just edit these two lines. */
+  const PLACES = {
+    Peter: { city: 'Boston', tz: 'America/New_York', lat: 42.3601, lon: -71.0589 },
+    Molly: { city: 'Oslo',   tz: 'Europe/Oslo',      lat: 59.9139, lon: 10.7522 }
+  };
+  const WAKING = { start: 8, end: 23 }; // local hours counted as "awake"
+
+  /* your milestones (for the days-together counter) */
+  const MILESTONES = {
+    met:    '2024-12-16',
+    paris:  '2025-01-17',
+    couple: '2025-03-18'
+  };
 
   /* =========================================================
      helpers
@@ -223,58 +287,43 @@
 
   let sb = null;
   try {
-    if (window.supabase && window.supabase.createClient) {
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
+    if (window.supabase && window.supabase.createClient) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   } catch (e) { sb = null; }
 
   function sha256Hex(str) {
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
-      .then(function (buf) {
-        return Array.prototype.map.call(new Uint8Array(buf), function (b) {
-          return b.toString(16).padStart(2, '0');
-        }).join('');
-      });
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    });
   }
-
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
-
   function toISO(dateStr, timeStr) {
     const t = timeStr && timeStr.length ? timeStr : '12:00';
     return new Date(dateStr + 'T' + t).toISOString();
   }
-
-  function startOfToday() {
-    const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime();
-  }
-  function endOfDay(d) {
-    const x = new Date(d); x.setHours(23, 59, 59, 999); return x;
+  function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+  function endOfDay(d) { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; }
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function fmtDate(iso, allDay) {
     const d = new Date(iso);
     const day = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
     if (allDay) return day;
-    const tm = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-    return day + ', ' + tm;
+    return day + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   }
-  function shortDate(t) {
-    return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  }
+  function shortDate(t) { return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
 
-  /* occurrence model (handles ranges + yearly recurrence) */
+  /* occurrence model (ranges + yearly) */
   function nextYearly(iso) {
-    const ref = new Date(iso);
-    const m = ref.getUTCMonth(), day = ref.getUTCDate();
+    const ref = new Date(iso); const m = ref.getUTCMonth(), day = ref.getUTCDate();
     const now = new Date();
     let occ = new Date(now.getFullYear(), m, day, 12, 0, 0, 0);
     if (occ.getTime() < startOfToday()) occ = new Date(now.getFullYear() + 1, m, day, 12, 0, 0, 0);
     return occ;
   }
-  function occStart(e) {
-    if (e.recurrence === 'yearly') return nextYearly(e.starts_at).getTime();
-    return new Date(e.starts_at).getTime();
-  }
+  function occStart(e) { return e.recurrence === 'yearly' ? nextYearly(e.starts_at).getTime() : new Date(e.starts_at).getTime(); }
   function occEnd(e) {
     if (e.recurrence === 'yearly') return endOfDay(nextYearly(e.starts_at)).getTime();
     if (e.ends_at) return new Date(e.ends_at).getTime();
@@ -282,84 +331,86 @@
     return new Date(e.starts_at).getTime();
   }
   function isYearly(e) { return e.recurrence === 'yearly'; }
-
   function eventWhen(e) {
-    if (isYearly(e)) {
-      return fmtDate(nextYearly(e.starts_at).toISOString(), true) + ' · every year';
-    }
+    if (isYearly(e)) return fmtDate(nextYearly(e.starts_at).toISOString(), true) + ' · every year';
     let s = fmtDate(e.starts_at, e.all_day);
     if (e.ends_at) s += ' to ' + fmtDate(e.ends_at, e.all_day);
     if (e.created_by && e.created_by !== 'seed') s += '  ·  added by ' + e.created_by;
     return s;
   }
 
+  /* timezone + geo helpers */
+  function hourIn(tz) {
+    return Number(new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', hour12: false }).format(new Date())) % 24;
+  }
+  function timeIn(tz) {
+    return new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit' }).format(new Date());
+  }
+  function awake(tz) { const h = hourIn(tz); return h >= WAKING.start && h < WAKING.end; }
+  function haversineKm(a, b) {
+    const R = 6371, toR = Math.PI / 180;
+    const dLat = (b.lat - a.lat) * toR, dLon = (b.lon - a.lon) * toR;
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * toR) * Math.cos(b.lat * toR) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(s));
+  }
+
   /* =========================================================
      auth
      ========================================================= */
+  let MY_NAME = null;
+  function partnerName() { return MY_NAME === 'Peter' ? 'Molly' : 'Peter'; }
+
   function showApp(name) {
+    MY_NAME = name;
     $('login').classList.add('hidden');
     $('app').classList.remove('hidden');
     $('who-name').textContent = name;
     initApp();
   }
-
   function handleLogin(e) {
     e.preventDefault();
     const pw = $('pw').value.trim();
     if (!pw) return;
     if (!sb) { $('login-err').textContent = 'could not reach the server, check your connection'; return; }
-    $('login-btn').disabled = true;
-    $('login-err').textContent = '';
+    $('login-btn').disabled = true; $('login-err').textContent = '';
     sha256Hex(pw).then(function (hash) {
       const acct = ACCOUNTS[hash];
-      if (!acct) {
-        $('login-err').textContent = 'that is not it, try again';
-        $('pw').value = '';
-        $('login-btn').disabled = false;
-        return;
-      }
+      if (!acct) { $('login-err').textContent = 'that is not it, try again'; $('pw').value = ''; $('login-btn').disabled = false; return; }
       sb.auth.signInWithPassword({ email: acct.email, password: pw }).then(function (res) {
         $('login-btn').disabled = false;
-        if (res.error) {
-          $('login-err').textContent = 'hmm, that did not work';
-          return;
-        }
-        $('pw').value = '';
-        showApp(acct.name);
+        if (res.error) { $('login-err').textContent = 'hmm, that did not work'; return; }
+        $('pw').value = ''; showApp(acct.name);
       });
     });
   }
-
-  function signOut() {
-    if (sb) sb.auth.signOut().then(function () { location.reload(); });
-    else location.reload();
-  }
+  function signOut() { if (sb) sb.auth.signOut().then(function () { location.reload(); }); else location.reload(); }
 
   /* =========================================================
      data
      ========================================================= */
   function loadEvents() {
-    return sb.from('events').select('*').then(function (res) {
-      if (res.error) throw res.error;
-      return res.data || [];
-    });
+    return sb.from('events').select('*').then(function (res) { if (res.error) throw res.error; return res.data || []; });
   }
   function addEvent(row) {
-    return sb.from('events').insert(row).select().then(function (res) {
-      if (res.error) throw res.error;
-      return res.data || [];
-    });
+    return sb.from('events').insert(row).select().then(function (res) { if (res.error) throw res.error; return res.data || []; });
   }
   function deleteEvent(id) {
-    return sb.from('events').delete().eq('id', id).then(function (res) {
-      if (res.error) throw res.error;
-    });
+    return sb.from('events').delete().eq('id', id).then(function (res) { if (res.error) throw res.error; });
+  }
+  function loadNotes() {
+    return sb.from('notes').select('*').then(function (res) { if (res.error) throw res.error; return res.data || []; });
+  }
+  function saveNote(body) {
+    return sb.from('notes').update({ body: body, updated_at: new Date().toISOString() }).eq('author', MY_NAME)
+      .then(function (res) { if (res.error) throw res.error; });
   }
 
   /* =========================================================
      app
      ========================================================= */
   let EVENTS = [];
+  let NOTES = {};          // author -> {body, updated_at}
+  let notesAvailable = true;
   let appReady = false;
 
   function initApp() {
@@ -369,34 +420,48 @@
     $('add').addEventListener('submit', onAdd);
     $('signout').addEventListener('click', signOut);
     $('ev-yearly').addEventListener('change', syncYearlyUI);
+    $('note-save').addEventListener('click', onSaveNote);
+    $('note-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') onSaveNote(); });
+    $('ics-link').addEventListener('click', function (e) { e.preventDefault(); downloadICS(); });
 
     const t = new Date();
     $('ev-date').value = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
 
     refresh();
+    refreshNotes();
     setInterval(refresh, 20000);
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
-    window.addEventListener('focus', refresh);
-    setInterval(tickClock, 1000);
+    setInterval(refreshNotes, 20000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) { refresh(); refreshNotes(); } });
+    window.addEventListener('focus', function () { refresh(); refreshNotes(); });
+
+    setInterval(tick, 1000);
+    renderStatus();
+    renderStats();
     renderAll();
   }
 
   function syncYearlyUI() {
     const on = $('ev-yearly').checked;
-    ['ev-time', 'ev-end-date', 'ev-end-time'].forEach(function (id) {
-      $(id).disabled = on;
-      if (on) $(id).value = '';
-    });
+    ['ev-time', 'ev-end-date', 'ev-end-time'].forEach(function (id) { $(id).disabled = on; if (on) $(id).value = ''; });
     $('ends-row').classList.toggle('hidden', on);
     $('ends-lbl').classList.toggle('hidden', on);
   }
 
   function refresh() {
     if (!sb) return;
-    loadEvents().then(function (rows) {
-      EVENTS = rows || [];
-      renderAll();
-    }).catch(function (err) { console.error('load failed', err); });
+    loadEvents().then(function (rows) { EVENTS = rows || []; renderAll(); renderStatus(); })
+      .catch(function (err) { console.error('load failed', err); });
+  }
+  function refreshNotes() {
+    if (!sb) return;
+    loadNotes().then(function (rows) {
+      notesAvailable = true; NOTES = {};
+      (rows || []).forEach(function (r) { NOTES[r.author] = r; });
+      renderNote();
+    }).catch(function (err) {
+      notesAvailable = false; $('note').classList.add('hidden');
+      console.warn('notes table not ready', err && err.message);
+    });
   }
 
   function onAdd(e) {
@@ -405,81 +470,67 @@
     const title = $('ev-title').value.trim();
     const date = $('ev-date').value;
     if (!title || !date) return;
-
     const yearly = $('ev-yearly').checked;
     const time = yearly ? '' : $('ev-time').value;
     const endDate = yearly ? '' : $('ev-end-date').value;
     const endTime = yearly ? '' : $('ev-end-time').value;
-
     const startsAt = toISO(date, time);
     let endsAt = null;
     if (endDate) {
       endsAt = toISO(endDate, endTime || time);
-      if (new Date(endsAt).getTime() < new Date(startsAt).getTime()) {
-        $('add-err').textContent = 'the end is before the start, check the dates';
-        return;
-      }
+      if (new Date(endsAt).getTime() < new Date(startsAt).getTime()) { $('add-err').textContent = 'the end is before the start, check the dates'; return; }
     }
-
     const row = {
-      title: title,
-      starts_at: startsAt,
-      ends_at: endsAt,
-      all_day: yearly ? true : !time,
-      is_reunion: $('ev-reunion').checked,
-      recurrence: yearly ? 'yearly' : 'none',
-      created_by: $('who-name').textContent || 'us'
+      title: title, starts_at: startsAt, ends_at: endsAt,
+      all_day: yearly ? true : !time, is_reunion: $('ev-reunion').checked,
+      recurrence: yearly ? 'yearly' : 'none', created_by: MY_NAME || 'us'
     };
-
     $('add-btn').disabled = true;
     addEvent(row).then(function (created) {
       if (created && created.length) EVENTS.push(created[0]);
-      $('ev-title').value = '';
-      $('ev-time').value = '';
-      $('ev-end-date').value = '';
-      $('ev-end-time').value = '';
-      $('ev-reunion').checked = false;
-      $('ev-yearly').checked = false;
-      syncYearlyUI();
-      renderAll();
-      $('ev-title').focus();
-    }).catch(function (err) {
-      console.error('add failed', err);
-      $('add-err').textContent = 'could not save that one, try again';
-    }).then(function () { $('add-btn').disabled = false; });
+      $('ev-title').value = ''; $('ev-time').value = ''; $('ev-end-date').value = ''; $('ev-end-time').value = '';
+      $('ev-reunion').checked = false; $('ev-yearly').checked = false; syncYearlyUI();
+      renderAll(); renderStatus(); $('ev-title').focus();
+    }).catch(function (err) { console.error('add failed', err); $('add-err').textContent = 'could not save that one, try again'; })
+      .then(function () { $('add-btn').disabled = false; });
   }
 
   function onDelete(id, title) {
     if (!confirm('Remove "' + title + '"?')) return;
     const prev = EVENTS;
     EVENTS = EVENTS.filter(function (e) { return e.id !== id; });
-    renderAll();
-    deleteEvent(id).catch(function (err) {
-      console.error('delete failed', err);
-      EVENTS = prev; renderAll();
-      alert('Could not remove that event.');
-    });
+    renderAll(); renderStatus();
+    deleteEvent(id).catch(function (err) { console.error('delete failed', err); EVENTS = prev; renderAll(); alert('Could not remove that event.'); });
   }
 
-  /* ---- rendering ---- */
+  function onSaveNote() {
+    if (!sb || !notesAvailable) return;
+    const body = $('note-input').value.trim();
+    $('note-save').disabled = true;
+    saveNote(body).then(function () {
+      NOTES[MY_NAME] = { author: MY_NAME, body: body, updated_at: new Date().toISOString() };
+      $('note-saved').textContent = 'saved ❤️';
+      setTimeout(function () { $('note-saved').textContent = ''; }, 2000);
+    }).catch(function (err) { console.error('note save failed', err); $('note-saved').textContent = 'could not save'; })
+      .then(function () { $('note-save').disabled = false; });
+  }
+
+  /* ---- reunion / hero ---- */
   function reunionState() {
     const now = Date.now();
     let ongoing = null, upcoming = null;
     EVENTS.forEach(function (e) {
       if (!e.is_reunion) return;
       const s = occStart(e), en = occEnd(e);
-      if (s <= now && now <= en) {
-        if (!ongoing || en < occEnd(ongoing)) ongoing = e;
-      } else if (s > now) {
-        if (!upcoming || s < occStart(upcoming)) upcoming = e;
-      }
+      if (s <= now && now <= en) { if (!ongoing || en < occEnd(ongoing)) ongoing = e; }
+      else if (s > now) { if (!upcoming || s < occStart(upcoming)) upcoming = e; }
     });
     if (ongoing) return { mode: 'together', event: ongoing };
     if (upcoming) return { mode: 'countdown', event: upcoming, target: occStart(upcoming) };
     return { mode: 'none' };
   }
-
   let heroState = { mode: 'none' };
+  let heartsOn = false;
 
   function renderAll() { renderHero(); renderLists(); }
 
@@ -489,7 +540,7 @@
     const togetherEl = hero.querySelector('.together');
 
     if (heroState.mode === 'none') {
-      hero.classList.add('empty');
+      hero.classList.add('empty'); stopHearts();
       if (togetherEl) togetherEl.remove();
       $('hero-cap').textContent = 'until we are together again';
       $('hero-ev').className = 'ev muted';
@@ -498,10 +549,8 @@
         : 'Add the next time you will see each other and tick the heart.';
       return;
     }
-
     hero.classList.remove('empty');
     const e = heroState.event;
-
     if (heroState.mode === 'together') {
       $('clock').classList.add('hidden');
       $('hero-cap').textContent = 'right now';
@@ -511,16 +560,15 @@
       $('hero-ev').className = 'ev';
       $('hero-ev').innerHTML = '<b>' + escapeHtml(e.title) + '</b>'
         + (e.ends_at ? '<br><span class="muted small">until ' + fmtDate(e.ends_at, e.all_day) + '</span>' : '');
+      startHearts();
       return;
     }
-
-    // countdown
     if (togetherEl) togetherEl.remove();
+    stopHearts();
     $('clock').classList.remove('hidden');
     $('hero-cap').textContent = 'until we are together again';
     $('hero-ev').className = 'ev';
-    $('hero-ev').innerHTML = '<b>' + escapeHtml(e.title) + '</b><br><span class="muted small">'
-      + eventWhen(e) + '</span>';
+    $('hero-ev').innerHTML = '<b>' + escapeHtml(e.title) + '</b><br><span class="muted small">' + eventWhen(e) + '</span>';
     tickClock();
   }
 
@@ -535,17 +583,35 @@
     $('c-sec').textContent = pad(s % 60);
   }
 
-  function renderLists() {
-    const today = startOfToday();
-    const now = Date.now();
-    const upcoming = [], birthdays = [], past = [];
+  /* floating hearts while together */
+  let heartTimer = null;
+  function startHearts() {
+    if (heartsOn) return; heartsOn = true;
+    spawnHeart(); spawnHeart();
+    heartTimer = setInterval(spawnHeart, 900);
+  }
+  function stopHearts() { heartsOn = false; if (heartTimer) { clearInterval(heartTimer); heartTimer = null; } }
+  function spawnHeart() {
+    const fx = $('heart-fx'); if (!fx) return;
+    const s = document.createElement('span');
+    s.textContent = Math.random() < 0.5 ? '❤️' : '🤍';
+    s.style.left = (6 + Math.random() * 88) + '%';
+    const dur = 3.2 + Math.random() * 2.2;
+    s.style.animationDuration = dur + 's';
+    s.style.fontSize = (12 + Math.random() * 10) + 'px';
+    fx.appendChild(s);
+    setTimeout(function () { s.remove(); }, dur * 1000 + 200);
+  }
 
+  /* ---- lists ---- */
+  function renderLists() {
+    const today = startOfToday(), now = Date.now();
+    const upcoming = [], birthdays = [], past = [];
     EVENTS.forEach(function (e) {
       if (isYearly(e)) birthdays.push(e);
       else if (occEnd(e) >= today) upcoming.push(e);
       else past.push(e);
     });
-
     upcoming.sort(function (a, b) { return occStart(a) - occStart(b); });
     birthdays.sort(function (a, b) { return occStart(a) - occStart(b); });
     past.sort(function (a, b) { return occStart(b) - occStart(a); });
@@ -562,42 +628,140 @@
     past.forEach(function (e) { pEl.appendChild(row(e, true, now)); });
     $('past-wrap').classList.toggle('hidden', past.length === 0);
   }
-
   function row(e, isPast, now) {
     const ongoing = !isYearly(e) && occStart(e) <= now && now <= occEnd(e);
     const li = document.createElement('li');
     li.className = 'ev-row' + (isPast ? ' past' : '') + (ongoing ? ' now' : '');
-
-    const date = document.createElement('div');
-    date.className = 'date';
-    date.textContent = shortDate(occStart(e));
-
-    const body = document.createElement('div');
-    body.className = 'body';
-    const title = document.createElement('div');
-    title.className = 'title';
+    const date = document.createElement('div'); date.className = 'date'; date.textContent = shortDate(occStart(e));
+    const body = document.createElement('div'); body.className = 'body';
+    const title = document.createElement('div'); title.className = 'title';
     const icon = (e.is_reunion ? '❤️ ' : '') + (isYearly(e) ? '🎂 ' : '');
-    title.innerHTML = icon + escapeHtml(e.title)
-      + (ongoing ? ' <span class="nowtag">· on now</span>' : '');
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    meta.textContent = eventWhen(e);
-    body.appendChild(title);
-    body.appendChild(meta);
-
-    const del = document.createElement('button');
-    del.className = 'del'; del.type = 'button';
+    title.innerHTML = icon + escapeHtml(e.title) + (ongoing ? ' <span class="nowtag">· on now</span>' : '');
+    const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = eventWhen(e);
+    body.appendChild(title); body.appendChild(meta);
+    const del = document.createElement('button'); del.className = 'del'; del.type = 'button';
     del.innerHTML = '&times;'; del.title = 'remove';
     del.addEventListener('click', function () { onDelete(e.id, e.title); });
-
     li.appendChild(date); li.appendChild(body); li.appendChild(del);
     return li;
   }
 
-  function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  /* ---- status strip: clocks + call window + distance ---- */
+  function renderStatus() {
+    const me = PLACES[MY_NAME], you = PLACES[partnerName()];
+    if (!me || !you) return;
+    // clocks (your city first, then theirs)
+    $('clocks').innerHTML =
+      '<span class="c">' + escapeHtml(me.city) + ' <b>' + timeIn(me.tz) + '</b></span>'
+      + '<span class="sep">·</span>'
+      + '<span class="c">' + escapeHtml(you.city) + ' <b>' + timeIn(you.tz) + '</b></span>';
+
+    // call window
+    const both = awake(me.tz) && awake(you.tz);
+    const cw = $('callwin');
+    if (both) { cw.textContent = 'you are both awake, good time to call ☎️'; cw.className = 'callwin good'; }
+    else {
+      const asleep = !awake(you.tz) ? you.city : me.city;
+      cw.textContent = asleep + ' is probably asleep 🌙'; cw.className = 'callwin';
+    }
+
+    // distance, or "together" if a reunion is on now
+    const dist = $('dist');
+    const together = reunionState().mode === 'together';
+    if (together) {
+      dist.className = 'dist together';
+      dist.innerHTML = 'together right now ❤️';
+    } else {
+      const km = Math.round(haversineKm(me, you) / 10) * 10;
+      dist.className = 'dist';
+      dist.innerHTML = '<span class="city">' + escapeHtml(me.city) + '</span>'
+        + '<span class="line"><span class="plane">✈️</span></span>'
+        + '<span class="city">' + escapeHtml(you.city) + '</span>'
+        + '<span class="km" style="margin-left:4px">' + km.toLocaleString() + ' km</span>';
+    }
+  }
+
+  /* ---- love note ---- */
+  function renderNote() {
+    if (!notesAvailable) { $('note').classList.add('hidden'); return; }
+    $('note').classList.remove('hidden');
+    const theirs = NOTES[partnerName()];
+    const from = $('note-from');
+    if (theirs && theirs.body) {
+      from.innerHTML = '<b>' + escapeHtml(partnerName()) + ':</b> ' + escapeHtml(theirs.body);
+    } else {
+      from.innerHTML = '<span class="empty">no note from ' + escapeHtml(partnerName()) + ' yet</span>';
+    }
+    const mine = NOTES[MY_NAME];
+    if (mine && mine.body && document.activeElement !== $('note-input') && !$('note-input').value) {
+      $('note-input').value = mine.body;
+    }
+  }
+
+  /* ---- days together ---- */
+  function daysSince(dateStr) {
+    const p = dateStr.split('-').map(Number);
+    const then = Date.UTC(p[0], p[1] - 1, p[2]);
+    const n = new Date();
+    const today = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+    return Math.round((today - then) / 86400000);
+  }
+  function prettyDate(dateStr) {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function renderStats() {
+    const together = daysSince(MILESTONES.couple);
+    $('stats').innerHTML =
+      '<span class="big">' + together.toLocaleString() + ' days</span> together ❤️'
+      + '<div class="sub">met ' + prettyDate(MILESTONES.met)
+      + ' · first trip to Paris ' + prettyDate(MILESTONES.paris)
+      + ' · together since ' + prettyDate(MILESTONES.couple) + '</div>';
+  }
+
+  /* ---- per-second tick ---- */
+  let lastClockMin = '';
+  function tick() {
+    tickClock();
+    const stamp = timeIn(PLACES.Peter.tz) + timeIn(PLACES.Molly.tz);
+    if (stamp !== lastClockMin) { lastClockMin = stamp; renderStatus(); }
+  }
+
+  /* ---- .ics export ---- */
+  function icsDate(d) { return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()); }
+  function icsDateUTC(d) {
+    return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate())
+      + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z';
+  }
+  function icsEsc(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+  function downloadICS() {
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//us//calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:us'];
+    EVENTS.forEach(function (e) {
+      L.push('BEGIN:VEVENT');
+      L.push('UID:' + e.id + '@pflo.org');
+      L.push('SUMMARY:' + icsEsc((e.is_reunion ? '❤️ ' : '') + (isYearly(e) ? '🎂 ' : '') + e.title));
+      if (isYearly(e)) {
+        const ref = new Date(e.starts_at);
+        const occ = new Date(new Date().getFullYear(), ref.getUTCMonth(), ref.getUTCDate());
+        L.push('DTSTART;VALUE=DATE:' + icsDate(occ));
+        L.push('RRULE:FREQ=YEARLY');
+      } else if (e.all_day) {
+        const s = new Date(e.starts_at);
+        L.push('DTSTART;VALUE=DATE:' + icsDate(s));
+        const end = e.ends_at ? new Date(e.ends_at) : new Date(e.starts_at);
+        const endPlus = new Date(end); endPlus.setDate(endPlus.getDate() + 1);
+        L.push('DTEND;VALUE=DATE:' + icsDate(endPlus));
+      } else {
+        L.push('DTSTART:' + icsDateUTC(new Date(e.starts_at)));
+        L.push('DTEND:' + icsDateUTC(new Date(e.ends_at || e.starts_at)));
+      }
+      L.push('END:VEVENT');
+    });
+    L.push('END:VCALENDAR');
+    const blob = new Blob([L.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'us.ics';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
 
   /* =========================================================
@@ -607,11 +771,8 @@
   if (sb) {
     sb.auth.getSession().then(function (res) {
       const session = res && res.data && res.data.session;
-      if (session && session.user) {
-        showApp(EMAIL_NAME[session.user.email] || 'you');
-      } else {
-        $('pw').focus();
-      }
+      if (session && session.user) showApp(EMAIL_NAME[session.user.email] || 'you');
+      else $('pw').focus();
     });
   } else {
     $('login-err').textContent = 'could not reach the server, check your connection';
