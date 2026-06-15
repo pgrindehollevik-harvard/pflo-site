@@ -953,7 +953,8 @@
   function renderStatus() {
     const me = placeFor(MY_NAME), you = placeFor(partnerName());
     if (!me.tz || !you.tz) return;
-    const sameCity = me.tz === you.tz;
+    const sameTz = me.tz === you.tz;
+    const together = reunionState().mode === 'together';   // a reunion event happening now = actually together
 
     // clocks (your city first, then theirs)
     $('clocks').innerHTML =
@@ -961,28 +962,35 @@
       + '<span class="sep">·</span>'
       + '<span class="c">' + escapeHtml(you.city) + ' <b>' + timeIn(you.tz) + '</b></span>';
 
-    // call window
-    const cw = $('callwin');
-    if (sameCity) { cw.textContent = 'you are in the same place 🤍'; cw.className = 'callwin good'; }
-    else if (awake(me.tz) && awake(you.tz)) { cw.textContent = 'you are both awake, good time to call ☎️'; cw.className = 'callwin good'; }
-    else { const asleep = !awake(you.tz) ? you.city : me.city; cw.textContent = asleep + ' is probably asleep 🌙'; cw.className = 'callwin'; }
+    const cw = $('callwin'), dist = $('dist');
 
-    // distance, or "together" when in the same city / mid-reunion
-    const dist = $('dist');
-    if (sameCity || reunionState().mode === 'together') {
+    // "together" comes only from your reunion (heart) events, not from matching timezones
+    if (together) {
+      cw.textContent = ''; cw.className = 'callwin';
       dist.className = 'dist together';
-      dist.innerHTML = sameCity ? ('together in ' + escapeHtml(me.city) + ' ❤️') : 'together right now ❤️';
-    } else {
-      let inner = '<span class="city">' + escapeHtml(me.city) + '</span>'
-        + '<span class="line"><span class="plane">✈️</span></span>'
-        + '<span class="city">' + escapeHtml(you.city) + '</span>';
-      if (me.lat != null && you.lat != null) {
-        const km = Math.round(haversineKm(me, you) / 10) * 10;
-        inner += '<span class="km" style="margin-left:4px">' + km.toLocaleString() + ' km</span>';
-      }
-      dist.className = 'dist';
-      dist.innerHTML = inner;
+      dist.innerHTML = 'together right now ❤️';
+      return;
     }
+    // same timezone but no reunion on now: just say so, do not claim you are together
+    if (sameTz) {
+      cw.textContent = 'you are in the same timezone';
+      cw.className = 'callwin good';
+      dist.className = 'dist';
+      dist.innerHTML = '';
+      return;
+    }
+    // apart, in different timezones
+    if (awake(me.tz) && awake(you.tz)) { cw.textContent = 'you are both awake, good time to call ☎️'; cw.className = 'callwin good'; }
+    else { const asleep = !awake(you.tz) ? you.city : me.city; cw.textContent = asleep + ' is probably asleep 🌙'; cw.className = 'callwin'; }
+    let inner = '<span class="city">' + escapeHtml(me.city) + '</span>'
+      + '<span class="line"><span class="plane">✈️</span></span>'
+      + '<span class="city">' + escapeHtml(you.city) + '</span>';
+    if (me.lat != null && you.lat != null) {
+      const km = Math.round(haversineKm(me, you) / 10) * 10;
+      inner += '<span class="km" style="margin-left:4px">' + km.toLocaleString() + ' km</span>';
+    }
+    dist.className = 'dist';
+    dist.innerHTML = inner;
   }
 
   /* ---- love note ---- */
