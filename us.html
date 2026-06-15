@@ -92,6 +92,24 @@
       100%{transform:translateY(-220px) scale(1.1);opacity:0}
     }
 
+    /* memories slideshow */
+    .memories{position:relative;margin-bottom:20px;display:none}
+    .memories .frame{position:relative;width:100%;height:220px;background:#f3f1ec;overflow:hidden;border:1px solid var(--soft)}
+    .memories .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease;cursor:pointer}
+    .memories .frame img.on{opacity:1}
+    .memories .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:5px}
+
+    /* event thumbnail + photo button */
+    .ev-row .thumb{flex:0 0 auto;width:34px;height:34px;object-fit:cover;border:1px solid var(--soft);cursor:pointer;align-self:center}
+    .photo-btn{flex:0 0 auto;background:none;border:none;color:var(--muted);font-size:13px;line-height:1;padding:2px 4px;align-self:center}
+    .photo-btn:hover{color:var(--accent)}
+    .photo-btn:disabled{opacity:.5;cursor:default}
+
+    /* lightbox */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+    .lightbox.on{display:flex}
+    .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+
     /* add form */
     .add{border:1px solid var(--soft);background:#fff;padding:14px;margin-bottom:22px}
     .add .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
@@ -197,6 +215,12 @@
         <div class="ev" id="hero-ev"></div>
       </div>
 
+      <!-- rotating memories -->
+      <div class="memories" id="memories">
+        <div class="frame" id="mem-frame"></div>
+        <div class="cap" id="mem-cap"></div>
+      </div>
+
       <!-- add event -->
       <form id="add" class="add" autocomplete="off">
         <div class="row">
@@ -245,6 +269,9 @@
           <a href="/index.html">pflo.org</a>
         </div>
       </div>
+
+      <input type="file" id="photo-input" accept="image/*" class="hidden" />
+      <div class="lightbox" id="lightbox"><img id="lightbox-img" alt="" /></div>
     </section>
 
   </main>
@@ -437,6 +464,46 @@
       .then(function (res) { if (res.error) throw res.error; });
   }
 
+  /* ---- photos (private Supabase Storage bucket "photos") ---- */
+  function resizeImage(file, maxDim) {
+    return new Promise(function (resolve, reject) {
+      const img = new Image();
+      img.onload = function () {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        cv.toBlob(function (b) { b ? resolve(b) : reject(new Error('encode failed')); }, 'image/jpeg', 0.85);
+        URL.revokeObjectURL(img.src);
+      };
+      img.onerror = function () { reject(new Error('could not read image')); };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  function uploadPhoto(eventId, file) {
+    return resizeImage(file, 1600).then(function (blob) {
+      const path = eventId + '.jpg';
+      return sb.storage.from('photos').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
+        .then(function (res) {
+          if (res.error) throw res.error;
+          return sb.from('events').update({ photo_path: path }).eq('id', eventId)
+            .then(function (r) { if (r.error) throw r.error; return path; });
+        });
+    });
+  }
+  function maybeSignPhotos() {
+    const paths = EVENTS.filter(function (e) { return e.photo_path; }).map(function (e) { return e.photo_path; });
+    if (!paths.length) { PHOTO_URLS = {}; return Promise.resolve(); }
+    const need = paths.some(function (p) { return !PHOTO_URLS[p]; }) || (Date.now() - lastSignAt > 3000000);
+    if (!need) return Promise.resolve();
+    return sb.storage.from('photos').createSignedUrls(paths, 3600).then(function (res) {
+      if (res.error) throw res.error;
+      const next = {};
+      (res.data || []).forEach(function (d) { if (d.signedUrl) next[d.path] = d.signedUrl; });
+      PHOTO_URLS = next; lastSignAt = Date.now();
+    }).catch(function (err) { console.warn('photo signing failed (bucket set up?)', err && err.message); });
+  }
+
   /* =========================================================
      app
      ========================================================= */
@@ -445,6 +512,10 @@
   let notesAvailable = true;
   let PRESENCE = {};        // name -> {tz, updated_at}
   let presenceAvailable = true;
+  let PHOTO_URLS = {};      // storage path -> signed url
+  let lastSignAt = 0;
+  let pendingPhotoEvent = null;
+  let memList = [], memIdx = 0, memTimer = null, lastMemKey = '';
   let appReady = false;
 
   function initApp() {
@@ -457,6 +528,8 @@
     $('note-save').addEventListener('click', onSaveNote);
     $('note-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') onSaveNote(); });
     $('ics-link').addEventListener('click', function (e) { e.preventDefault(); downloadICS(); });
+    $('photo-input').addEventListener('change', onPhotoPicked);
+    $('lightbox').addEventListener('click', closeLightbox);
 
     const t = new Date();
     $('ev-date').value = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
@@ -500,7 +573,10 @@
 
   function refresh() {
     if (!sb) return;
-    loadEvents().then(function (rows) { EVENTS = rows || []; renderAll(); renderStatus(); })
+    loadEvents().then(function (rows) {
+      EVENTS = rows || [];
+      return maybeSignPhotos();
+    }).then(function () { renderAll(); renderStatus(); renderMemories(); })
       .catch(function (err) { console.error('load failed', err); });
   }
   function refreshNotes() {
@@ -690,12 +766,79 @@
     title.innerHTML = icon + escapeHtml(e.title) + (ongoing ? ' <span class="nowtag">· on now</span>' : '');
     const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = eventWhen(e);
     body.appendChild(title); body.appendChild(meta);
+    li.appendChild(date); li.appendChild(body);
+
+    const url = e.photo_path ? PHOTO_URLS[e.photo_path] : null;
+    if (url) {
+      const thumb = document.createElement('img');
+      thumb.className = 'thumb'; thumb.src = url; thumb.alt = e.title;
+      thumb.addEventListener('click', function () { openLightbox(url); });
+      li.appendChild(thumb);
+    }
+    const pbtn = document.createElement('button');
+    pbtn.className = 'photo-btn'; pbtn.type = 'button';
+    pbtn.textContent = '📷'; pbtn.title = url ? 'change photo' : 'add a photo';
+    pbtn.addEventListener('click', function () { onPhotoBtn(e.id); });
+    li.appendChild(pbtn);
+
     const del = document.createElement('button'); del.className = 'del'; del.type = 'button';
     del.innerHTML = '&times;'; del.title = 'remove';
     del.addEventListener('click', function () { onDelete(e.id, e.title); });
-    li.appendChild(date); li.appendChild(body); li.appendChild(del);
+    li.appendChild(del);
     return li;
   }
+
+  /* ---- photo button + lightbox + memories slideshow ---- */
+  function onPhotoBtn(eventId) {
+    pendingPhotoEvent = eventId;
+    const inp = $('photo-input'); inp.value = ''; inp.click();
+  }
+  function onPhotoPicked() {
+    const inp = $('photo-input');
+    const file = inp.files && inp.files[0];
+    if (!file || !pendingPhotoEvent) return;
+    const id = pendingPhotoEvent; pendingPhotoEvent = null;
+    uploadPhoto(id, file).then(function (path) {
+      const ev = EVENTS.filter(function (e) { return e.id === id; })[0];
+      if (ev) ev.photo_path = path;
+      return maybeSignPhotos();
+    }).then(function () { renderAll(); renderMemories(); })
+      .catch(function (err) {
+        console.error('photo upload failed', err);
+        alert('Could not save that photo. Make sure the photos bucket is set up.');
+      });
+  }
+  function openLightbox(url) { $('lightbox-img').src = url; $('lightbox').classList.add('on'); }
+  function closeLightbox() { $('lightbox').classList.remove('on'); $('lightbox-img').src = ''; }
+
+  function renderMemories() {
+    memList = EVENTS.filter(function (e) { return e.photo_path && PHOTO_URLS[e.photo_path]; })
+      .sort(function (a, b) { return occStart(b) - occStart(a); });
+    const wrap = $('memories'), frame = $('mem-frame');
+    if (!memList.length) { wrap.style.display = 'none'; if (memTimer) { clearInterval(memTimer); memTimer = null; } frame.innerHTML = ''; lastMemKey = ''; return; }
+    wrap.style.display = 'block';
+    const key = memList.map(function (e) { return e.id + ':' + PHOTO_URLS[e.photo_path]; }).join('|');
+    if (key === lastMemKey) return; // unchanged, let rotation continue
+    lastMemKey = key;
+    frame.innerHTML = '';
+    memList.forEach(function (e, i) {
+      const img = document.createElement('img');
+      img.src = PHOTO_URLS[e.photo_path]; img.alt = e.title;
+      if (i === 0) img.classList.add('on');
+      img.addEventListener('click', function () { openLightbox(PHOTO_URLS[e.photo_path]); });
+      frame.appendChild(img);
+    });
+    memIdx = 0; showMem(0);
+    if (memTimer) clearInterval(memTimer);
+    if (memList.length > 1) memTimer = setInterval(nextMem, 5000);
+  }
+  function showMem(i) {
+    const imgs = $('mem-frame').querySelectorAll('img');
+    imgs.forEach(function (im, j) { im.classList.toggle('on', j === i); });
+    const e = memList[i];
+    $('mem-cap').textContent = e ? (e.title + ' · ' + new Date(occStart(e)).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })) : '';
+  }
+  function nextMem() { if (!memList.length) return; memIdx = (memIdx + 1) % memList.length; showMem(memIdx); }
 
   /* ---- status strip: clocks + call window + distance ---- */
   function renderStatus() {
