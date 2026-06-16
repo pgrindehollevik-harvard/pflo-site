@@ -6,7 +6,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://hqkbqztcsxaafmshbyrb.supabase.co';
 const SERVICE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM = process.env.REMINDER_FROM || 'Us <reminders@pflo.org>';
+const FROM = process.env.REMINDER_FROM || 'oss <reminders@pflo.org>';
 const TO = (process.env.REMINDER_TO ||
   'pgrindehollevik@g.harvard.edu,Molly.kvam.mccarthy@gmail.com')
   .split(',').map(s => s.trim()).filter(Boolean);
