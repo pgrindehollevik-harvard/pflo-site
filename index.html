@@ -169,7 +169,7 @@
         <h2 class="label">ancient</h2>
         <div class="content">
           <p><a href="cv.pdf">curriculum vitae</a></p>
-          <p><small>pgrindehollevik [at] g.harvard.edu · <a href="https://github.com/pgrindehollevik-harvard" target="_blank" rel="noopener">github</a><span id="gh-contrib"></span></small></p>
+          <p><small>pgrindehollevik [at] g.harvard.edu · <a href="https://github.com/pgrindehollevik-harvard" target="_blank" rel="noopener">github</a><span id="gh-contrib"></span><span id="claude-burn"></span></small></p>
           <p><small>© <span id="year"></span> Peter Flo</small></p>
         </div>
       </div>
@@ -211,6 +211,41 @@
             if (p < 1) requestAnimationFrame(tick);
           }
           requestAnimationFrame(tick);
+        })
+        .catch(function () {});
+    })();
+
+    (function () {
+      var el = document.getElementById('claude-burn');
+      if (!el) return;
+      function fmtTokens(n) {
+        if (n >= 1e9) return (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+        if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1e3) return Math.round(n / 1e3) + 'K';
+        return String(Math.round(n));
+      }
+      function fmtCost(n) {
+        if (n >= 1000) return '$' + (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        return '$' + Math.round(n);
+      }
+      fetch('claude-tokens.json')
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (d) {
+          var tokens = d && d.totalTokens, cost = d && d.totalCost;
+          if (!tokens || tokens < 1) return;
+          function render(e) {
+            el.textContent = ' · ' + fmtTokens(e * tokens) + ' Claude tokens · ' + fmtCost(e * cost);
+          }
+          var start = null, dur = 900;
+          function tick(t) {
+            if (start === null) start = t;
+            var p = Math.min((t - start) / dur, 1);
+            render(1 - Math.pow(1 - p, 3));
+            if (p < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+          // guarantee the final value lands even if rAF is throttled (background tab)
+          setTimeout(function () { render(1); }, dur + 120);
         })
         .catch(function () {});
     })();
