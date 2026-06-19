@@ -12,6 +12,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 OUT="$REPO_ROOT/claude-tokens.json"
 
+cd "$REPO_ROOT"
+
+# Sync with the remote before regenerating. main may have advanced from another
+# checkout (e.g. ~/Documents/pflo edits), so this keeps our push fast-forwardable
+# and the job self-healing rather than failing on a non-ff push.
+if [ "${COMMIT:-1}" = "1" ] && [ "${PUSH:-1}" = "1" ]; then
+  git pull --rebase --autostash origin "$(git rev-parse --abbrev-ref HEAD)" >/dev/null 2>&1 || true
+fi
+
 # ccusage reads ~/.claude/projects/*.jsonl and aggregates token usage.
 USAGE_JSON="$(npx ccusage@latest --json 2>/dev/null)"
 
