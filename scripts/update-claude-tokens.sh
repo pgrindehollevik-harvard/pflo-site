@@ -22,12 +22,18 @@ if [ "${COMMIT:-1}" = "1" ] && [ "${PUSH:-1}" = "1" ]; then
 fi
 
 # ccusage reads ~/.claude/projects/*.jsonl and aggregates token usage.
-USAGE_JSON="$(npx ccusage@latest --json 2>/dev/null)"
+# Write to a temp file and pass its path as an argument: the python program
+# below is fed on stdin via the heredoc, so the usage JSON can't also go on
+# stdin (the last stdin redirection would win and clobber the program).
+USAGE_FILE="$(mktemp)"
+trap 'rm -f "$USAGE_FILE"' EXIT
+npx ccusage@latest --json 2>/dev/null > "$USAGE_FILE"
 
-UPDATED="$(date +%Y-%m-%d)" python3 - "$OUT" <<'PY' <<<"$USAGE_JSON"
+UPDATED="$(date +%Y-%m-%d)" python3 - "$OUT" "$USAGE_FILE" <<'PY'
 import json, os, sys
-out_path = sys.argv[1]
-data = json.load(sys.stdin)
+out_path, usage_path = sys.argv[1], sys.argv[2]
+with open(usage_path) as f:
+    data = json.load(f)
 totals = data["totals"]
 payload = {
     "totalTokens": int(totals["totalTokens"]),
