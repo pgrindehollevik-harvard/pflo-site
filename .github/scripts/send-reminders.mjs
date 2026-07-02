@@ -83,7 +83,7 @@ let nextReunion = null;
 for (const ev of events) {
   if (ev.recurrence === 'yearly') {
     const b = birthdayInfo(ev);
-    if (b.daysAway >= 0 && b.daysAway <= BIRTHDAY_LEAD_DAYS) birthdays.push({ ev, ...b });
+    if (b.daysAway === 0 || b.daysAway === BIRTHDAY_LEAD_DAYS) birthdays.push({ ev, ...b });
     continue;
   }
   const diff = eventDayNum(ev) - todayNum;
