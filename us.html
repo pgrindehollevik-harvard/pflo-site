@@ -96,6 +96,24 @@
       100%{transform:translateY(-220px) scale(1.1);opacity:0}
     }
 
+    /* flight tracker (expands under an event row) */
+    .fl-detail{padding:8px 0 12px;border-bottom:1px solid #eee}
+    .photo-btn.on-air{color:var(--accent)}
+    .flight{border:1px solid var(--soft);background:#fff;padding:12px;margin-bottom:10px}
+    .fl-detail .flight:last-child{margin-bottom:0}
+    .flight .fl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+    .flight .fl-who{font-size:13px;font-weight:700}
+    .flight .fl-no{font-size:11px;color:var(--muted)}
+    .flight .fl-bar{position:relative;margin:16px 0 4px;height:1px;border-top:1px dashed #bbb}
+    .flight .fl-bar .fl-plane{position:absolute;top:-9px;font-size:12px;transform:translateX(-50%)}
+    .flight .fl-codes{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+    .flight .fl-codes b{color:var(--text)}
+    .flight .fl-times{font-size:11px;color:var(--muted);margin-top:6px}
+    .flight .fl-status{font-size:12px;margin-top:6px}
+    .flight.inair{border-color:var(--accent);background:var(--softbg)}
+    .flight.inair .fl-status{color:var(--accent);font-weight:700}
+    .flight.landed{opacity:.55}
+
     /* memories slideshow */
     .memories{position:relative;margin-bottom:20px;display:none}
     .memories .frame{position:relative;width:100%;height:min(64vh,440px);background:#ece7dc;overflow:hidden;border:1px solid var(--soft)}
@@ -333,6 +351,31 @@
   };
   const WAKING = { start: 8, end: 23 }; // local hours counted as "awake"
 
+  /* flights when we fly to each other. Add the next trip here: times are the
+     local departure/arrival times with the airport's UTC offset, straight off
+     the booking. A flight shows up as a ✈️ button on any calendar event whose
+     dates overlap it; tap the plane for details and live tracking.
+     For connections, list both numbers in `flight`, name the stop in `via`,
+     and put the flight number worth following live in `track`. */
+  const FLIGHTS = [
+    { who: 'Peter', flight: 'DL5829 + DL7691', operator: 'Delta Connection + SAS',
+      via: 'EWR', track: 'DL7691',
+      from: { code: 'BOS', city: 'Boston', tz: 'America/New_York' },
+      dest: { code: 'OSL', city: 'Oslo', tz: 'Europe/Oslo' },
+      dep: '2026-12-18T13:10:00-05:00',
+      arr: '2026-12-19T08:05:00+01:00' },
+    { who: 'Peter', flight: 'DL8759', operator: 'Air France',
+      from: { code: 'SFO', city: 'San Francisco', tz: 'America/Los_Angeles' },
+      dest: { code: 'CDG', city: 'Paris', tz: 'Europe/Paris' },
+      dep: '2026-08-11T20:10:00-07:00',
+      arr: '2026-08-12T15:50:00+02:00' },
+    { who: 'Peter', flight: 'DL8762', operator: 'Air France',
+      from: { code: 'CDG', city: 'Paris', tz: 'Europe/Paris' },
+      dest: { code: 'SFO', city: 'San Francisco', tz: 'America/Los_Angeles' },
+      dep: '2026-08-24T15:40:00+02:00',
+      arr: '2026-08-24T18:00:00-07:00' }
+  ];
+
   /* your milestones (for the days-together counter) */
   const MILESTONES = {
     met:    '2024-12-16',
@@ -561,6 +604,7 @@
   let pendingPhotoEvent = null;
   let currentLightbox = null;
   let memList = [], memIdx = 0, memTimer = null, lastMemKey = '';
+  let openFlights = {};     // event id -> flight details expanded
   let appReady = false;
 
   function initApp() {
@@ -795,16 +839,26 @@
     past.sort(function (a, b) { return occStart(b) - occStart(a); });
 
     const upEl = $('upcoming'); upEl.innerHTML = '';
-    upcoming.forEach(function (e) { upEl.appendChild(row(e, false, now)); });
+    upcoming.forEach(function (e) { appendRow(upEl, e, false, now); });
     $('up-empty').classList.toggle('hidden', upcoming.length > 0);
 
     const bEl = $('birthdays'); bEl.innerHTML = '';
-    birthdays.forEach(function (e) { bEl.appendChild(row(e, false, now)); });
+    birthdays.forEach(function (e) { appendRow(bEl, e, false, now); });
     $('bday-wrap').classList.toggle('hidden', birthdays.length === 0);
 
     const pEl = $('past'); pEl.innerHTML = '';
-    past.forEach(function (e) { pEl.appendChild(row(e, true, now)); });
+    past.forEach(function (e) { appendRow(pEl, e, true, now); });
     $('past-wrap').classList.toggle('hidden', past.length === 0);
+  }
+  function appendRow(ul, e, isPast, now) {
+    ul.appendChild(row(e, isPast, now));
+    if (!openFlights[e.id]) return;
+    const fls = flightsFor(e);
+    if (!fls.length) return;
+    const li = document.createElement('li');
+    li.className = 'fl-detail';
+    li.innerHTML = fls.map(function (f) { return flightCard(f, now); }).join('');
+    ul.appendChild(li);
   }
   function row(e, isPast, now) {
     const ongoing = !isYearly(e) && occStart(e) <= now && now <= occEnd(e);
@@ -826,6 +880,19 @@
       thumb.addEventListener('click', function () { openLightbox({ url: url, type: 'event', id: e.id, path: e.photo_path }); });
       li.appendChild(thumb);
     }
+    const fls = flightsFor(e);
+    if (fls.length) {
+      const fbtn = document.createElement('button');
+      fbtn.className = 'photo-btn'; fbtn.type = 'button';
+      fbtn.textContent = '✈️';
+      fbtn.title = openFlights[e.id] ? 'hide flight details' : 'flight details';
+      if (fls.some(function (f) { return now >= new Date(f.dep).getTime() && now <= new Date(f.arr).getTime(); })) {
+        fbtn.classList.add('on-air');
+      }
+      fbtn.addEventListener('click', function () { openFlights[e.id] = !openFlights[e.id]; renderLists(); });
+      li.appendChild(fbtn);
+    }
+
     const pbtn = document.createElement('button');
     pbtn.className = 'photo-btn'; pbtn.type = 'button';
     pbtn.textContent = '📷'; pbtn.title = url ? 'change photo' : 'add a photo';
@@ -1000,6 +1067,50 @@
     dist.innerHTML = inner;
   }
 
+  /* ---- flight tracker ---- */
+  function fmtAirportTime(iso, tz) {
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone: tz, weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    }).format(new Date(iso));
+  }
+  function durShort(ms) {
+    const m = Math.max(0, Math.floor(ms / 60000));
+    const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+    if (d) return d + 'd ' + h + 'h';
+    if (h) return h + 'h ' + pad(mm) + 'm';
+    return mm + 'm';
+  }
+  function flightCard(f, now) {
+    const dep = new Date(f.dep).getTime(), arr = new Date(f.arr).getTime();
+    let pct = 0, cls = '', status = '';
+    if (now < dep) { status = 'departs in ' + durShort(dep - now); }
+    else if (now <= arr) {
+      pct = (now - dep) / (arr - dep); cls = ' inair';
+      status = 'in the air · ' + Math.round(pct * 100) + '% of the way · lands in ' + durShort(arr - now);
+    } else { pct = 1; cls = ' landed'; status = 'landed 🛬'; }
+    const link = 'https://www.flightaware.com/live/flight/' + encodeURIComponent((f.track || f.flight).replace(/\s+/g, ''));
+    return '<div class="flight' + cls + '">'
+      + '<div class="fl-top"><span class="fl-who">✈️ ' + escapeHtml(f.who) + ' flies to ' + escapeHtml(f.dest.city) + '</span>'
+      + '<span class="fl-no">' + escapeHtml(f.flight) + (f.operator ? ' · ' + escapeHtml(f.operator) : '') + '</span></div>'
+      + '<div class="fl-bar"><span class="fl-plane" style="left:' + (2 + pct * 96) + '%">✈️</span></div>'
+      + '<div class="fl-codes"><span><b>' + escapeHtml(f.from.code) + '</b> ' + escapeHtml(f.from.city) + '</span>'
+      + (f.via ? '<span>via ' + escapeHtml(f.via) + '</span>' : '')
+      + '<span>' + escapeHtml(f.dest.city) + ' <b>' + escapeHtml(f.dest.code) + '</b></span></div>'
+      + '<div class="fl-times">departs ' + fmtAirportTime(f.dep, f.from.tz) + ' · lands ' + fmtAirportTime(f.arr, f.dest.tz) + ' · local times</div>'
+      + '<div class="fl-status">' + status + ' · <a href="' + link + '" target="_blank" rel="noopener">follow live</a></div>'
+      + '</div>';
+  }
+  /* flights whose departure falls in (or within a day and a half of) an event's dates */
+  function flightsFor(e) {
+    if (isYearly(e)) return [];
+    const buf = 129600000; // 1.5 days
+    const s = occStart(e) - buf, en = occEnd(e) + buf;
+    return FLIGHTS.filter(function (f) {
+      const d = new Date(f.dep).getTime();
+      return d >= s && d <= en;
+    }).sort(function (a, b) { return new Date(a.dep) - new Date(b.dep); });
+  }
+
   /* ---- love note ---- */
   function renderNote() {
     if (!notesAvailable) { $('note').classList.add('hidden'); return; }
@@ -1041,7 +1152,7 @@
   function tick() {
     tickClock();
     const stamp = timeIn(placeFor(MY_NAME).tz) + timeIn(placeFor(partnerName()).tz);
-    if (stamp !== lastClockMin) { lastClockMin = stamp; renderStatus(); }
+    if (stamp !== lastClockMin) { lastClockMin = stamp; renderStatus(); renderLists(); }
   }
 
   /* ---- .ics export ---- */
