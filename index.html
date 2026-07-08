@@ -224,17 +224,13 @@
         if (n >= 1e3) return Math.round(n / 1e3) + 'K';
         return String(Math.round(n));
       }
-      function fmtCost(n) {
-        if (n >= 1000) return '$' + (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-        return '$' + Math.round(n);
-      }
       fetch('claude-tokens.json')
         .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
         .then(function (d) {
-          var tokens = d && d.totalTokens, cost = d && d.totalCost;
+          var tokens = d && d.totalTokens;
           if (!tokens || tokens < 1) return;
           function render(e) {
-            el.textContent = ' · ' + fmtTokens(e * tokens) + ' claude tokens · ~' + fmtCost(e * cost) + ' (lol)';
+            el.textContent = ' · ' + fmtTokens(e * tokens) + ' claude tokens';
           }
           var start = null, dur = 900;
           function tick(t) {
