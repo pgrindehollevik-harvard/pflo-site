@@ -245,8 +245,9 @@
         <div class="mem-add"><a href="#" id="add-photos-link">+ add photos</a></div>
       </div>
 
-      <!-- add event -->
-      <form id="add" class="add" autocomplete="off">
+      <!-- add event (collapsed behind the link) -->
+      <button id="add-toggle" class="linkbtn" type="button" style="display:block;margin-bottom:22px">+ add event</button>
+      <form id="add" class="add hidden" autocomplete="off">
         <div class="row">
           <input id="ev-title" type="text" placeholder="what is happening? (e.g. Molly flies to Boston)" maxlength="120" required />
         </div>
@@ -286,8 +287,8 @@
         </div>
       </div>
 
-      <!-- love note -->
-      <div class="note" id="note">
+      <!-- love note (off for now, flip NOTES_ON to bring it back) -->
+      <div class="note hidden" id="note">
         <div class="from" id="note-from"></div>
         <div class="mine">
           <input id="note-input" type="text" maxlength="140" placeholder="leave a note..." />
@@ -381,6 +382,9 @@
       dep: '2026-08-24T15:40:00+02:00',
       arr: '2026-08-24T18:00:00-07:00' }
   ];
+
+  /* love notes are paused for now; set to true to bring the box back */
+  const NOTES_ON = false;
 
   /* your milestones (for the days-together counter) */
   const MILESTONES = {
@@ -636,6 +640,11 @@
     $('lb-remove').addEventListener('click', onLightboxRemove);
     $('bday-more').addEventListener('click', function () { showAllBdays = !showAllBdays; renderLists(); });
     $('past-toggle').addEventListener('click', function () { showPast = !showPast; renderLists(); });
+    $('add-toggle').addEventListener('click', function () {
+      const hidden = $('add').classList.toggle('hidden');
+      $('add-toggle').textContent = hidden ? '+ add event' : 'close';
+      if (!hidden) $('ev-title').focus();
+    });
 
     const t = new Date();
     $('ev-date').value = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
@@ -689,7 +698,7 @@
       .catch(function (err) { console.error('load failed', err); });
   }
   function refreshNotes() {
-    if (!sb) return;
+    if (!NOTES_ON || !sb) return;
     loadNotes().then(function (rows) {
       notesAvailable = true; NOTES = {};
       (rows || []).forEach(function (r) { NOTES[r.author] = r; });
@@ -726,7 +735,8 @@
       if (created && created.length) EVENTS.push(created[0]);
       $('ev-title').value = ''; $('ev-time').value = ''; $('ev-end-date').value = ''; $('ev-end-time').value = '';
       $('ev-reunion').checked = false; $('ev-yearly').checked = false; syncYearlyUI();
-      renderAll(); renderStatus(); $('ev-title').focus();
+      $('add').classList.add('hidden'); $('add-toggle').textContent = '+ add event';
+      renderAll(); renderStatus();
     }).catch(function (err) { console.error('add failed', err); $('add-err').textContent = 'could not save that one, try again'; })
       .then(function () { $('add-btn').disabled = false; });
   }
