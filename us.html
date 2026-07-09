@@ -117,8 +117,8 @@
     /* memories slideshow */
     .memories{position:relative;margin-bottom:20px;display:none}
     .memories .frame{position:relative;width:100%;height:min(64vh,440px);background:#ece7dc;overflow:hidden;border:1px solid var(--soft)}
-    .memories .frame .mem-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease}
-    .memories .frame .mem-slide.on{opacity:1}
+    .memories .frame .mem-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
+    .memories .frame .mem-slide.on{opacity:1;pointer-events:auto}
     .memories .frame .mem-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(22px) brightness(.9);transform:scale(1.15)}
     .memories .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;cursor:pointer}
     .memories .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:5px}
@@ -155,6 +155,8 @@
     /* event list */
     .grouphd{color:var(--accent);font-weight:700;font-size:13px;margin:18px 0 6px;
       text-transform:lowercase;letter-spacing:.03em}
+    .grouphd-btn{display:block;background:none;border:none;padding:0;text-align:left;width:100%}
+    .showmore{display:block;margin-top:6px}
     .ev-list{list-style:none;margin:0;padding:0}
     .ev-row{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid #eee}
     .ev-row .date{flex:0 0 84px;color:var(--accent);font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
@@ -213,7 +215,6 @@
             <span class="label" style="margin:0;">oss</span>
             <span class="stat-head" id="stats-head"></span>
           </div>
-          <div class="stat-sub" id="stats-sub"></div>
         </div>
         <span class="who">hi <b id="who-name"></b> &middot; <button id="signout" class="linkbtn">sign out</button></span>
       </div>
@@ -233,7 +234,6 @@
           <div class="unit"><div class="num" id="c-days">0</div><div class="lbl">days</div></div>
           <div class="unit"><div class="num" id="c-hrs">0</div><div class="lbl">hours</div></div>
           <div class="unit"><div class="num" id="c-min">0</div><div class="lbl">min</div></div>
-          <div class="unit"><div class="num" id="c-sec">0</div><div class="lbl">sec</div></div>
         </div>
         <div class="ev" id="hero-ev"></div>
       </div>
@@ -277,10 +277,11 @@
         <div id="bday-wrap" class="hidden">
           <div class="grouphd" style="margin-top:22px;">birthdays</div>
           <ul id="birthdays" class="ev-list"></ul>
+          <button id="bday-more" class="linkbtn showmore hidden" type="button"></button>
         </div>
 
         <div id="past-wrap" class="hidden">
-          <div class="grouphd" style="margin-top:22px;">already happened</div>
+          <button id="past-toggle" class="grouphd grouphd-btn" type="button" style="margin-top:22px;"></button>
           <ul id="past" class="ev-list"></ul>
         </div>
       </div>
@@ -295,8 +296,9 @@
         <div class="saved" id="note-saved"></div>
       </div>
 
-      <!-- footer: actions -->
+      <!-- footer: milestones + actions -->
       <div class="footer">
+        <div class="stat-sub" id="stats-sub" style="margin-top:0"></div>
         <div class="acts">
           <a href="#" id="ics-link">add these to your phone calendar</a>
           <a href="/index.html">pflo.org</a>
@@ -349,7 +351,11 @@
     'America/Chicago':     { city: 'Chicago',       lat: 41.8781, lon: -87.6298 },
     'America/Los_Angeles': { city: 'San Francisco', lat: 37.7749, lon: -122.4194 }
   };
-  const WAKING = { start: 8, end: 23 }; // local hours counted as "awake"
+  /* local hours counted as "awake": Peter sleeps 22:00-06:00, Molly 23:00-07:00 */
+  const WAKING = {
+    Peter: { start: 6, end: 22 },
+    Molly: { start: 7, end: 23 }
+  };
 
   /* flights when we fly to each other. Add the next trip here: times are the
      local departure/arrival times with the airport's UTC offset, straight off
@@ -449,7 +455,11 @@
   function timeIn(tz) {
     return new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit' }).format(new Date());
   }
-  function awake(tz) { const h = hourIn(tz); return h >= WAKING.start && h < WAKING.end; }
+  function awake(name) {
+    const w = WAKING[name] || { start: 7, end: 23 };
+    const h = hourIn(placeFor(name).tz);
+    return h >= w.start && h < w.end;
+  }
   function haversineKm(a, b) {
     const R = 6371, toR = Math.PI / 180;
     const dLat = (b.lat - a.lat) * toR, dLon = (b.lon - a.lon) * toR;
@@ -605,6 +615,8 @@
   let currentLightbox = null;
   let memList = [], memIdx = 0, memTimer = null, lastMemKey = '';
   let openFlights = {};     // event id -> flight details expanded
+  let showAllBdays = false; // birthdays list expanded past the first 3
+  let showPast = false;     // "already happened" section expanded
   let appReady = false;
 
   function initApp() {
@@ -622,6 +634,8 @@
     $('add-photos-link').addEventListener('click', function (e) { e.preventDefault(); const inp = $('gallery-input'); inp.value = ''; inp.click(); });
     $('lightbox').addEventListener('click', function (e) { if (e.target === this) closeLightbox(); });
     $('lb-remove').addEventListener('click', onLightboxRemove);
+    $('bday-more').addEventListener('click', function () { showAllBdays = !showAllBdays; renderLists(); });
+    $('past-toggle').addEventListener('click', function () { showPast = !showPast; renderLists(); });
 
     const t = new Date();
     $('ev-date').value = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
@@ -802,7 +816,6 @@
     $('c-days').textContent = Math.floor(s / 86400);
     $('c-hrs').textContent = pad(Math.floor((s % 86400) / 3600));
     $('c-min').textContent = pad(Math.floor((s % 3600) / 60));
-    $('c-sec').textContent = pad(s % 60);
   }
 
   /* floating hearts while together */
@@ -843,11 +856,15 @@
     $('up-empty').classList.toggle('hidden', upcoming.length > 0);
 
     const bEl = $('birthdays'); bEl.innerHTML = '';
-    birthdays.forEach(function (e) { appendRow(bEl, e, false, now); });
+    (showAllBdays ? birthdays : birthdays.slice(0, 3)).forEach(function (e) { appendRow(bEl, e, false, now); });
+    const bMore = $('bday-more');
+    bMore.classList.toggle('hidden', birthdays.length <= 3);
+    bMore.textContent = showAllBdays ? 'show fewer' : 'show all ' + birthdays.length;
     $('bday-wrap').classList.toggle('hidden', birthdays.length === 0);
 
     const pEl = $('past'); pEl.innerHTML = '';
-    past.forEach(function (e) { appendRow(pEl, e, true, now); });
+    if (showPast) past.forEach(function (e) { appendRow(pEl, e, true, now); });
+    $('past-toggle').textContent = 'already happened (' + past.length + ') ' + (showPast ? '▾' : '▸');
     $('past-wrap').classList.toggle('hidden', past.length === 0);
   }
   function appendRow(ul, e, isPast, now) {
@@ -1054,8 +1071,8 @@
       return;
     }
     // apart, in different timezones
-    if (awake(me.tz) && awake(you.tz)) { cw.textContent = 'you are both awake, good time to call ☎️'; cw.className = 'callwin good'; }
-    else { const asleep = !awake(you.tz) ? you.city : me.city; cw.textContent = asleep + ' is probably asleep 🌙'; cw.className = 'callwin'; }
+    if (awake(MY_NAME) && awake(partnerName())) { cw.textContent = 'you are both awake, good time to call ☎️'; cw.className = 'callwin good'; }
+    else { const asleep = !awake(partnerName()) ? you.city : me.city; cw.textContent = asleep + ' is probably asleep 🌙'; cw.className = 'callwin'; }
     let inner = '<span class="city">' + escapeHtml(me.city) + '</span>'
       + '<span class="line"><span class="plane">✈️</span></span>'
       + '<span class="city">' + escapeHtml(you.city) + '</span>';
