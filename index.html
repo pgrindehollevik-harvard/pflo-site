@@ -168,7 +168,7 @@
       <div class="section">
         <div class="content">
           <p><small>© <span id="year"></span> Peter Flo</small></p>
-          <p><small><span id="gh-contrib"></span> <a href="https://github.com/pgrindehollevik-harvard" target="_blank" rel="noopener">gh</a> contributions<span id="claude-burn"></span> past yr</small></p>
+          <p><small>meaningless stats: <span id="gh-contrib"></span> <a href="https://github.com/pgrindehollevik-harvard" target="_blank" rel="noopener">gh</a> contributions<span id="claude-burn"></span> past yr</small></p>
         </div>
       </div>
     </section>
@@ -224,13 +224,18 @@
         if (n >= 1e3) return Math.round(n / 1e3) + 'K';
         return String(Math.round(n));
       }
-      fetch('claude-tokens.json')
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-        .then(function (d) {
-          var tokens = d && d.totalTokens;
+      function grab(url) {
+        return fetch(url)
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) { return (d && d.totalTokens) || 0; })
+          .catch(function () { return 0; });
+      }
+      Promise.all([grab('claude-tokens.json'), grab('openai-tokens.json')])
+        .then(function (parts) {
+          var tokens = parts[0] + parts[1];
           if (!tokens || tokens < 1) return;
           function render(e) {
-            el.textContent = ' · ' + fmtTokens(e * tokens) + ' claude tokens';
+            el.textContent = ' · ' + fmtTokens(e * tokens) + ' llm tokens';
           }
           var start = null, dur = 900;
           function tick(t) {
