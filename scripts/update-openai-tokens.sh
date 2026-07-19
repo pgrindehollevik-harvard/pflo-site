@@ -62,8 +62,14 @@ while True:
         base + "?" + urllib.parse.urlencode(params),
         headers={"Authorization": "Bearer " + key},
     )
-    with urllib.request.urlopen(req, timeout=60) as r:
-        data = json.load(r)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            data = json.load(r)
+    except urllib.error.HTTPError as e:
+        # Surface OpenAI's own explanation; the body never contains the key.
+        body = e.read().decode("utf-8", "replace")[:600]
+        print(f"HTTP {e.code} from {base}\n{body}", file=sys.stderr)
+        raise SystemExit(1)
     for bucket in data.get("data", []):
         for res in bucket.get("results", []):
             total += int(res.get("input_tokens", 0)) + int(res.get("output_tokens", 0))
