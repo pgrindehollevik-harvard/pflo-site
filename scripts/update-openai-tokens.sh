@@ -5,18 +5,29 @@
 #
 # Needs an Admin API key (sk-admin-...), NOT a regular sk-proj-... key:
 #   https://platform.openai.com/settings/organization/admin-keys
-# The key is read from the environment and never written to disk:
 #
-#   OPENAI_ADMIN_KEY=sk-admin-... ./scripts/update-openai-tokens.sh
-#   PUSH=0 OPENAI_ADMIN_KEY=... ./scripts/update-openai-tokens.sh   # no push
-#   COMMIT=0 OPENAI_ADMIN_KEY=... ./scripts/update-openai-tokens.sh # just rewrite json
+# The key is never stored in this repo or in the launchd plist. It comes from
+# the login keychain, or from the environment for one-off manual runs. Store it
+# once (the -w with no value prompts, so it stays out of shell history):
+#
+#   security add-generic-password -a "$USER" -s pflo-openai-admin-key -w
+#
+#   ./scripts/update-openai-tokens.sh                # keychain, update + push
+#   PUSH=0 ./scripts/update-openai-tokens.sh         # no push
+#   COMMIT=0 ./scripts/update-openai-tokens.sh       # just rewrite the json
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 OUT="$REPO_ROOT/openai-tokens.json"
+KEYCHAIN_SERVICE="${OPENAI_KEYCHAIN_SERVICE:-pflo-openai-admin-key}"
 
-: "${OPENAI_ADMIN_KEY:?set OPENAI_ADMIN_KEY to an sk-admin-... key (org admin keys)}"
+# Environment wins for manual runs; otherwise fall back to the keychain so the
+# scheduled job has no secret sitting in plaintext anywhere on disk.
+if [ -z "${OPENAI_ADMIN_KEY:-}" ]; then
+  OPENAI_ADMIN_KEY="$(security find-generic-password -w -s "$KEYCHAIN_SERVICE" 2>/dev/null || true)"
+fi
+: "${OPENAI_ADMIN_KEY:?no key: store one with 'security add-generic-password -a \"\$USER\" -s $KEYCHAIN_SERVICE -w' or set OPENAI_ADMIN_KEY}"
 
 cd "$REPO_ROOT"
 
