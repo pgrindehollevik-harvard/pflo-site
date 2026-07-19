@@ -27,7 +27,12 @@ KEYCHAIN_SERVICE="${OPENAI_KEYCHAIN_SERVICE:-pflo-openai-admin-key}"
 if [ -z "${OPENAI_ADMIN_KEY:-}" ]; then
   OPENAI_ADMIN_KEY="$(security find-generic-password -w -s "$KEYCHAIN_SERVICE" 2>/dev/null || true)"
 fi
-: "${OPENAI_ADMIN_KEY:?no key: store one with 'security add-generic-password -a \"\$USER\" -s $KEYCHAIN_SERVICE -w' or set OPENAI_ADMIN_KEY}"
+if [ -z "${OPENAI_ADMIN_KEY:-}" ]; then
+  echo "No admin key found. Store one (prompts, so it stays out of shell history):" >&2
+  echo "  security add-generic-password -a \"\$USER\" -s $KEYCHAIN_SERVICE -w" >&2
+  echo "...or set OPENAI_ADMIN_KEY in the environment for a one-off run." >&2
+  exit 1
+fi
 
 cd "$REPO_ROOT"
 
