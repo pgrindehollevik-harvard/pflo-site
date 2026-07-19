@@ -224,18 +224,13 @@
         if (n >= 1e3) return Math.round(n / 1e3) + 'K';
         return String(Math.round(n));
       }
-      function grab(url) {
-        return fetch(url)
-          .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (d) { return (d && d.totalTokens) || 0; })
-          .catch(function () { return 0; });
-      }
-      Promise.all([grab('claude-tokens.json'), grab('openai-tokens.json')])
-        .then(function (parts) {
-          var tokens = parts[0] + parts[1];
+      fetch('claude-tokens.json')
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (d) {
+          var tokens = d && d.totalTokens;
           if (!tokens || tokens < 1) return;
           function render(e) {
-            el.textContent = ' · ' + fmtTokens(e * tokens) + ' llm tokens';
+            el.textContent = ' · ' + fmtTokens(e * tokens) + ' claude tokens';
           }
           var start = null, dur = 900;
           function tick(t) {
