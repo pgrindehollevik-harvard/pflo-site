@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="canonical" href="https://pflo.org/jspace-4b.html" />
+  <title>Does a Small Model Have a Global Workspace?</title>
+  <meta name="description" content="I pre-registered Anthropic&#39;s J-space ablation on Qwen3-4B. The directions are causally real, but the workspace/autopilot split their result rests on never shows up." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://pflo.org/jspace-4b.html" />
+  <meta property="og:title" content="Does a Small Model Have a Global Workspace?" />
+  <meta property="og:description" content="I pre-registered Anthropic&#39;s J-space ablation on Qwen3-4B. The directions are causally real, but the workspace/autopilot split their result rests on never shows up." />
+  <meta property="og:image" content="https://pflo.org/cover.jpg" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://pflo.org/jspace-4b.html" />
+  <meta name="twitter:title" content="Does a Small Model Have a Global Workspace?" />
+  <meta name="twitter:description" content="A pre-registered negative replication: causal but not selective at 4B scale." />
+  <meta name="twitter:image" content="https://pflo.org/cover.jpg" />
+
+  <style>
+    :root {
+      --bg:#fff;
+      --text:#222;
+      --muted:#666;
+      --muted2:#888;
+      --rule:#e5e5e5;
+      --link:#1a2d5f;
+      --visited:#1a2d5f;
+      --mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --serif: 'Georgia', 'Times New Roman', serif;
+      --sans: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --accent:#AD7C03;
+      --maxw:1032px;
+    }
+
+    body { margin:0; background:var(--bg); color:var(--text); font:13px/1.45 Arial, Helvetica, sans-serif; }
+    a { color:var(--link); text-decoration:underline; }
+    a:visited { color:var(--visited); }
+    a:hover { color:#000; text-decoration:none; }
+
+    .blog-shell { min-height: 100vh; display: flex; }
+
+    /* Sidebar */
+    .blog-sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #fafafa;
+      border-right: 1px solid var(--rule);
+      padding: 40px 32px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      font-family: var(--mono);
+      z-index: 100;
+    }
+    .blog-sidebar.collapsed {
+      transform: translateX(-100%);
+      width: 0;
+      min-width: 0;
+      padding: 40px 0;
+      border-right: none;
+      overflow: hidden;
+    }
+    .blog-sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 10px;
+      letter-spacing: 0.02em;
+    }
+    .blog-sidebar-subtitle {
+      font-size: 12px;
+      color: var(--muted2);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .blog-toc { list-style: none; padding: 0; margin: 0; }
+    .blog-toc-item { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
+    .blog-toc-item a { color:#666; text-decoration:none; display:block; padding: 4px 0; transition: color 0.2s; }
+    .blog-toc-item a:hover { color:#222; }
+    .blog-toc-item.active > a { color: var(--accent); font-weight: 600; }
+    .blog-toc-sublist { list-style: none; padding: 0; margin: 6px 0 14px 14px; }
+    .blog-toc-sublist .blog-toc-item { font-size: 12px; margin-bottom: 4px; }
+
+    /* subtle sidebar toggle */
+    .sidebar-toggle {
+      position: fixed;
+      left: 280px;
+      top: 18px;
+      width: 28px;
+      height: 28px;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-left: none;
+      border-radius: 0 7px 7px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 101;
+      transition: left 0.25s ease, box-shadow 0.2s ease;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+    .sidebar-toggle:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.14); }
+    .blog-sidebar.collapsed ~ .sidebar-toggle { left: 0; }
+    .sidebar-toggle-icon {
+      width: 9px;
+      height: 9px;
+      border-right: 1.8px solid #666;
+      border-bottom: 1.8px solid #666;
+      transform: rotate(135deg);
+      transition: transform 0.25s ease;
+    }
+    .blog-sidebar.collapsed ~ .sidebar-toggle .sidebar-toggle-icon { transform: rotate(-45deg); }
+
+    /* Main */
+    .blog-main { flex: 1; min-width: 0; }
+    .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
+    .main { padding:0 24px; }
+    .blog-content {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+      line-height: 1.75;
+    }
+    .blog-breadcrumb { font-size: 12px; color: var(--muted2); margin-bottom: 16px; }
+    .blog-breadcrumb a { color: var(--link); text-decoration:none; }
+    .blog-breadcrumb a:hover { text-decoration: underline; }
+    .blog-meta-bar { font-size: 12px; color: var(--muted2); margin-bottom: 24px; font-family: var(--mono); }
+
+    .blog-title {
+      font-size: 2.8rem;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+      font-family: var(--serif);
+      font-weight: 400;
+      line-height: 1.15;
+    }
+    .blog-subtitle {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .blog-meta { font-size: 0.9rem; color: var(--muted2); margin-bottom: 2rem; }
+    .blog-meta span + span::before { content: "•"; margin: 0 8px; opacity: 0.5; }
+
+    .blog-content p { margin: 0 0 1.5rem 0; font-size: 1.05rem; line-height: 1.8; }
+    .blog-content h2 {
+      margin-top: 4rem;
+      margin-bottom: 1.2rem;
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+      font-weight: 400;
+      font-family: var(--serif);
+      scroll-margin-top: 20px;
+    }
+    .blog-content h2:first-of-type { margin-top: 2rem; }
+    .blog-content h3 {
+      font-size: 1.15rem;
+      margin-top: 2rem;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+
+    blockquote {
+      border-left: 3px solid var(--accent);
+      padding: .6rem 1.2rem;
+      margin: 1.5rem 0;
+      background: #faf8f5;
+      color: #444;
+      font-style: italic;
+    }
+    blockquote p { margin-bottom: .5rem; }
+    .blog-content ul, .blog-content ol { margin: 0 0 1.5rem 1.5rem; font-size: 1.05rem; line-height: 1.8; }
+    .blog-content li { margin-bottom: .4rem; }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.9em;
+      background: #f4f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    pre {
+      background: #0b1020;
+      color: #e5e7eb;
+      padding: 14px 14px;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin: 1.2rem 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    pre code { background: transparent; padding: 0; color: inherit; }
+
+    hr { border: none; border-top: 1px solid var(--rule); margin: 3rem 0; }
+
+    /* Term tooltips */
+    .term {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted rgba(0,0,0,0.35);
+    }
+    .term::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: 120%;
+      transform: translateX(-50%);
+      background: #111827;
+      color: #f9fafb;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      padding: 6px 8px;
+      border-radius: 6px;
+      white-space: normal;
+      min-width: 180px;
+      max-width: 280px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.12s ease;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+      z-index: 20;
+    }
+    .term::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 110%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #111827 transparent transparent transparent;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+      z-index: 19;
+    }
+    .term:hover::after,
+    .term:hover::before { opacity: 1; }
+
+    /* Collapsible fun snippets */
+    details { margin: 16px 0; font-size: 0.95rem; color: #555; line-height: 1.7; }
+    details summary {
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 8px;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    details summary:hover { color: #8B6914; }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::before {
+      content: "▶ ";
+      display: inline-block;
+      margin-right: 6px;
+      transition: transform 0.2s;
+      font-size: 0.75em;
+    }
+    details[open] summary::before { transform: rotate(90deg); }
+    details p { margin: 0 0 0.8rem 0; font-size: 0.95rem; }
+
+    /* Footer */
+    .post-footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--rule);
+      text-align: center;
+    }
+    .post-footer .thanks { font-size: 1rem; color: var(--muted); margin: 0 0 1rem 0; }
+    .post-footer .copyright { font-size: 0.85rem; color: var(--muted2); margin: 0; }
+
+    @media (max-width: 900px) {
+      .blog-shell { flex-direction: column; }
+      .blog-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+        padding: 24px 32px;
+      }
+      .blog-sidebar.collapsed { display: none; }
+      .sidebar-toggle { display:none; }
+      .blog-title { font-size: 2.2rem; }
+    }
+    @media (max-width: 600px) {
+      .blog-title { font-size: 1.85rem; }
+      .blog-sidebar { padding: 20px 24px; }
+    }
+  
+    .figure-block { margin: 28px 0; }
+    .figure-block img, .figure-block svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+    .figure-block figcaption { font-size:.88rem; color:#666; text-align:center; margin-top:.7rem; line-height:1.55; font-family:var(--serif); font-style:italic; }
+    .figure-block figcaption strong { font-style:normal; color:#444; }
+    table.results { border-collapse: collapse; margin: 20px auto; font-size: 13px; }
+    table.results th, table.results td { padding: 6px 14px; text-align: center; border-bottom: 1px solid var(--rule); }
+    table.results th { font-family: var(--mono); font-size: 11px; color: #666; font-weight: 600; }
+    table.results td:first-child { text-align: left; font-family: var(--mono); font-size: 12px; }
+  </style>
+
+  <!-- MathJax for LaTeX blocks -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+  <div class="blog-shell">
+    <aside class="blog-sidebar" id="sidebar">
+      <div class="blog-sidebar-title">WORKSPACE</div>
+      <div class="blog-sidebar-subtitle">
+        J-space ablation at 4B scale<br />
+        Summer 2026
+      </div>
+      <nav>
+        <ul class="blog-toc" id="blog-toc"></ul>
+      </nav>
+    </aside>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+      <div class="sidebar-toggle-icon"></div>
+    </button>
+
+    <main class="blog-main">
+      <div class="wrap">
+      <section class="main" aria-label="content">
+      <div class="blog-content" id="content">
+        <div class="blog-breadcrumb">
+          <a href="/index.html">&larr; pflo.org</a> · <a href="/writing.html">writing</a>
+        </div>
+        <div class="blog-meta-bar" id="word-count">— WORDS —</div>
+
+        <header>
+          <h1 class="blog-title">Does a Small Model Have a Global Workspace?</h1>
+          <p class="blog-subtitle">
+            I pre-registered Anthropic&rsquo;s J-space ablation on Qwen3-4B. The directions turned out to be causally real, but the workspace/autopilot split their headline result rests on never showed up. A negative replication, and why I think it is the more interesting outcome.
+          </p>
+          <p class="blog-meta">
+            <span>Peter Flo</span>
+            <span>Summer 2026</span>
+            <span><a href="https://transformer-circuits.pub/2026/workspace/index.html" target="_blank" rel="noopener">the paper</a></span>
+          </p>
+        </header>
+
+        <section id="intro">
+          <p>
+            In July, Anthropic published one of the most striking interpretability papers I have read:
+            <a href="https://transformer-circuits.pub/2026/workspace/index.html" target="_blank" rel="noopener">Verbalizable Representations Form a Global Workspace in Language Models</a>.
+            The claim is that a language model carries a small, privileged set of internal directions, the
+            <span class="term" data-tooltip="The set of residual-stream directions the Jacobian lens reads out: what the model is currently poised to verbalize. Typically only 10 to 25 are strongly active, under 10% of activation variance.">J-space</span>,
+            that works like the global workspace from consciousness science: a narrow broadcast channel holding whatever the model is currently poised to say, sitting on top of a vast ocean of automatic processing it cannot report.
+          </p>
+          <p>
+            The experiment in that paper I could not stop thinking about: delete the workspace, at every token, mid-thought, and the model keeps talking fluently. Shallow skills survive. Multi-step reasoning collapses. Unless the model is allowed to <em>write its reasoning down</em>, in which case it barely gets hurt. The page substitutes for the head.
+          </p>
+          <blockquote>
+            <p><strong>Does any of this survive on a model 100x smaller?</strong></p>
+          </blockquote>
+          <p>
+            The paper runs on frontier models (Sonnet 4.5, Opus). Its own limitations section admits nobody knows whether small models have &ldquo;an equally rich workspace, a proportionally smaller one, a less reliable one, or none at all.&rdquo; So I took their ablation protocol to Qwen3-4B and found out. Short version: the fourth option, with a twist.
+          </p>
+        </section>
+
+        <section id="the-intervention">
+          <h2>The intervention, in one figure</h2>
+          <p>
+            The model&rsquo;s working state at each token is a single vector, the
+            <span class="term" data-tooltip="The ~2560-dimensional vector at each token position that every attention and MLP block reads from and writes back into.">residual stream</span>.
+            The paper&rsquo;s <span class="term" data-tooltip="A per-layer matrix J = E[dh_final/dh_layer], averaged over text including future positions. It transports a mid-layer vector into the final layer's basis, where the unembedding can read it as words.">Jacobian lens</span>
+            assigns every vocabulary word a direction in that space; leaning along the <em>spider</em> direction means the model is silently poised to say something spider-related. The ablation finds the ten directions the vector leans along most strongly and subtracts exactly that component. Everything perpendicular passes through untouched.
+          </p>
+
+          <figure class="figure-block">
+            <svg viewBox="0 0 720 240" role="img" aria-label="Schematic of J-space ablation: the residual stream vector loses its component along the top-k lens directions, keeping the perpendicular part.">
+              <defs>
+                <marker id="ah1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#222"/></marker>
+                <marker id="ah2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#AD7C03"/></marker>
+                <marker id="ah3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#1a2d5f"/></marker>
+              </defs>
+              <!-- left panel: before -->
+              <text x="130" y="24" font-family="monospace" font-size="12" fill="#666" text-anchor="middle">before</text>
+              <line x1="40" y1="200" x2="250" y2="200" stroke="#e5e5e5" stroke-width="1"/>
+              <line x1="40" y1="200" x2="235" y2="185" stroke="#AD7C03" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah2)"><title>span of the top-10 J-lens directions (the active workspace content)</title></line>
+              <text x="245" y="176" font-family="monospace" font-size="11" fill="#AD7C03">top-10 lens directions</text>
+              <line x1="40" y1="200" x2="180" y2="60" stroke="#222" stroke-width="2.5" marker-end="url(#ah1)"><title>the residual stream h: everything the model has in mind here</title></line>
+              <text x="150" y="52" font-family="monospace" font-size="12" fill="#222">h</text>
+              <line x1="40" y1="200" x2="150" y2="191" stroke="#AD7C03" stroke-width="2" marker-end="url(#ah2)"><title>the projection: how much h leans along the workspace directions</title></line>
+              <text x="88" y="222" font-family="monospace" font-size="11" fill="#AD7C03">projection</text>
+              <line x1="150" y1="191" x2="180" y2="63" stroke="#999" stroke-width="1" stroke-dasharray="3 3"/>
+              <!-- middle arrow -->
+              <text x="360" y="130" font-family="monospace" font-size="13" fill="#666" text-anchor="middle">subtract the</text>
+              <text x="360" y="148" font-family="monospace" font-size="13" fill="#666" text-anchor="middle">projection</text>
+              <line x1="310" y1="160" x2="410" y2="160" stroke="#666" stroke-width="1.2" marker-end="url(#ah1)"/>
+              <!-- right panel: after -->
+              <text x="560" y="24" font-family="monospace" font-size="12" fill="#666" text-anchor="middle">after</text>
+              <line x1="470" y1="200" x2="680" y2="200" stroke="#e5e5e5" stroke-width="1"/>
+              <line x1="470" y1="200" x2="665" y2="185" stroke="#AD7C03" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah2)"/>
+              <line x1="470" y1="200" x2="500" y2="72" stroke="#1a2d5f" stroke-width="2.5" marker-end="url(#ah3)"><title>h after ablation: zero component along the workspace directions, everything else intact</title></line>
+              <text x="508" y="64" font-family="monospace" font-size="12" fill="#1a2d5f">h&prime;</text>
+              <text x="575" y="222" font-family="monospace" font-size="11" fill="#999" text-anchor="middle">workspace component: zero</text>
+            </svg>
+            <figcaption><strong>The whole intervention.</strong> At every token and every workspace layer: rank the lens directions by activity, take the top ten, remove the vector&rsquo;s component in their span (hover the arrows). One care taken from the paper: directions for words the model is literally about to output are exempt, so you damage the thinking, not the mouth.</figcaption>
+          </figure>
+
+          <p>
+            Anthropic released the lens but not the eraser, so I wrote the ablation myself: forward hooks with a second, clean copy of the model running one step ahead to supply the exemption lists. The subtle part is the control. Deleting ten directions damages any network, so at every single position and layer the control condition measures the exact size of the would-be deletion and removes an <em>equally sized</em> component along
+            <span class="term" data-tooltip="Per-slot norm matching: at each (position, layer), the random deletion is rescaled to exactly the magnitude the J-deletion would have had right there. Same damage budget, different target.">random directions at that same spot</span>.
+            Only the gap between the two arms counts as evidence about the workspace.
+          </p>
+        </section>
+
+        <section id="the-gate">
+          <h2>A tripwire instead of a leap</h2>
+          <p>
+            The plan, <span class="term" data-tooltip="All thresholds, sample sizes, falsification criteria, and analysis rules were frozen in a tagged git commit before any experiment ran. Deviations are logged with timestamps.">pre-registered</span>
+            before any run, was to replicate the chain-of-thought protection on GSM8K and then push it up a difficulty ladder (MATH-500, AIME) to see whether writing stops saving you when problems get hard. But the main grid costs about a day of compute, so I put a gate in front of it: the ablation first had to reproduce, on this model, the two signatures the paper found on frontier models.
+          </p>
+          <blockquote>
+            <p><strong>Signature 1:</strong> deleting the workspace hurts reasoning far more than matched random damage.<br/>
+            <strong>Signature 2:</strong> ordinary next-token prediction on plain text survives.</p>
+          </blockquote>
+          <p>
+            Calibration was allowed to look at those two gauges and nothing else. In particular it never saw a chain-of-thought comparison, so I could not accidentally tune the intervention toward my own hypothesis.
+          </p>
+        </section>
+
+        <section id="results">
+          <h2>What the tripwire caught</h2>
+          <p>
+            Signature 1 showed up beautifully. In the lightest configuration, deleting the top ten workspace directions cost the model <strong>16 points</strong> on a two-step reasoning control while the exactly norm-matched random deletion cost <strong>zero</strong> (n=55 paired items, exact McNemar p=.012), with output staying fluent. The lens is pointing at real, causally load-bearing thoughts, even in a 4B model.
+          </p>
+          <p>
+            Signature 2 never showed up. At every strength I tried, workspace deletion also scrambled <strong>34 to 42 percent</strong> of ordinary next-token predictions on plain text, roughly double the random arm&rsquo;s damage, where the paper reports ordinary prediction left largely intact.
+          </p>
+
+          <table class="results">
+            <tr><th>configuration</th><th>reasoning drop (J)</th><th>reasoning drop (random)</th><th>plain-text survival (J)</th><th>gate</th></tr>
+            <tr><td>band 14&ndash;24, k=10</td><td>&minus;16.4 (p=.004)</td><td>&minus;9.1</td><td>0.62</td><td>fail</td></tr>
+            <tr><td>band 14&ndash;31, k=10</td><td>&minus;18.2</td><td>&minus;9.1</td><td>0.58</td><td>fail</td></tr>
+            <tr><td>band 14&ndash;24, k=5</td><td>&minus;14.5</td><td>&minus;5.5</td><td>0.61</td><td>fail</td></tr>
+            <tr><td>band 14&ndash;19, k=10</td><td>&minus;16.4 (p=.012)</td><td>&nbsp;&nbsp;0.0</td><td>0.66</td><td>fail</td></tr>
+          </table>
+
+          <figure class="figure-block">
+            <img src="/figures/jspace/ladder.png" alt="Two-panel dumbbell chart across eight configurations and two lenses. Left panel: the J-space ablation drop versus the norm-matched random drop on the positive control; the stock lens shows large gaps, the refit lens shows overlapping dots. Right panel: wikitext top-1 agreement for the J arm, every point left of the 0.80 gate line." />
+            <figcaption><strong>The full dose-response ladder, both lenses.</strong> Left: filled dots are the J-space deletion, open dots the norm-matched random control; the gap between them is the evidence. Right: how much ordinary text prediction survives the J-deletion, against the pre-registered 0.80 gate (dashed). No configuration clears it. This is the figure I would show if I had thirty seconds.</figcaption>
+          </figure>
+
+          <p>
+            I also re-ran the entire ladder with a second lens I fit myself, targeting the paper&rsquo;s preferred layer, to rule out an artifact of the off-the-shelf one. Its fit was small (32 prompts against the reference lens&rsquo;s 479) and it produced something diagnostic: its &ldquo;workspace directions&rdquo; performed <em>identically to the random control</em>, drops of 10.9 versus 10.9. An undertrained lens converges to noise, which is exactly what noise should do, and it quietly confirms that the reference lens&rsquo;s gap was real structure.
+          </p>
+          <p>
+            Eight configurations, two lenses, zero passes. Per the pre-registration, the main experiment never ran. Asking whether writing protects the workspace is meaningless on a model where trashing the workspace trashes everything else too.
+          </p>
+        </section>
+
+        <section id="meaning">
+          <h2>One room, not two</h2>
+          <p>
+            Here is the picture I ended up with. In the frontier models of the paper, deliberate thought and automatic processing are two separate rooms: you can trash one and the other keeps humming. In Qwen3-4B they appear to be <strong>one room</strong>. The verbalizable directions exist and do real work, but everyday word prediction runs through the same machinery, so no deletion can hit one without the other.
+          </p>
+          <p>
+            Two readings survive, and they make opposite predictions. Either <strong>(a)</strong> the workspace/autopilot separation is something models grow into with scale, an emergent architecture of cognition, or <strong>(b)</strong> lens estimation at 4B is too blurry to isolate the workspace even though one exists. A supporting datum for (a): clean Qwen3-4B scores only 0.42 on the paper&rsquo;s silent two-hop reasoning control (&ldquo;the number of legs on the animal that spins webs&rdquo;), where frontier models are near ceiling. The capability the workspace supposedly serves is mostly missing too.
+          </p>
+          <p>
+            The nice part is that the tiebreaker is cheap: public lenses exist for Qwen3-1.7B up through 32B. Run the identical gate up the size ladder and watch whether a second room appears. Reading (a) predicts the gate starts passing at some scale; reading (b) predicts it never does. That sweep is what I am doing next.
+          </p>
+        </section>
+
+        <section id="lessons">
+          <h2>What I actually learned</h2>
+          <p>
+            The result I set out to get was never available, and the process is most of what I am taking away.
+          </p>
+          <p>
+            <strong>Negative results need more rigor, not less.</strong> A negative replication from an unknown student has an obvious dismissal: they fiddled until it broke. The only rebuttal is structure decided in advance: frozen thresholds, a control matched deletion-by-deletion, a calibration that provably never saw the hypothesis, and a written rule for when to stop. The stop-gate refusing to run my experiment <em>is</em> the finding, and it is only credible because refusing was specified before any data existed.
+          </p>
+          <p>
+            <strong>The deadliest bugs run clean and lie.</strong> Adversarial review of my own pipeline caught a control arm accidentally sorted by difficulty (which would have manufactured my exact hypothesis) and a bootstrap that deduplicated its own resamples, shrinking every confidence interval by a quarter. Neither ever threw an error. Both lived in which comparisons the data licenses, not in any line of code you could point to.
+          </p>
+          <p>
+            <strong>And the unglamorous 60 percent:</strong> macOS decided mid-experiment to prepare a system update and started silently killing my 8GB process every 90 seconds, faster than one generation could finish. The durable fix was not winning that fight but making death cheap: checkpoint every 64 tokens, replay the sampler state exactly on resume, restart forever while progress is being made. The experiment ultimately ran to completion on a laptop that was actively hostile to it.
+          </p>
+          <p>
+            This started as the entrance homework for Boaz Barak&rsquo;s AI safety course at Harvard, grew into an abstract submitted to <a href="https://nemiconf.github.io/summer26/" target="_blank" rel="noopener">NEMI 2026</a>, and the code, pre-registration, and full calibration records go public on August 6. The scaling sweep comes next. If the workspace really is emergent, I want to see the layer at which the second room gets built.
+          </p>
+        </section>
+
+        <section id="end">
+          <div class="post-footer">
+            <p class="thanks">Thanks for reading!</p>
+            <p class="copyright">© <span id="copyright-year"></span> Peter Flo</p>
+          </div>
+        </section>
+      </div>
+      </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Sidebar toggle (persisted)
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      if (!sidebar || !toggle) return;
+      const saved = localStorage.getItem('jspace-sidebar-collapsed');
+      if (saved === 'true') sidebar.classList.add('collapsed');
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('jspace-sidebar-collapsed', sidebar.classList.contains('collapsed'));
+      });
+    })();
+
+    // Word count
+    (function() {
+      const content = document.getElementById('content');
+      const text = content ? (content.innerText || content.textContent || '') : '';
+      const wc = text.trim().split(/\s+/).filter(Boolean).length;
+      const el = document.getElementById('word-count');
+      if (el) el.textContent = `${wc.toLocaleString()} WORDS | PETER FLO`;
+    })();
+
+    // Copyright year
+    (function() {
+      const yearEl = document.getElementById('copyright-year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+    })();
+
+    // Build TOC from h2/h3
+    (function() {
+      const toc = document.getElementById('blog-toc');
+      const sections = Array.from(document.querySelectorAll('.blog-content section'));
+      if (!toc || sections.length === 0) return;
+
+      function slugify(s) {
+        return s.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
+      }
+
+      const tocItems = [];
+      for (const sec of sections) {
+        const h2 = sec.querySelector('h2');
+        if (!h2) continue;
+
+        if (!sec.id) sec.id = slugify(h2.textContent);
+        const li = document.createElement('li');
+        li.className = 'blog-toc-item';
+        const a = document.createElement('a');
+        a.href = `#${sec.id}`;
+        a.textContent = h2.textContent;
+        li.appendChild(a);
+
+        const h3s = Array.from(sec.querySelectorAll('h3'));
+        if (h3s.length) {
+          const sub = document.createElement('ul');
+          sub.className = 'blog-toc-sublist';
+          h3s.forEach(h3 => {
+            let id = h3.id;
+            if (!id) {
+              id = `${sec.id}--${slugify(h3.textContent)}`;
+              h3.id = id;
+            }
+            const subli = document.createElement('li');
+            subli.className = 'blog-toc-item';
+            const suba = document.createElement('a');
+            suba.href = `#${id}`;
+            suba.textContent = h3.textContent;
+            subli.appendChild(suba);
+            sub.appendChild(subli);
+          });
+          li.appendChild(sub);
+        }
+
+        toc.appendChild(li);
+        tocItems.push(li);
+      }
+
+      // Smooth scroll
+      toc.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href') || '';
+          if (!href.startsWith('#')) return;
+          const target = document.querySelector(href);
+          if (!target) return;
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', href);
+        });
+      });
+
+      // Active section highlighting
+      const tocLinks = Array.from(toc.querySelectorAll(':scope > .blog-toc-item > a'));
+      const topSections = sections.filter(s => s.querySelector('h2'));
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.id;
+          tocItems.forEach(item => item.classList.remove('active'));
+          const active = tocLinks.find(l => l.getAttribute('href') === `#${id}`);
+          if (active) active.closest('.blog-toc-item')?.classList.add('active');
+        });
+      }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+      topSections.forEach(s => observer.observe(s));
+    })();
+  </script>
+</body>
+</html>
+
