@@ -82,10 +82,22 @@
         width: 100%; height: auto; position: relative; border-right: none;
         border-bottom: 1px solid #e5e5e5; padding: 20px 24px;
       }
-      .blog-sidebar.collapsed { display: none; }
+      .blog-sidebar.collapsed { display: block; transform: none; width: 100%; min-width: 0; padding: 20px 24px; overflow: visible; }
       .sidebar-toggle { display: none; }
+      .blog-sidebar nav { display: none; }
+      .blog-sidebar.mobile-open nav { display: block; }
+      .blog-sidebar-title { cursor: pointer; padding: 6px 0; }
+      .blog-sidebar-title::after { content: " \25B8"; }
+      .blog-sidebar.mobile-open .blog-sidebar-title::after { content: " \25BE"; }
     }
-    @media (max-width:600px) { .blog-title { font-size:1.8rem; } }
+    @media (max-width:600px) {
+      .blog-title { font-size:1.8rem; }
+      .main { padding:0; }
+      .blog-breadcrumb, .blog-meta-bar { font-size:14px; }
+      .blog-toc-item { font-size:14px; }
+      .blog-toc-item a { padding:8px 0; }
+      .aside-personal { padding:16px 14px; }
+    }
 
     .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; font-size:1rem; }
     .num-table { width:100%; border-collapse:collapse; margin:1.5rem 0; font-size:.95rem; }
@@ -99,8 +111,8 @@
     .figure-block figcaption strong { font-style:normal; color:#444; }
 
     .tip { border-bottom:1px dotted #b3a48a; cursor:help; position:relative; }
-    .tip:hover { color:var(--accent); }
-    .tip:hover::after {
+    .tip:hover, .tip.tt-open { color:var(--accent); }
+    .tip:hover::after, .tip.tt-open::after {
       content: attr(data-tip);
       position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%);
       background:#222; color:#fff; padding:8px 12px; border-radius:6px;
@@ -108,14 +120,23 @@
       width:max-content; max-width:320px; white-space:normal; z-index:50;
       box-shadow:0 4px 14px rgba(0,0,0,.18); pointer-events:none;
     }
-    .tip:hover::before {
+    .tip:hover::before, .tip.tt-open::before {
       content:""; position:absolute; left:50%; bottom:calc(100% + 2px); transform:translateX(-50%);
       border:6px solid transparent; border-top-color:#222; z-index:50; pointer-events:none;
     }
     @media (max-width:600px) {
-      .tip:hover::after { left:0; transform:none; max-width:240px; }
-      .tip:hover::before { left:18px; transform:none; }
+      .tip.tt-open::after { position:fixed; left:16px; right:16px; bottom:16px; top:auto; transform:none; max-width:none; width:auto; z-index:1000; }
+      .tip.tt-open::before { display:none; }
+      .eq-block { text-align:left; }
     }
+    mjx-container[display="true"] { overflow-x:auto; overflow-y:hidden; max-width:100%; }
+    .blog-content a { overflow-wrap:anywhere; }
+  
+    @media (max-width:900px){ .blog-sidebar{box-sizing:border-box} }
+  
+    /* tooltips: remove hidden bubbles from layout so they cannot widen the page */
+    .tip::after,.tip::before{display:none}
+    .tip:hover::after,.tip:hover::before,.tip.tt-open::after,.tip.tt-open::before{display:block}
   </style>
   <script>
     window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
@@ -175,7 +196,10 @@
             <p>We use <strong>WikiArt Refined</strong>, around 81k paintings labeled with one of 27 styles, with a comically lopsided distribution (Impressionism has 13,060 paintings, Analytical Cubism has 77). Features come from a frozen <span class="tip" data-tip="OpenAI&rsquo;s vision-language model. ViT-B/16 is the base-size Vision Transformer with 16-by-16 image patches. &lsquo;Frozen&rsquo; means we don&rsquo;t update its weights during training.">CLIP ViT-B/16</span> encoder. A two-layer MLP maps those features into a $d$-dimensional embedding. A prototype classifier (one learnable point per style) turns the embedding into 27-way logits via $-d(z, p_k)$.</p>
             <p>Switching from Euclidean to hyperbolic changes exactly two things:</p>
             <ul>
-              <li>the head&rsquo;s final transform: identity in the Euclidean case, the <span class="tip" data-tip="The Riemannian-geometry operation that lifts a vector in the tangent space at a point onto the manifold itself. Here it&rsquo;s what maps an unconstrained MLP output into the Poincar&eacute; ball.">exponential map</span> at the origin in the hyperbolic case, $\exp_0^c(u) = \tanh(\sqrt{c}\,\|u\|)\,u/(\sqrt{c}\,\|u\|)$;</li>
+              <li>the head&rsquo;s final transform: identity in the Euclidean case, the <span class="tip" data-tip="The Riemannian-geometry operation that lifts a vector in the tangent space at a point onto the manifold itself. Here it&rsquo;s what maps an unconstrained MLP output into the Poincar&eacute; ball.">exponential map</span> at the origin in the hyperbolic case:
+              <div class="eq-block">
+                $$\exp_0^c(u) = \tanh(\sqrt{c}\,\|u\|)\,u/(\sqrt{c}\,\|u\|)$$
+              </div></li>
               <li>the metric used by the classifier: $\ell_2$ in the Euclidean case, the Poincar&eacute; distance in the hyperbolic case,
               <div class="eq-block">
                 $$d^c(x, y) = \tfrac{1}{\sqrt{c}}\,\operatorname{arcosh}\!\Bigl(1 + \tfrac{2c\,\|x-y\|^2}{(1-c\|x\|^2)(1-c\|y\|^2)}\Bigr).$$
@@ -380,6 +404,10 @@
     }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
     secs.forEach(s => observer.observe(s));
   })();
+
+  (function(){var t=document.querySelector('.blog-sidebar-title');var s=document.getElementById('sidebar');if(!t||!s)return;t.addEventListener('click',function(){s.classList.toggle('mobile-open');});})();
+
+  (function(){var ts=document.querySelectorAll('.tip[data-tip]');ts.forEach(function(t){t.setAttribute('tabindex','0');});document.addEventListener('click',function(e){var t=e.target.closest('.tip[data-tip]');ts.forEach(function(x){if(x!==t)x.classList.remove('tt-open');});if(t)t.classList.toggle('tt-open');});})();
 </script>
 </body>
 </html>

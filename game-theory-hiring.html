@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>A Game-Theoretic View of High-Skill Tech Hiring</title>
   <meta name="description" content="Why recruiting researchers at labs like Midjourney looks less like a job board and more like a repeated auction with hidden values. A game-theoretic analysis with interactive visualizations." />
   
@@ -29,6 +30,7 @@
     .wrap { max-width:var(--maxw); margin:40px auto; padding:0 16px; }
     .main { padding:0 24px; }
     .blog-content { max-width:100%; margin:0; padding:0; line-height:1.75; }
+    .blog-content a { overflow-wrap: anywhere; }
     .blog-breadcrumb { font-size:12px; color:#888; margin-bottom:16px; }
     .blog-breadcrumb a { color:var(--link); text-decoration:none; }
     .blog-breadcrumb a:hover { text-decoration:underline; }
@@ -382,10 +384,17 @@
       .blog-shell { flex-direction: column; }
       .blog-sidebar {
         width: 100%; height: auto; position: relative; border-right: none;
-        border-bottom: 1px solid #e5e5e5; padding: 20px 24px;
+        border-bottom: 1px solid #e5e5e5; padding: 20px 24px; box-sizing: border-box;
       }
-      .blog-sidebar.collapsed { display: none; }
+      .blog-sidebar.collapsed {
+        display: block; transform: none; width: 100%; min-width: 0; padding: 20px 24px;
+      }
       .sidebar-toggle { display: none; }
+      .blog-sidebar nav { display: none; }
+      .blog-sidebar.mobile-open nav { display: block; }
+      .blog-sidebar-title { cursor: pointer; padding: 6px 0; }
+      .blog-sidebar-title::after { content: " \25B8"; }
+      .blog-sidebar.mobile-open .blog-sidebar-title::after { content: " \25BE"; }
     }
 
     /* --- Term tooltips --- */
@@ -410,8 +419,9 @@
       min-width: 160px;
       max-width: 240px;
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.12s ease;
+      transition: opacity 0.12s ease, visibility 0.12s ease;
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
       z-index: 20;
     }
@@ -425,12 +435,19 @@
       border-style: solid;
       border-color: #111827 transparent transparent transparent;
       opacity: 0;
-      transition: opacity 0.12s ease;
+      visibility: hidden;
+      transition: opacity 0.12s ease, visibility 0.12s ease;
       z-index: 19;
     }
     .term:hover::after,
     .term:hover::before {
       opacity: 1;
+      visibility: visible;
+    }
+    .term.tt-open::after,
+    .term.tt-open::before {
+      opacity: 1;
+      visibility: visible;
     }
 
     /* --- Equilibrium regime card --- */
@@ -603,6 +620,31 @@
       font-size: 0.85em;
       color: #dc2626;
     }
+
+    @media (max-width: 600px) {
+      .main { padding: 0; }
+      .blog-breadcrumb, .blog-meta-bar { font-size: 14px; }
+      .blog-toc-item { font-size: 14px; }
+      .blog-toc-item a { padding: 8px 0; }
+      .interactive { padding: 14px 12px; }
+      input[type=range] { width: 100%; }
+      .term.tt-open::after {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        top: auto;
+        transform: none;
+        max-width: none;
+        width: auto;
+        z-index: 1000;
+      }
+      .term.tt-open::before { display: none; }
+    }
+  
+    /* tooltips: remove hidden bubbles from layout so they cannot widen the page */
+    .term::after,.term::before{display:none}
+    .term:hover::after,.term:hover::before,.term.tt-open::after,.term.tt-open::before{display:block}
   </style>
 </head>
 <body>
@@ -670,6 +712,7 @@
           do the same. Click a scenario to see how the outcome changes.
         </p>
 
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <div class="matrix-grid">
           <div></div>
           <div class="matrix-label">Rivals: Conservative</div>
@@ -690,6 +733,7 @@
           <button class="matrix-cell" data-mid="aggressive" data-rivals="aggressive">
             Aggressive / Aggressive
           </button>
+        </div>
         </div>
 
             <div class="matrix-explainer" id="matrix-explainer">
@@ -1619,6 +1663,12 @@
       }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
       secs.forEach(s => observer.observe(s));
     })();
+
+    // ===== Mobile TOC disclosure =====
+    (function(){var t=document.querySelector('.blog-sidebar-title');var s=document.getElementById('sidebar');if(!t||!s)return;t.addEventListener('click',function(){s.classList.toggle('mobile-open');});})();
+
+    // ===== Tooltip touch support =====
+    (function(){var ts=document.querySelectorAll('.term[data-tooltip]');ts.forEach(function(t){t.setAttribute('tabindex','0');});document.addEventListener('click',function(e){var t=e.target.closest('.term[data-tooltip]');ts.forEach(function(x){if(x!==t)x.classList.remove('tt-open');});if(t)t.classList.toggle('tt-open');});})();
   </script>
 </body>
 </html>

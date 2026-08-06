@@ -53,12 +53,16 @@
     .eq-block { background:#f9fafb; border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:1.5rem 0; overflow-x:auto; text-align:center; }
 
     .term { position:relative; cursor:help; border-bottom:1px dotted rgba(0,0,0,.3); }
-    .term::after { content:attr(data-tooltip); position:absolute; left:50%; bottom:120%; transform:translateX(-50%); background:#111827; color:#f9fafb; font-size:.75rem; line-height:1.4; padding:6px 8px; border-radius:6px; white-space:normal; min-width:180px; max-width:280px; opacity:0; pointer-events:none; transition:opacity .12s; box-shadow:0 4px 12px rgba(15,23,42,.25); z-index:20; }
-    .term::before { content:""; position:absolute; left:50%; bottom:110%; transform:translateX(-50%); border-width:6px; border-style:solid; border-color:#111827 transparent transparent transparent; opacity:0; transition:opacity .12s; z-index:19; }
-    .term:hover::after, .term:hover::before { opacity:1; }
+    .term::after { content:attr(data-tooltip); position:absolute; left:50%; bottom:120%; transform:translateX(-50%); background:#111827; color:#f9fafb; font-size:.75rem; line-height:1.4; padding:6px 8px; border-radius:6px; white-space:normal; min-width:180px; max-width:280px; opacity:0; visibility:hidden; pointer-events:none; transition:opacity .12s; box-shadow:0 4px 12px rgba(15,23,42,.25); z-index:20; }
+    .term::before { content:""; position:absolute; left:50%; bottom:110%; transform:translateX(-50%); border-width:6px; border-style:solid; border-color:#111827 transparent transparent transparent; opacity:0; visibility:hidden; transition:opacity .12s; z-index:19; }
+    .term:hover::after, .term:hover::before { opacity:1; visibility:visible; }
+    .term.tt-open::after, .term.tt-open::before { opacity:1; visibility:visible; }
 
     .diagram { margin:2rem 0; text-align:center; overflow-x:auto; }
     .diagram svg { max-width:100%; height:auto; }
+
+    mjx-container[display="true"] { overflow-x:auto; overflow-y:hidden; max-width:100%; }
+    .blog-content a { overflow-wrap:anywhere; }
 
     /* Left sidebar TOC (essay navigation) */
     .blog-shell { min-height: 100vh; display: flex; }
@@ -143,10 +147,31 @@
         border-bottom: 1px solid #e5e5e5;
         padding: 20px 24px;
       }
-      .blog-sidebar.collapsed { display: none; }
+      .blog-sidebar.collapsed { display: block; transform: none; width: 100%; min-width: 0; padding: 20px 24px; overflow: visible; }
       .sidebar-toggle { display: none; }
+      .blog-sidebar nav { display: none; }
+      .blog-sidebar.mobile-open nav { display: block; }
+      .blog-sidebar-title { cursor: pointer; padding: 6px 0; }
+      .blog-sidebar-title::after { content: " \25B8"; }
+      .blog-sidebar.mobile-open .blog-sidebar-title::after { content: " \25BE"; }
     }
-    @media (max-width:600px) { .blog-title { font-size:1.8rem; } }
+    @media (max-width:600px) {
+      .blog-title { font-size:1.8rem; }
+      .main { padding:0; }
+      .blog-breadcrumb, .blog-meta-bar { font-size:14px; }
+      .blog-toc-item { font-size:14px; }
+      .blog-toc-item a { padding:8px 0; }
+      .aside-personal { padding:16px 14px; }
+      .eq-block { text-align:left; }
+      .term.tt-open::after { position:fixed; left:16px; right:16px; bottom:16px; top:auto; transform:none; max-width:none; width:auto; z-index:1000; }
+      .term.tt-open::before { display:none; }
+    }
+  
+    @media (max-width:900px){ .blog-sidebar{box-sizing:border-box} }
+  
+    /* tooltips: remove hidden bubbles from layout so they cannot widen the page */
+    .term::after,.term::before{display:none}
+    .term:hover::after,.term:hover::before,.term.tt-open::after,.term.tt-open::before{display:block}
   </style>
 </head>
 <body>
@@ -609,6 +634,10 @@
 
     secs.forEach(s => observer.observe(s));
   })();
+
+  (function(){var t=document.querySelector('.blog-sidebar-title');var s=document.getElementById('sidebar');if(!t||!s)return;t.addEventListener('click',function(){s.classList.toggle('mobile-open');});})();
+
+  (function(){var ts=document.querySelectorAll('.term[data-tooltip]');ts.forEach(function(t){t.setAttribute('tabindex','0');});document.addEventListener('click',function(e){var t=e.target.closest('.term[data-tooltip]');ts.forEach(function(x){if(x!==t)x.classList.remove('tt-open');});if(t)t.classList.toggle('tt-open');});})();
 </script>
 </body>
 </html>

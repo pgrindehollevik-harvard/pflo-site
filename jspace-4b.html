@@ -128,6 +128,7 @@
       padding: 0;
       line-height: 1.75;
     }
+    .blog-content a { overflow-wrap: anywhere; }
     .blog-breadcrumb { font-size: 12px; color: var(--muted2); margin-bottom: 16px; }
     .blog-breadcrumb a { color: var(--link); text-decoration:none; }
     .blog-breadcrumb a:hover { text-decoration: underline; }
@@ -223,6 +224,7 @@
       min-width: 180px;
       max-width: 280px;
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
       transition: opacity 0.12s ease;
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
@@ -238,11 +240,14 @@
       border-style: solid;
       border-color: #111827 transparent transparent transparent;
       opacity: 0;
+      visibility: hidden;
       transition: opacity 0.12s ease;
       z-index: 19;
     }
     .term:hover::after,
-    .term:hover::before { opacity: 1; }
+    .term:hover::before { opacity: 1; visibility: visible; }
+    .term.tt-open::after,
+    .term.tt-open::before { opacity: 1; visibility: visible; }
 
     /* Collapsible fun snippets */
     details { margin: 16px 0; font-size: 0.95rem; color: #555; line-height: 1.7; }
@@ -286,13 +291,24 @@
         border-bottom: 1px solid var(--rule);
         padding: 24px 32px;
       }
-      .blog-sidebar.collapsed { display: none; }
+      .blog-sidebar.collapsed { display: block; transform: none; width: 100%; min-width: 0; padding: 24px 32px; overflow: visible; }
       .sidebar-toggle { display:none; }
       .blog-title { font-size: 2.2rem; }
+      .blog-sidebar nav { display: none; }
+      .blog-sidebar.mobile-open nav { display: block; }
+      .blog-sidebar-title { cursor: pointer; padding: 6px 0; }
+      .blog-sidebar-title::after { content: " \25B8"; }
+      .blog-sidebar.mobile-open .blog-sidebar-title::after { content: " \25BE"; }
     }
     @media (max-width: 600px) {
       .blog-title { font-size: 1.85rem; }
-      .blog-sidebar { padding: 20px 24px; }
+      .blog-sidebar, .blog-sidebar.collapsed { padding: 20px 24px; }
+      .main { padding: 0; }
+      .blog-breadcrumb, .blog-meta-bar { font-size: 14px; }
+      .blog-toc-item { font-size: 14px; }
+      .blog-toc-item a { padding: 8px 0; }
+      .term.tt-open::after { position: fixed; left: 16px; right: 16px; bottom: 16px; top: auto; transform: none; max-width: none; width: auto; z-index: 1000; }
+      .term.tt-open::before { display: none; }
     }
   
     .figure-block { margin: 28px 0; }
@@ -303,19 +319,14 @@
     table.results th, table.results td { padding: 6px 14px; text-align: center; border-bottom: 1px solid var(--rule); }
     table.results th { font-family: var(--mono); font-size: 11px; color: #666; font-weight: 600; }
     table.results td:first-child { text-align: left; font-family: var(--mono); font-size: 12px; }
+  
+    @media (max-width:900px){ .blog-sidebar{box-sizing:border-box} }
+  
+    /* tooltips: remove hidden bubbles from layout so they cannot widen the page */
+    .term::after,.term::before{display:none}
+    .term:hover::after,.term:hover::before,.term.tt-open::after,.term.tt-open::before{display:block}
   </style>
 
-  <!-- MathJax for LaTeX blocks -->
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']]
-      },
-      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
-    };
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
   <div class="blog-shell">
@@ -445,6 +456,7 @@
             Signature 2 never showed up. At every strength I tried, workspace deletion also scrambled <strong>34 to 42 percent</strong> of ordinary next-token predictions on plain text, roughly double the random arm&rsquo;s damage, where the paper reports ordinary prediction left largely intact.
           </p>
 
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
           <table class="results">
             <tr><th>configuration</th><th>reasoning drop (J)</th><th>reasoning drop (random)</th><th>plain-text survival (J)</th><th>gate</th></tr>
             <tr><td>band 14 to 24, k=10</td><td>&minus;16.4 (p=.004)</td><td>&minus;9.1</td><td>0.62</td><td>fail</td></tr>
@@ -452,6 +464,7 @@
             <tr><td>band 14 to 24, k=5</td><td>&minus;14.5</td><td>&minus;5.5</td><td>0.61</td><td>fail</td></tr>
             <tr><td>band 14 to 19, k=10</td><td>&minus;16.4 (p=.012)</td><td>&nbsp;&nbsp;0.0</td><td>0.66</td><td>fail</td></tr>
           </table>
+          </div>
 
           <figure class="figure-block">
             <img src="/figures/jspace/ladder.png" alt="Two-panel dumbbell chart across eight configurations and two lenses. Left panel: the J-space ablation drop versus the norm-matched random drop on the positive control; the stock lens shows large gaps, the refit lens shows overlapping dots. Right panel: wikitext top-1 agreement for the J arm, every point left of the 0.80 gate line." />
@@ -615,6 +628,12 @@
 
       topSections.forEach(s => observer.observe(s));
     })();
+
+    // Mobile TOC disclosure
+    (function(){var t=document.querySelector('.blog-sidebar-title');var s=document.getElementById('sidebar');if(!t||!s)return;t.addEventListener('click',function(){s.classList.toggle('mobile-open');});})();
+
+    // Tooltip touch support
+    (function(){var ts=document.querySelectorAll('.term[data-tooltip]');ts.forEach(function(t){t.setAttribute('tabindex','0');});document.addEventListener('click',function(e){var t=e.target.closest('.term[data-tooltip]');ts.forEach(function(x){if(x!==t)x.classList.remove('tt-open');});if(t)t.classList.toggle('tt-open');});})();
   </script>
 </body>
 </html>
