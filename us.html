@@ -18,6 +18,7 @@
       --bg:#fff; --text:#111; --muted:#666;
       --accent:#AD7C03; --rule:#222; --link:#1a2d5f; --visited:#1a2d5f;
       --soft:#e6e0d2; --softbg:#faf7f0; --heart:#c0392b;
+      --pblue:#e3eef7; --pblue-line:#c5dbe9; --pgreen:#e4f1e8; --pgreen-line:#c6ded0; --calmgreen:#3e7d5a;
       --maxw:620px;
     }
     *{box-sizing:border-box}
@@ -54,7 +55,7 @@
     .clocks .c b{color:var(--text);font-variant-numeric:tabular-nums}
     .clocks .sep{opacity:.5}
     .callwin{font-size:11px}
-    .callwin.good{color:var(--accent);font-weight:700}
+    .callwin.good{color:var(--calmgreen);font-weight:700}
     .dist{display:flex;align-items:center;gap:6px;font-size:11px}
     .dist .city{color:var(--text)}
     .dist .line{display:inline-block;width:46px;border-top:1px dashed #bbb;position:relative;height:1px}
@@ -62,7 +63,7 @@
     .dist.together{color:var(--heart);font-weight:700}
 
     /* love note */
-    .note{border:1px solid var(--soft);background:var(--softbg);padding:10px 12px;margin-bottom:16px;font-size:12px}
+    .note{border:1px solid var(--pgreen-line);background:var(--pgreen);padding:10px 12px;margin-bottom:16px;font-size:12px}
     .note .from{color:var(--text)}
     .note .from b{color:var(--accent)}
     .note .empty{color:var(--muted);font-style:italic}
@@ -74,7 +75,7 @@
     .note .saved{color:var(--accent);font-size:11px;margin-top:4px;min-height:13px}
 
     /* countdown hero */
-    .hero{position:relative;overflow:hidden;border:1px solid var(--rule);background:var(--softbg);
+    .hero{position:relative;overflow:hidden;border:1px solid var(--rule);background:var(--pblue);
       padding:18px 16px;text-align:center;margin-bottom:20px}
     .hero .cap{color:var(--accent);font-weight:700;font-size:13px;
       letter-spacing:.04em;text-transform:lowercase}
@@ -110,13 +111,13 @@
     .flight .fl-codes b{color:var(--text)}
     .flight .fl-times{font-size:11px;color:var(--muted);margin-top:6px}
     .flight .fl-status{font-size:12px;margin-top:6px}
-    .flight.inair{border-color:var(--accent);background:var(--softbg)}
+    .flight.inair{border-color:var(--pblue-line);background:var(--pblue)}
     .flight.inair .fl-status{color:var(--accent);font-weight:700}
     .flight.landed{opacity:.55}
 
     /* memories slideshow */
     .memories{position:relative;margin-bottom:20px;display:none}
-    .memories .frame{position:relative;width:100%;height:min(64vh,440px);background:#ece7dc;overflow:hidden;border:1px solid var(--soft)}
+    .memories .frame{position:relative;width:100%;height:min(64vh,440px);background:var(--pgreen);overflow:hidden;border:1px solid var(--pgreen-line)}
     .memories .frame .mem-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
     .memories .frame .mem-slide.on{opacity:1;pointer-events:auto}
     .memories .frame .mem-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(22px) brightness(.9);transform:scale(1.15)}
@@ -124,6 +125,14 @@
     .memories .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:5px}
     .memories .mem-add{font-size:12px;text-align:center;margin-top:6px}
     .memories .mem-add a{color:var(--link)}
+    .memories .frame .mem-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:rgba(255,255,255,.7);border:none;font-size:20px;line-height:1;padding:10px 8px;cursor:pointer;color:var(--text)}
+    .memories .frame .mem-arrow:hover{background:rgba(255,255,255,.9)}
+    .memories .frame .mem-prev{left:0}
+    .memories .frame .mem-next{right:0}
+
+    /* album grid */
+    .album{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:2px;margin-top:10px}
+    .album img{width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;background:var(--pgreen)}
 
     /* event thumbnail + photo button */
     .ev-row .thumb{flex:0 0 auto;width:34px;height:34px;object-fit:cover;border:1px solid var(--soft);cursor:pointer;align-self:center}
@@ -136,6 +145,11 @@
     .lightbox.on{display:flex}
     .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
     .lightbox .lb-remove{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);border:none;padding:6px 14px;font-size:12px;color:#9a2a2a;cursor:pointer;display:none}
+    .lightbox .lb-arrow{position:absolute;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.8);font-size:38px;line-height:1;padding:16px 12px;cursor:pointer;display:none}
+    .lightbox .lb-arrow:hover{color:#fff}
+    .lightbox .lb-prev{left:4px}
+    .lightbox .lb-next{right:4px}
+    .lightbox .lb-cap{position:absolute;top:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.85);font-size:12px;max-width:80%;text-align:center}
 
     /* add form */
     .add{border:1px solid var(--soft);background:#fff;padding:14px;margin-bottom:22px}
@@ -242,7 +256,8 @@
       <div class="memories" id="memories">
         <div class="frame" id="mem-frame"></div>
         <div class="cap" id="mem-cap"></div>
-        <div class="mem-add"><a href="#" id="add-photos-link">+ add photos</a></div>
+        <div class="mem-add"><a href="#" id="add-photos-link">+ add photos</a> &middot; <a href="#" id="album-toggle">browse album</a></div>
+        <div class="album hidden" id="album"></div>
       </div>
 
       <!-- add event (collapsed behind the link) -->
@@ -310,6 +325,9 @@
       <input type="file" id="gallery-input" accept="image/*" multiple class="hidden" />
       <div class="lightbox" id="lightbox">
         <img id="lightbox-img" alt="" />
+        <div id="lb-cap" class="lb-cap"></div>
+        <button id="lb-prev" class="lb-arrow lb-prev" type="button" title="previous photo">&#8249;</button>
+        <button id="lb-next" class="lb-arrow lb-next" type="button" title="next photo">&#8250;</button>
         <button id="lb-remove" class="lb-remove" type="button">remove</button>
       </div>
     </section>
@@ -629,6 +647,8 @@
   let lastSignAt = 0;
   let pendingPhotoEvent = null;
   let currentLightbox = null;
+  let lightboxIdx = -1;     // position in memList while browsing the lightbox
+  let albumOpen = false;    // photo grid expanded
   let memList = [], memIdx = 0, memTimer = null, lastMemKey = '';
   let openFlights = {};     // event id -> flight details expanded
   let showAllBdays = false; // birthdays list expanded past the first 3
@@ -648,8 +668,17 @@
     $('photo-input').addEventListener('change', onPhotoPicked);
     $('gallery-input').addEventListener('change', onGalleryPicked);
     $('add-photos-link').addEventListener('click', function (e) { e.preventDefault(); const inp = $('gallery-input'); inp.value = ''; inp.click(); });
+    $('album-toggle').addEventListener('click', function (e) { e.preventDefault(); albumOpen = !albumOpen; renderAlbum(); });
     $('lightbox').addEventListener('click', function (e) { if (e.target === this) closeLightbox(); });
     $('lb-remove').addEventListener('click', onLightboxRemove);
+    $('lb-prev').addEventListener('click', function () { stepLightbox(-1); });
+    $('lb-next').addEventListener('click', function () { stepLightbox(1); });
+    document.addEventListener('keydown', function (e) {
+      if (!$('lightbox').classList.contains('on')) return;
+      if (e.key === 'ArrowLeft') stepLightbox(-1);
+      else if (e.key === 'ArrowRight') stepLightbox(1);
+      else if (e.key === 'Escape') closeLightbox();
+    });
     $('bday-more').addEventListener('click', function () { showAllBdays = !showAllBdays; renderLists(); });
     $('past-toggle').addEventListener('click', function () { showPast = !showPast; renderLists(); });
     $('add-toggle').addEventListener('click', function () {
@@ -966,12 +995,26 @@
       });
   }
   function openLightbox(item) {
+    lightboxIdx = memList.findIndex(function (m) { return m.type === item.type && m.id === item.id; });
+    if (lightboxIdx !== -1) item = memList[lightboxIdx]; // pick up the caption when we know it
     currentLightbox = item;
     $('lightbox-img').src = item.url;
+    $('lb-cap').textContent = item.caption || '';
     $('lb-remove').style.display = 'block';
+    const canStep = lightboxIdx !== -1 && memList.length > 1;
+    $('lb-prev').style.display = canStep ? 'block' : 'none';
+    $('lb-next').style.display = canStep ? 'block' : 'none';
     $('lightbox').classList.add('on');
   }
-  function closeLightbox() { $('lightbox').classList.remove('on'); $('lightbox-img').src = ''; currentLightbox = null; }
+  function stepLightbox(dir) {
+    if (lightboxIdx === -1 || memList.length < 2) return;
+    lightboxIdx = (lightboxIdx + dir + memList.length) % memList.length;
+    const m = memList[lightboxIdx];
+    currentLightbox = m;
+    $('lightbox-img').src = m.url;
+    $('lb-cap').textContent = m.caption || '';
+  }
+  function closeLightbox() { $('lightbox').classList.remove('on'); $('lightbox-img').src = ''; $('lb-cap').textContent = ''; currentLightbox = null; lightboxIdx = -1; }
   function onLightboxRemove() {
     const it = currentLightbox; if (!it) return;
     if (!confirm('Remove this photo?')) return;
@@ -1009,7 +1052,7 @@
     if (!memList.length) {
       frame.style.display = 'none'; cap.style.display = 'none';
       if (memTimer) { clearInterval(memTimer); memTimer = null; }
-      frame.innerHTML = ''; lastMemKey = ''; return;
+      frame.innerHTML = ''; lastMemKey = ''; renderAlbum(); return;
     }
     frame.style.display = 'block'; cap.style.display = 'block';
     const key = memList.map(function (m) { return m.key; }).join('|');
@@ -1028,9 +1071,21 @@
       slide.appendChild(bg); slide.appendChild(img);
       frame.appendChild(slide);
     });
+    if (memList.length > 1) {
+      const prev = document.createElement('button');
+      prev.className = 'mem-arrow mem-prev'; prev.type = 'button'; prev.title = 'previous photo';
+      prev.innerHTML = '&#8249;';
+      prev.addEventListener('click', function () { manualMem(-1); });
+      const next = document.createElement('button');
+      next.className = 'mem-arrow mem-next'; next.type = 'button'; next.title = 'next photo';
+      next.innerHTML = '&#8250;';
+      next.addEventListener('click', function () { manualMem(1); });
+      frame.appendChild(prev); frame.appendChild(next);
+    }
     memIdx = 0; showMem(0);
     if (memTimer) clearInterval(memTimer);
     if (memList.length > 1) memTimer = setInterval(nextMem, 5000);
+    renderAlbum();
   }
   function showMem(i) {
     const slides = $('mem-frame').querySelectorAll('.mem-slide');
@@ -1038,6 +1093,27 @@
     $('mem-cap').textContent = memList[i] ? memList[i].caption : '';
   }
   function nextMem() { if (!memList.length) return; memIdx = (memIdx + 1) % memList.length; showMem(memIdx); }
+  function manualMem(dir) {
+    if (!memList.length) return;
+    memIdx = (memIdx + dir + memList.length) % memList.length;
+    showMem(memIdx);
+    if (memTimer) { clearInterval(memTimer); memTimer = setInterval(nextMem, 5000); } // restart the auto-advance clock
+  }
+
+  /* iPhone-style photo grid under the slideshow */
+  function renderAlbum() {
+    const el = $('album');
+    el.classList.toggle('hidden', !albumOpen);
+    $('album-toggle').textContent = albumOpen ? 'hide album' : 'browse album';
+    el.innerHTML = '';
+    if (!albumOpen) return;
+    memList.forEach(function (m) {
+      const img = document.createElement('img');
+      img.src = m.url; img.alt = m.caption; img.loading = 'lazy';
+      img.addEventListener('click', function () { openLightbox(m); });
+      el.appendChild(img);
+    });
+  }
 
   /* batch upload to the gallery */
   function onGalleryPicked() {
