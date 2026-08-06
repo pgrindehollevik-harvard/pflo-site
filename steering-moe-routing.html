@@ -149,7 +149,7 @@
 
           <section id="how-steering-works">
             <h2>How the steering actually works</h2>
-            <p>The slogan, "bias the router toward certain experts," sounds high level, but the implementation is clean: first you <em>measure</em> which experts correlate with a behavior, then you <em>shift</em> the router&rsquo;s scores to promote or suppress them.</p>
+            <p>The slogan, &ldquo;bias the router toward certain experts,&rdquo; sounds high level, but the implementation is clean: first you <em>measure</em> which experts correlate with a behavior, then you <em>shift</em> the router&rsquo;s scores to promote or suppress them.</p>
 
             <h3>Step 1: Find behavior-linked experts</h3>
             <p>Start with paired prompts \((x^{(1)}, x^{(2)})\) that differ only in the behavior you care about. Typical contrasts:</p>
@@ -183,13 +183,8 @@
             <p>No weight updates, no hard mask that forces a single expert to run everywhere. Just a tilted distribution over experts, then business as usual for the rest of the layer.</p>
 
             <h3>Why this feels different from activation steering</h3>
-            <p>Three consequences matter for how I think about it:</p>
-            <ul>
-              <li>Weights stay frozen.</li>
-              <li>You are not forcing one expert to take over the full depth of the model.</li>
-              <li>You only change the <em>probabilities</em> over which experts get a say at this routing step.</li>
-            </ul>
-            <p>Classic activation steering is a geometric move on a hidden state: \(h \leftarrow h + \alpha v\). Here the primitive is distributional: routing is \(\mathrm{route} \sim \mathrm{softmax}(z)\), and you implement steering as \(\mathrm{softmax}(z) \to \mathrm{softmax}(z + \delta)\) after the structured update to \(s\). Same broad recipe, small intervention and global behavioral effect, but applied one level up, at who computes, not only at what vector they see.</p>
+            <p>The consequence that matters most for how I think about it: you only change the <em>probabilities</em> over which experts get a say at this routing step.</p>
+            <p>Classic activation steering is a geometric move on a hidden state: \(h \leftarrow h + \alpha v\). Here the primitive is distributional: routing is \(\mathrm{route} \sim \mathrm{softmax}(z)\), and you implement steering as \(\mathrm{softmax}(z) \to \mathrm{softmax}(z + \delta)\) after the structured update to \(s\). Same broad recipe (small intervention, global behavioral effect), but applied one level up: at who computes, not only at what vector they see.</p>
 
             <h3>A useful intuition</h3>
             <p>If a dense model is like one circuit you can poke, an MoE is closer to a committee: each token is handled by a sparse mixture, schematically</p>

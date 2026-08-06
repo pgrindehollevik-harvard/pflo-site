@@ -663,7 +663,7 @@
       </p>
 
       <!-- 1) Hiring Game Matrix -->
-      <section class="interactive" id="hiring-game">
+      <section class="interactive" id="hiring-game-matrix">
         <h3>A simple hiring game</h3>
         <p>
           Imagine Midjourney choosing between aggressive and conservative offers, while rival labs
@@ -702,21 +702,21 @@
                 This 2×2 matrix represents a simplified version of the hiring game. Each cell shows
                 the outcome when Midjourney and rivals choose a particular combination of strategies.
                 In a full game-theoretic treatment, each cell would contain numerical payoffs for both
-                players, and we'd look for Nash equilibria: combinations where neither player wants to
+                players, and we’d look for Nash equilibria: combinations where neither player wants to
                 unilaterally deviate.
               </p>
               <p>
-                The key insight is that there's no single "best" strategy that works in all scenarios.
+                The key insight is that there’s no single “best” strategy that works in all scenarios.
                 When rivals are conservative, being aggressive can win you candidates at reasonable cost.
-                When rivals are aggressive, matching their aggression leads to overpaying (the "winner's
-                curse"), but being too conservative means losing talent. This is why mixed strategies
+                When rivals are aggressive, matching their aggression leads to overpaying (the “winner’s
+                curse”), but being too conservative means losing talent. This is why mixed strategies
                 often emerge in practice.
               </p>
             </details>
           </section>
 
           <p>
-            The real world, of course, has many more strategies than "aggressive" versus "conservative":
+            The real world, of course, has many more strategies than “aggressive” versus “conservative”:
         labs can differ on salary, equity, freedom to publish, compute budgets, and how closely
         work ties to the product. But the core trade-off is similar. You want to reserve your most
         aggressive bids for the candidates who make the biggest difference inside your specific
@@ -812,13 +812,13 @@
 
         <div class="rep-description" id="rep-description">
           Candidates know little about the lab. Offers have to be relatively generous to
-          compensate for uncertainty, and a lot of the early hiring game is about signalling
+          compensate for uncertainty, and a lot of the early hiring game is about signaling
           seriousness and stability.
         </div>
       </section>
 
       <p>
-        A lab that consistently honours what it promises, around autonomy, promotions, or the
+        A lab that consistently honors what it promises, around autonomy, promotions, or the
         chance to ship impactful work, can sometimes pay slightly less cash than its rivals and
         still win the candidates it cares most about. A lab that burns trust, on the other hand,
         ends up paying a “reputation tax” in higher salaries or weaker pipelines for years.
@@ -843,7 +843,7 @@
         <p>
           Think of the broader environment as defined by two things: how uncertain salaries are,
           and how strong your lab’s reputation is. Different combinations give rise to different
-          stable patterns of behaviour. Use the sliders to describe your world; the card below
+          stable patterns of behavior. Use the sliders to describe your world; the card below
           shows the kind of equilibrium you are likely sitting in.
         </p>
 
@@ -879,22 +879,22 @@
         </div>
 
         <div class="regime-card" id="regime-card">
-          <div class="regime-title" id="regime-title">Arms-race equilibrium</div>
+          <div class="regime-title" id="regime-title">Fit-and-reputation equilibrium</div>
           <p id="regime-body">
-            High uncertainty and weak reputation put you in a noisy arms race: everyone bids
-            aggressively, overpaying is common, and small shocks move the market a lot.
+            Low uncertainty and strong reputation give you a calmer game: salaries cluster near
+            benchmarks and you win key candidates on match quality and trust rather than pure cash.
           </p>
           <ul id="regime-bullets">
-            <li>Offers swing widely for similar candidates.</li>
-            <li>Labs feel pressure to "match whatever others are paying," even without good data.</li>
-            <li>It is easy to burn budget without clearly improving the team.</li>
+            <li>Most offers sit near clear market benchmarks.</li>
+            <li>Candidates are willing to trade a bit of cash for autonomy and interesting work.</li>
+            <li>Over time you can reserve aggressive bids for truly exceptional matches.</li>
           </ul>
         </div>
 
         <details>
           <summary>For readers who like the formal game-theory view</summary>
           <p style="margin-top:8px;">
-            Formally, you can think of each "regime" as a region of parameter space where a
+            Formally, you can think of each “regime” as a region of parameter space where a
             particular pattern of strategies is a
             <span class="term" data-tooltip="A Nash equilibrium is a set of strategies where no player can improve their outcome by unilaterally changing their own strategy, given what everyone else is doing.">
               Nash equilibrium
@@ -907,8 +907,8 @@
             When information is precise and reputation is strong, a calmer profile of offers
             becomes self-reinforcing instead: deviating to constant overbidding is costly,
             because it no longer buys you much extra talent. The grid is not meant to pin
-            down a single "true" equilibrium, but to show how small shifts in information or
-            reputation can move you between regions where very different behaviours are stable.
+            down a single “true” equilibrium, but to show how small shifts in information or
+            reputation can move you between regions where very different behaviors are stable.
           </p>
         </details>
       </section>
@@ -921,7 +921,7 @@
       <p>
         None of this is one-sided. Candidates also play a game. They choose how much to reveal,
         when to surface competing offers, and whether to present themselves as “pure researcher,”
-        “staff engineer,” or something in between. Done skillfully, this is a form of signalling:
+        “staff engineer,” or something in between. Done skillfully, this is a form of signaling:
         shaping the lab’s beliefs about their type and nudging the equilibrium toward higher
         offers or more freedom.
       </p>
@@ -929,7 +929,7 @@
       <p>
         The best outcome for both sides is not maximum drama at the negotiating table. It is a
         matching process where information flows clearly enough that aggressive bids are reserved
-        for genuinely exceptional fits: people who will thrive in the lab's specific environment
+        for genuinely exceptional fits: people who will thrive in the lab’s specific environment
         and push the frontier forward rather than simply moving headcount numbers.
       </p>
 
@@ -945,30 +945,30 @@
       <section class="interactive" id="mixed-strategy">
         <h3>Mixed strategies in practice</h3>
         <p>
-          To see how this works, we need to define what we mean by "payoff." In this simplified model,
+          To see how this works, we need to define what we mean by “payoff.” In this simplified model,
           payoff represents the net value to Midjourney from a hiring decision: the benefit of getting
           a strong candidate (or avoiding a bad fit) minus the cost of the offer and the risk of overpaying.
-          Positive payoffs mean the strategy is working well; negative payoffs mean it's costly or ineffective.
+          Positive payoffs mean the strategy is working well; negative payoffs mean it’s costly or ineffective.
         </p>
 
         <p>
-          The payoff depends on both Midjourney's choice and what rivals do. Here's the logic behind
+          The payoff depends on both Midjourney’s choice and what rivals do. Here’s the logic behind
           each scenario:
         </p>
 
         <ul style="margin: 0 0 1.5rem 0; padding-left: 1.5rem; line-height: 1.8;">
           <li><strong>Midjourney aggressive, rivals conservative:</strong> Midjourney wins the candidate
-            with a strong offer, and the cost is justified because rivals weren't bidding hard. <strong>Payoff: +3</strong></li>
+            with a strong offer, and the cost is justified because rivals weren’t bidding hard. <strong>Payoff: +3</strong></li>
           <li><strong>Both conservative:</strong> Salaries stay reasonable, but Midjourney might miss some
             candidates. <strong>Payoff: +1</strong></li>
           <li><strong>Midjourney conservative, rivals aggressive:</strong> Midjourney loses good candidates
             to rivals who outbid them. <strong>Payoff: -1</strong></li>
-          <li><strong>Both aggressive:</strong> Everyone bids high, leading to overpaying and winner's curse.
+          <li><strong>Both aggressive:</strong> Everyone bids high, leading to overpaying and winner’s curse.
             <strong>Payoff: -2</strong></li>
         </ul>
 
         <p>
-          The chart below shows Midjourney's expected payoff from each strategy as we vary how often
+          The chart below shows Midjourney’s expected payoff from each strategy as we vary how often
           rivals play aggressively. When rivals are rarely aggressive (left side), aggressive bidding
           pays off. When rivals are often aggressive (right side), conservative bidding avoids the worst
           outcomes. Move the slider to see how the optimal strategy changes.
@@ -1057,7 +1057,7 @@
               At this point, Midjourney cannot improve its expected payoff by switching entirely to
               aggressive or conservative bidding, given what rivals are doing. That is exactly the
               sense in which a mixed strategy is an equilibrium: each pure strategy has the same
-              expected value, so randomising between them is sustainable.
+              expected value, so randomizing between them is sustainable.
             </p>
           </details>
 
@@ -1171,7 +1171,7 @@
             <h2>Why this matters for labs like Midjourney</h2>
           
             <p>
-              What recruiting teams often treat as "operations" are, in practice, mechanisms that reshape
+              What recruiting teams often treat as “operations” are, in practice, mechanisms that reshape
               incentives, clarify information, and strengthen the repeated-game dynamics that make hiring
               more predictable. When those mechanisms are in place, the system drifts toward the calmer,
               high-reputation, fit-driven equilibrium rather than the expensive, noisy one. That is the real
@@ -1182,11 +1182,10 @@
           </section>
 
           <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e5e5e5; text-align: center;">
-            <p style="font-size: 1rem; color: #666; margin-bottom: 1rem;">Thanks for reading!</p>
+            <p style="font-size: 1rem; color: #666; margin-bottom: 1rem;">Thanks for reading.</p>
             <p style="font-size: 0.85rem; color: #888;">© <span id="copyright-year"></span> Peter Flo</p>
           </div>
           
-        </section>
       </div>
     </section>
   </div></main></div>
@@ -1287,10 +1286,10 @@
       const desc = document.getElementById('rep-description');
 
       const descriptions = [
-        'Candidates know little about the lab. Offers have to be relatively generous to compensate for uncertainty, and a lot of the early hiring game is about signalling seriousness and stability.',
+        'Candidates know little about the lab. Offers have to be relatively generous to compensate for uncertainty, and a lot of the early hiring game is about signaling seriousness and stability.',
         'Past researchers talk positively about autonomy and impact. Some candidates are willing to accept slightly lower cash in exchange for interesting work and strong mentorship, giving the lab more bargaining power.',
-        'Stories spread that commitments were not honoured, maybe around layoffs or broken promises. Even generous offers are viewed with suspicion, and outside options suddenly look safer.',
-        'If the lab invests in rebuilding trust (real changes, consistent behaviour), reputation can slowly recover, but it is costly. If it does not, top candidates stop applying and the lab competes mainly for weaker signals.'
+        'Stories spread that commitments were not honored, maybe around layoffs or broken promises. Even generous offers are viewed with suspicion, and outside options suddenly look safer.',
+        'If the lab invests in rebuilding trust (real changes, consistent behavior), reputation can slowly recover, but it is costly. If it does not, top candidates stop applying and the lab competes mainly for weaker signals.'
       ];
 
       buttons.forEach(btn => {
@@ -1368,7 +1367,7 @@
             'High uncertainty and weak reputation put you in a noisy arms race: everyone bids aggressively, overpaying is common, and small shocks move the market a lot.';
           bulletsHtml = `
             <li>Offers swing widely for similar candidates.</li>
-            <li>Labs feel pressure to "match whatever others are paying," even without good data.</li>
+            <li>Labs feel pressure to “match whatever others are paying,” even without good data.</li>
             <li>It is easy to burn budget without clearly improving the team.</li>
           `;
         } else if (regimeType === 'fit-reputation') {
@@ -1383,7 +1382,7 @@
         } else if (regimeType === 'reputation-tax') {
           title = 'Reputation-tax equilibrium';
           body =
-            'Information is good but your reputation is weak. You can match the market on salary, but you often have to overpay or add sweeteners to overcome scepticism.';
+            'Information is good but your reputation is weak. You can match the market on salary, but you often have to overpay or add sweeteners to overcome skepticism.';
           bulletsHtml = `
             <li>Candidates know roughly what they could earn elsewhere.</li>
             <li>To close offers, you lean heavily on salary, sign-on, or title inflation.</li>
@@ -1401,9 +1400,9 @@
         } else {
           title = 'Mixed-strategy region';
           body =
-            'You are in a middle region: sometimes aggressive bidding makes sense, sometimes not. Small changes in information or reputation can shift which behaviours are stable.';
+            'You are in a middle region: sometimes aggressive bidding makes sense, sometimes not. Small changes in information or reputation can shift which behaviors are stable.';
           bulletsHtml = `
-            <li>Neither pure "always aggressive" nor pure "always conservative" works well.</li>
+            <li>Neither pure “always aggressive” nor pure “always conservative” works well.</li>
             <li>You experiment with different mixes of salary, equity, and freedom across roles.</li>
             <li>Clarifying benchmarks and strengthening reputation nudge you toward better regimes.</li>
           `;
@@ -1538,7 +1537,7 @@
             'Here Midjourney is roughly indifferent between the two strategies. That is what a mixed-strategy equilibrium looks like: sometimes you bid hard, sometimes you hold back, and rivals cannot profitably exploit either choice.';
         } else if (payoffAggVal > payoffConsVal) {
           msg =
-            'Given how often rivals are aggressive, Midjourney does better on average by bidding aggressively too, but at the cost of more winner\'s-curse risk.';
+            'Given how often rivals are aggressive, Midjourney does better on average by bidding aggressively too, but at the cost of more winner’s-curse risk.';
         } else {
           msg =
             'At this level of rival aggression, a more conservative posture yields higher expected value. You will lose some candidates, but avoid burning budget on noisy overbids.';

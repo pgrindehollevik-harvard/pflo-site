@@ -227,7 +227,7 @@
           <span class="term" data-tooltip="The high-dimensional space of neural network hidden states. Each point is a vector; directions in this space can correspond to semantic concepts like truth or refusal.">activation space</span>
           is highly similar between base and post-trained models, and transfers well for interventions.</li>
           <li><strong>Refusal is also linear, but it changes.</strong> The refusal direction differs sharply between base and post-trained models, and does not transfer forward (base &rarr; instruct) very well.</li>
-          <li><strong>Confidence differences aren&rsquo;t explained by entropy neurons.</strong> The entropy-neuron sets overlap heavily across base and post-training, so whatever changes confidence is subtler than &ldquo;these 10 neurons moved.&rdquo;</li>
+          <li><strong>Confidence differences aren&rsquo;t explained by entropy neurons.</strong> The entropy-neuron sets overlap heavily across base and post-trained models, so whatever changes confidence is subtler than &ldquo;these 10 neurons moved.&rdquo;</li>
         </ol>
         <p style="margin-top:1rem;">
           If you&rsquo;re building
@@ -479,7 +479,7 @@
             <text x="385" y="78" text-anchor="middle" font-size="10" fill="#374151">Refusal direction</text>
             <text x="385" y="93" text-anchor="middle" font-size="10" fill="#374151">Some knowledge repr</text>
             <text x="385" y="108" text-anchor="middle" font-size="10" fill="#374151">(new content)</text>
-            <text x="385" y="123" text-anchor="middle" font-size="9" fill="#6b7280">Transfer: base → instruct ✗</text>
+            <text x="385" y="123" text-anchor="middle" font-size="9" fill="#6b7280">Refusal transfer: base → instruct ✗</text>
           </svg>
         </div>
       </section>

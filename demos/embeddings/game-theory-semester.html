@@ -361,11 +361,6 @@
         <section class="interactive">
           <h3>The refinement game</h3>
           <p>This game has three Nash equilibria: $(r_1, c_1)$, $(r_2, c_2)$, and $(r_3, c_3)$. Click each to see which refinements it survives.</p>
-          <div class="matrix-grid">
-            <div></div>
-            <div class="matrix-label">$c_1$</div>
-            <div class="matrix-label">$c_2$</div>
-          </div>
           <div class="matrix-grid" style="grid-template-columns:1fr 1fr 1fr 1fr; margin-top:4px;">
             <div></div>
             <div class="matrix-label">$c_1$</div>
@@ -415,9 +410,9 @@
             <div class="matrix-cell">6, 6</div>
           </div>
           <p style="margin-top:12px; font-size:.9rem; color:#374151;">
-            The correlated equilibrium avoids (Drive, Drive) entirely (the crash), while
-            Nash can't, because independent randomization inevitably puts some probability on
-            both players driving. This is the power of correlation: a shared signal coordinates
+            The correlated equilibrium avoids (Drive, Drive) entirely (the crash), while the
+            best Nash (the mixed one) can't: independent randomization inevitably puts some
+            probability on both players driving. This is the power of correlation: a shared signal coordinates
             players away from bad outcomes.
           </p>
         </section>
@@ -663,7 +658,7 @@
           If $X \subseteq \mathbb{R}$, it's automatically a lattice and every function is
           supermodular in $x$. If constraints don't vary with $t$, condition 4 is free. You
           only need to check increasing differences, which often reduces to checking a
-          cross-partial is nonneg.
+          cross-partial is nonnegative.
         </p>
 
         <details>
@@ -931,8 +926,8 @@
     const exp = document.getElementById('refine-explainer');
     const info = {
       'r1c1': '<strong>(r₁, c₁): payoff (1, 1).</strong> Nash ✓ · Perfect ✓ · Proper ✓. Both players\' best response when the other\'s tremble makes costly mistakes (−9) even less likely than moderate ones (0). The unique proper equilibrium.',
-      'r2c2': '<strong>(r₂, c₂): payoff (0, 0).</strong> Nash ✓ · Perfect ✓ · Proper ✗. Both get 0 regardless of trembles to c₂/r₂. Survives trembling, but a "proper" trembling player would put more weight on the better mistake (r₁) than the worse one (r₃), which destabilizes this.',
-      'r3c3': '<strong>(r₃, c₃): payoff (−7, −7).</strong> Nash ✓ · Perfect ✗ · Proper ✗. A terrible equilibrium sustained only because each player expects the other to play c₃/r₃. Any trembling destroys it: a small probability on c₁ makes r₁ strictly better than r₃.',
+      'r2c2': '<strong>(r₂, c₂): payoff (0, 0).</strong> Nash ✓ · Perfect ✓ · Proper ✗. Against c₂, both r₁ and r₂ give 0, so small trembles don\'t break this. But a "proper" trembling player would put more weight on the better mistake (r₁) than the worse one (r₃), which destabilizes this.',
+      'r3c3': '<strong>(r₃, c₃): payoff (−7, −7).</strong> Nash ✓ · Perfect ✗ · Proper ✗. A terrible equilibrium sustained only because each player expects the other to play c₃/r₃. Any trembling destroys it: any small probability on c₁ or c₂ makes r₂ strictly better than r₃.',
       'off': 'This cell is not a Nash equilibrium. Click a diagonal cell, (r₁,c₁), (r₂,c₂), or (r₃,c₃), to see which refinements it survives.'
     };
     cells.forEach(cell => cell.addEventListener('click', () => {

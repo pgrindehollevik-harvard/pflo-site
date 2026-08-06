@@ -425,7 +425,7 @@
           <h2>A tripwire instead of a leap</h2>
           <p>
             The plan, <span class="term" data-tooltip="All thresholds, sample sizes, falsification criteria, and analysis rules were frozen in a tagged git commit before any experiment ran. Deviations are logged with timestamps.">pre-registered</span>
-            before any run, was to replicate the chain-of-thought protection on GSM8K and then push it up a difficulty ladder (MATH-500, AIME) to see whether writing stops saving you when problems get hard. But the main grid costs about a day of compute, so I put a gate in front of it: the ablation first had to reproduce, on this model, the two signatures the paper found on frontier models.
+            before any run, was to replicate the chain-of-thought protection on GSM8K and then push it up a difficulty ladder (MATH-500, AIME) to see whether writing stops saving you when problems get hard. But the main experiment costs about a day of compute, so I put a gate in front of it: the ablation first had to reproduce, on this model, the two signatures the paper found on frontier models.
           </p>
           <blockquote>
             <p><strong>Signature 1:</strong> deleting the workspace hurts reasoning far more than matched random damage.<br/>
@@ -447,10 +447,10 @@
 
           <table class="results">
             <tr><th>configuration</th><th>reasoning drop (J)</th><th>reasoning drop (random)</th><th>plain-text survival (J)</th><th>gate</th></tr>
-            <tr><td>band 14&ndash;24, k=10</td><td>&minus;16.4 (p=.004)</td><td>&minus;9.1</td><td>0.62</td><td>fail</td></tr>
-            <tr><td>band 14&ndash;31, k=10</td><td>&minus;18.2</td><td>&minus;9.1</td><td>0.58</td><td>fail</td></tr>
-            <tr><td>band 14&ndash;24, k=5</td><td>&minus;14.5</td><td>&minus;5.5</td><td>0.61</td><td>fail</td></tr>
-            <tr><td>band 14&ndash;19, k=10</td><td>&minus;16.4 (p=.012)</td><td>&nbsp;&nbsp;0.0</td><td>0.66</td><td>fail</td></tr>
+            <tr><td>band 14 to 24, k=10</td><td>&minus;16.4 (p=.004)</td><td>&minus;9.1</td><td>0.62</td><td>fail</td></tr>
+            <tr><td>band 14 to 31, k=10</td><td>&minus;18.2</td><td>&minus;9.1</td><td>0.58</td><td>fail</td></tr>
+            <tr><td>band 14 to 24, k=5</td><td>&minus;14.5</td><td>&minus;5.5</td><td>0.61</td><td>fail</td></tr>
+            <tr><td>band 14 to 19, k=10</td><td>&minus;16.4 (p=.012)</td><td>&nbsp;&nbsp;0.0</td><td>0.66</td><td>fail</td></tr>
           </table>
 
           <figure class="figure-block">
@@ -459,7 +459,7 @@
           </figure>
 
           <p>
-            I also re-ran the entire ladder with a second lens I fit myself, targeting the paper&rsquo;s preferred layer, to rule out an artifact of the off-the-shelf one. Its fit was small (32 prompts against the reference lens&rsquo;s 479) and it produced something diagnostic: its &ldquo;workspace directions&rdquo; performed <em>identically to the random control</em>, drops of 10.9 versus 10.9. An undertrained lens converges to noise, which is exactly what noise should do, and it quietly confirms that the reference lens&rsquo;s gap was real structure.
+            I also re-ran the entire dose-response ladder with a second lens I fit myself, targeting the paper&rsquo;s preferred layer, to rule out an artifact of the off-the-shelf one. Its fit was small (32 prompts against the reference lens&rsquo;s 479) and it produced something diagnostic: its &ldquo;workspace directions&rdquo; performed <em>identically to the random control</em>, drops of 10.9 versus 10.9. An undertrained lens converges to noise, which is exactly what noise should do, and it quietly confirms that the reference lens&rsquo;s gap was real structure.
           </p>
           <p>
             Eight configurations, two lenses, zero passes. Per the pre-registration, the main experiment never ran. Asking whether writing protects the workspace is meaningless on a model where trashing the workspace trashes everything else too.
@@ -500,7 +500,7 @@
 
         <section id="end">
           <div class="post-footer">
-            <p class="thanks">Thanks for reading!</p>
+            <p class="thanks">Thanks for reading.</p>
             <p class="copyright">© <span id="copyright-year"></span> Peter Flo</p>
           </div>
         </section>

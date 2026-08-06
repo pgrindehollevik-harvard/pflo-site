@@ -479,8 +479,7 @@
           </p>
           <p>
             SDL rests on two assumptions. First, the
-            <span class="term" data-tooltip="The observation that concepts tend to be represented as linear directions in activation space: their intensity scales with vector magnitude, and combinations compose by addition. A 'weak' version (some concepts are linear) is well-supported; the 'strong' version (all are) is false.">linear representation hypothesis</span>
-            , that concepts map to linear directions in activation space. Second, the
+            <span class="term" data-tooltip="The observation that concepts tend to be represented as linear directions in activation space: their intensity scales with vector magnitude, and combinations compose by addition. A 'weak' version (some concepts are linear) is well-supported; the 'strong' version (all are) is false.">linear representation hypothesis</span>, that concepts map to linear directions in activation space. Second, the
             superposition hypothesis, that there are more of these directions than dimensions.
             Both have empirical support, but both have known exceptions.
           </p>
@@ -495,7 +494,7 @@
             interpretability.
           </p>
           <p>
-            But the paper is remarkably candid about its limitations.
+            But the paper is remarkably candid about SDL's limitations.
           </p>
         </section>
 
@@ -545,7 +544,7 @@
           <h2>Theoretical foundations</h2>
 
           <p>
-            The paper makes a striking admission: despite being the central object of study,
+            The paper makes a striking admission: despite features being the central object of study,
             we don't have a satisfying formal definition of a "feature." We don't know, in a
             rigorous sense, whether the superposition hypothesis is fundamentally true or merely
             pragmatically useful. And we don't have a principled theory that tells us how to
@@ -610,8 +609,7 @@
             <em>same</em> direction in
             <span class="term" data-tooltip="Bidirectional Encoder Representations from Transformers. A 2018 language model from Google that processes text in both directions simultaneously. Widely used as a research subject in early mechanistic interpretability work.">BERT</span>
             depending on which dataset they drew examples from.
-            Worse, you can find plausible-looking explanations for <em>arbitrary</em> directions
-            , not just the ones that actually matter.
+            Worse, you can find plausible-looking explanations for <em>arbitrary</em> directions, not just the ones that actually matter.
           </p>
           <p>
             <strong>Attribution methods</strong>: gradient-based
@@ -629,8 +627,7 @@
             representations into vocabulary space to see what a component "is thinking about."
             The
             <span class="term" data-tooltip="Apply the model's unembedding matrix to an intermediate residual stream vector to convert it into a distribution over output tokens. The 'residual stream' is the running sum of all layer outputs that threads through a Transformer.">logit lens</span>
-            measures direct effects. It's clean and cheap, but can't capture indirect effects
-            : how a representation influences downstream layers.
+            measures direct effects. Direct logit attribution does the same for a single component's output, attributing the final logits to individual heads and neurons. Both are clean and cheap, but can't capture indirect effects: how a representation influences downstream layers.
           </p>
           <p>
             <strong>Causal interventions</strong>: the gold standard.
@@ -675,9 +672,9 @@
               <text x="505" y="106" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">ground truth</text>
 
               <rect x="580" y="30" width="90" height="155" rx="6" fill="#2563eb" stroke="#1d4ed8" stroke-width="1"/>
-              <text x="625" y="85" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">Beat</text>
-              <text x="625" y="99" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">baselines</text>
-              <text x="625" y="113" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">fairly</text>
+              <text x="625" y="85" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">Achieve</text>
+              <text x="625" y="99" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">goals</text>
+              <text x="625" y="113" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">competitively</text>
               <text x="625" y="132" text-anchor="middle" font-size="9" fill="#dbeafe">Hardest</text>
 
               <!-- Arrow underneath -->
@@ -730,7 +727,7 @@
             This pipeline has produced real insights, including the
             <span class="term" data-tooltip="A circuit in Transformers that performs in-context learning by copying patterns: if the model sees 'A B … A', the induction head predicts B will follow the second A. One of the most well-understood circuits in mechanistic interpretability.">induction head</span>
             circuit and the indirect
-            object identification circuit, but the paper is forthright about its shortcomings.
+            object identification circuit, but the paper is forthright about the pipeline's shortcomings.
             Task definitions are human-imposed and may not match the model's internal task
             structure. Within-task variance is large: a circuit may approximate average
             performance well but individual datapoints poorly. Circuit faithfulness is low for
@@ -777,8 +774,7 @@
             of cognition itself. This means it's uniquely positioned to catch deception,
             <span class="term" data-tooltip="When a model tells the user what they want to hear rather than what's true, adjusting its responses to match perceived user beliefs or preferences, even when this means giving incorrect information.">sycophancy</span>,
             and
-            <span class="term" data-tooltip="When a model deliberately underperforms on capability evaluations to hide its true abilities. A model that 'sandbags' appears less capable than it is, potentially to avoid triggering safety restrictions.">sandbagging</span>
-            , behaviors that are specifically designed to defeat
+            <span class="term" data-tooltip="When a model deliberately underperforms on capability evaluations to hide its true abilities. A model that 'sandbags' appears less capable than it is, potentially to avoid triggering safety restrictions.">sandbagging</span>, behaviors that are specifically designed to defeat
             behavioral evaluations.
           </p>
         </section>
@@ -865,8 +861,7 @@
           </p>
           <p>
             The paper hints at this connection in its discussion of
-            <span class="term" data-tooltip="The vision that if we could decompose a network into all its components and describe each one, we could verify that none implement dangerous capabilities, like checking every part of a machine for defects. Currently far beyond reach for large models.">enumerative safety</span>
-            , the idea that if you can decompose a network and describe every component, you
+            <span class="term" data-tooltip="The vision that if we could decompose a network into all its components and describe each one, we could verify that none implement dangerous capabilities, like checking every part of a machine for defects. Currently far beyond reach for large models.">enumerative safety</span>, the idea that if you can decompose a network and describe every component, you
             could verify that no component implements dangerous capabilities. That's the strongest
             possible monitoring contract: full observability. We're very far from it, but even
             partial progress, understanding some components and flagging anomalous ones, would
@@ -926,7 +921,7 @@
 
           <div class="aside-personal">
             <p>
-              Reading this paper carefully, a few research threads pull at me:
+              As I read this paper carefully, a few research threads pull at me:
             </p>
             <p>
               <strong>1. The economics of alignment as monitoring.</strong> The principal-agent
@@ -948,7 +943,7 @@
             <p>
               <strong>3. Feature geometry and economic network theory.</strong> The paper flags
               that SDL ignores feature geometry, the relationships between features. I'm drawn
-              to the parallel with economic network analysis, where the structure of
+              to the parallel with network economics, where the structure of
               relationships (not just the existence of agents) determines outcomes. Can we import
               tools from network economics to understand how features interact?
             </p>

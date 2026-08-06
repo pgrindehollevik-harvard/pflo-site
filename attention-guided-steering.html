@@ -437,7 +437,7 @@
 
           <h3>3. Which layers should you steer?</h3>
           <p>
-            Prior work often chose blocks manually or did a grid search. That can work, but it treats layer selection like a hyperparameter search rather than a representational question.
+            Prior work often chose blocks (the paper’s word for transformer layers) manually or did a grid search. That can work, but it treats layer selection like a hyperparameter search rather than a representational question.
           </p>
 
           <p>
@@ -496,8 +496,8 @@
 
           <p>
             The empirical effect is not subtle. Once token selection becomes dynamic and attention-guided, the average score rises to <strong>78.2%</strong>,
-            well above the <strong>49.3%</strong> average from the fixed <code>end_header_id</code> setup used in the earlier benchmark setup.
-            Qualitatively, the same pattern also shows up across the other extraction methods they test, not just RFM.
+            well above the <strong>49.3%</strong> average from the fixed <code>end_header_id</code> setup used in the earlier benchmark.
+            Qualitatively, the same pattern also shows up across the other extraction methods they test, not just RFM (the paper’s main extraction method, more on it in Step 2).
           </p>
 
           <p>
@@ -585,7 +585,7 @@
 
           <p>
             The soft-label extension fits naturally into this setup. For regression-based extractors like linear regression and RFM, you simply replace
-            binary positive labels with attention-to-prefix scores. The paper notes that difference-in-means and PCA do not accommodate that change as naturally,
+            binary positive labels with attention-to-prefix scores. The paper notes that difference in means and PCA do not accommodate that change as naturally,
             which is one reason the supervised methods become more compelling here.
           </p>
 
@@ -703,7 +703,7 @@
 
           <h3>3. Steering is dual-use</h3>
           <p>
-            The appendix makes this point uncomfortably clear: the same machinery that improves controllability can also be used to weaken refusal and jailbreak models. That is not a reason to ignore the work. It is a reason to treat activation steering as a safety-relevant capability, not just a neat interpretability trick.
+            The appendix makes this point uncomfortably clear: the same machinery that improves controllability can also be used to weaken refusal and to jailbreak models. That is not a reason to ignore the work. It is a reason to treat activation steering as a safety-relevant capability, not just a neat interpretability trick.
           </p>
         </section>
 
@@ -766,7 +766,7 @@
           </div>
 
           <div class="post-footer">
-            <p class="thanks">Thanks for reading!</p>
+            <p class="thanks">Thanks for reading.</p>
             <p class="copyright">© <span id="copyright-year"></span> Peter Flo</p>
           </div>
         </section>

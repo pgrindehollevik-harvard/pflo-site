@@ -204,7 +204,7 @@
           <li>"toxic content"</li>
         </ul>
         <p>
-          They build labeled datasets for each concept, compute activations at every <span class="term" data-tooltip="A layer in a transformer model (e.g. one attention + MLP block). The paper extracts a concept vector per block.">block</span>, and use a feature-learning method (<span class="term" data-tooltip="A method for finding directions in high-dimensional data that best separate or predict classes. The paper uses it to extract concept directions.">Recursive Feature Machines</span>) to extract a direction $v_\ell$ per block that best tracks the concept.
+          They build labeled datasets for each concept, compute activations at every <span class="term" data-tooltip="A layer in a transformer model (e.g. one attention + MLP block). The paper extracts a concept vector per block.">block</span> (layer), and use a feature-learning method (<span class="term" data-tooltip="A method for finding directions in high-dimensional data that best separate or predict classes. The paper uses it to extract concept directions.">Recursive Feature Machines</span>) to extract a direction $v_\ell$ per block that best tracks the concept.
         </p>
         <p>
           Then, during <span class="term" data-tooltip="The process of producing text token-by-token. Steering injects the concept vector at each step.">generation</span>, they modify the forward pass:
@@ -264,7 +264,7 @@
         </p>
         <ul>
           <li>A direction that separates two classes (e.g., English vs Hindi) need not be the direction that maps one to the other.</li>
-          <li><span class="term" data-tooltip="The task of predicting which class a point belongs to. The direction that best separates classes may differ from the steering direction.">Classification</span> and <span class="term" data-tooltip="Directions in activation space that, when added during the forward pass, steer model behavior toward a concept.">steering vectors</span> could, in principle, differ.
+          <li><span class="term" data-tooltip="The task of predicting which class a point belongs to. The direction that best separates classes may differ from the steering direction.">Classification</span> and <span class="term" data-tooltip="Directions in activation space that, when added during the forward pass, steer model behavior toward a concept.">steering vectors</span> could, in principle, differ.</li>
         </ul>
         <p>
           Yet in practice, <span class="term" data-tooltip="Finding concept directions by training a classifier to predict concept presence, then using the classifier weights as the direction. Simpler than causal methods but may not always align with steering.">classification-style extraction</span> often yields directions that also steer.
@@ -369,7 +369,7 @@
         </p>
         <ul>
           <li>projections of activations onto hallucination or toxicity vectors</li>
-          <li>ensemble blockwise features</li>
+          <li>features pooled across blocks (the paper's ensemble approach)</li>
         </ul>
         <p>
           This combines output-based metrics with internal representation metrics.
@@ -457,7 +457,8 @@
       </section>
 
       <hr>
-      <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">&copy; <span id="copyright-year"></span> Peter Flo</p>
+      <p style="font-size:.85rem; color:#888; text-align:center; margin-top:2rem;">Thanks for reading.</p>
+      <p style="font-size:.85rem; color:#888; text-align:center;">&copy; <span id="copyright-year"></span> Peter Flo</p>
         </div>
       </section>
     </div>
