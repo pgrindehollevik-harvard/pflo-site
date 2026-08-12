@@ -413,6 +413,12 @@
       arr: '2026-07-29T22:05:00+02:00' }
   ];
 
+  /* when we actually see each other next: the countdown runs to this exact
+     moment instead of the calendar event's start (an all day event would
+     otherwise flip too early). Update it for the next trip, or set it to ''
+     to fall back to the event time. */
+  const MEET_AT = '2026-08-12T17:00:00+02:00';
+
   /* love notes are paused for now; set to true to bring the box back */
   const NOTES_ON = false;
 
@@ -812,6 +818,13 @@
       if (s <= now && now <= en) { if (!ongoing || en < occEnd(ongoing)) ongoing = e; }
       else if (s > now) { if (!upcoming || s < occStart(upcoming)) upcoming = e; }
     });
+    /* keep counting down to the real meeting moment even if the calendar
+       event has technically started */
+    const meet = MEET_AT ? new Date(MEET_AT).getTime() : 0;
+    const next = ongoing || upcoming;
+    if (meet && now < meet && next && occStart(next) <= meet && meet <= occEnd(next)) {
+      return { mode: 'countdown', event: next, target: meet };
+    }
     if (ongoing) return { mode: 'together', event: ongoing };
     if (upcoming) return { mode: 'countdown', event: upcoming, target: occStart(upcoming) };
     return { mode: 'none' };
