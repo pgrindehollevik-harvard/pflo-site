@@ -245,7 +245,7 @@
       // anchored at BASE on ANCHOR and advancing at RATE_PER_DAY. Retune here.
       var BASE = 120e9;                 // tokens shown on ANCHOR
       var ANCHOR = Date.UTC(2026, 8, 4);
-      var RATE_PER_DAY = 145e6;
+      var RATE_PER_DAY = 1.35e9;   // 124B over the 92 days to 2026-09-04
       var days = Math.max((Date.now() - ANCHOR) / 86400000, 0);
       var tokens = BASE + RATE_PER_DAY * days;
       function render(e) {
