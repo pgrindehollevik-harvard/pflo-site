@@ -241,26 +241,26 @@
         if (n >= 1e3) return Math.round(n / 1e3) + 'K';
         return String(Math.round(n));
       }
-      fetch('claude-tokens.json')
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-        .then(function (d) {
-          var tokens = d && d.totalTokens;
-          if (!tokens || tokens < 1) return;
-          function render(e) {
-            el.textContent = ' · ' + fmtTokens(e * tokens) + ' claude tokens';
-          }
-          var start = null, dur = 900;
-          function tick(t) {
-            if (start === null) start = t;
-            var p = Math.min((t - start) / dur, 1);
-            render(1 - Math.pow(1 - p, 3));
-            if (p < 1) requestAnimationFrame(tick);
-          }
-          requestAnimationFrame(tick);
-          // guarantee the final value lands even if rAF is throttled (background tab)
-          setTimeout(function () { render(1); }, dur + 120);
-        })
-        .catch(function () {});
+      // Displayed count is a projection, not a live read of claude-tokens.json:
+      // anchored at BASE on ANCHOR and advancing at RATE_PER_DAY. Retune here.
+      var BASE = 120e9;                 // tokens shown on ANCHOR
+      var ANCHOR = Date.UTC(2026, 8, 4);
+      var RATE_PER_DAY = 145e6;
+      var days = Math.max((Date.now() - ANCHOR) / 86400000, 0);
+      var tokens = BASE + RATE_PER_DAY * days;
+      function render(e) {
+        el.textContent = ' \u00b7 ' + fmtTokens(e * tokens) + ' claude tokens';
+      }
+      var start = null, dur = 900;
+      function tick(t) {
+        if (start === null) start = t;
+        var p = Math.min((t - start) / dur, 1);
+        render(1 - Math.pow(1 - p, 3));
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      // guarantee the final value lands even if rAF is throttled (background tab)
+      setTimeout(function () { render(1); }, dur + 120);
     })();
   </script>
 </body>
