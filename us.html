@@ -383,6 +383,16 @@
      For connections, list both numbers in `flight`, name the stop in `via`,
      and put the flight number worth following live in `track`. */
   const FLIGHTS = [
+    { who: 'Peter', flight: 'DL224', operator: 'Delta',
+      from: { code: 'BOS', city: 'Boston', tz: 'America/New_York' },
+      dest: { code: 'CDG', city: 'Paris', tz: 'Europe/Paris' },
+      dep: '2026-11-06T16:55:00-05:00',
+      arr: '2026-11-07T06:00:00+01:00' },
+    { who: 'Peter', flight: 'DL225', operator: 'Delta',
+      from: { code: 'CDG', city: 'Paris', tz: 'Europe/Paris' },
+      dest: { code: 'BOS', city: 'Boston', tz: 'America/New_York' },
+      dep: '2026-11-16T12:15:00+01:00',
+      arr: '2026-11-16T14:29:00-05:00' },
     { who: 'Peter', flight: 'DL5829 + DL7691', operator: 'Delta Connection + SAS',
       via: 'EWR', track: 'DL7691',
       from: { code: 'BOS', city: 'Boston', tz: 'America/New_York' },
@@ -417,7 +427,7 @@
      moment instead of the calendar event's start (an all day event would
      otherwise flip too early). Update it for the next trip, or set it to ''
      to fall back to the event time. */
-  const MEET_AT = '2026-08-12T17:00:00+02:00';
+  const MEET_AT = '2026-11-07T07:00:00+01:00';
 
   /* love notes are paused for now; set to true to bring the box back */
   const NOTES_ON = false;
